@@ -1,0 +1,133 @@
+project:
+  name: "TechVault MSP - Enterprise RAG Intelligence Hub"
+  version: "2.0.0"
+  description: >
+    Enterprise RAG pipeline for TechVault MSP that aggregates data from five
+    disparate back-office systems (QuickBooks, ConnectWise, HubSpot, Exchange,
+    SharePoint) plus AI/ML research sources to power intelligent Q&A over
+    billing, service delivery, client relationships, communications, and contracts.
+
+collection:
+  # ── Research sources (AI/ML knowledge base) ──────────────────────────────
+  arxiv:
+    enabled: true
+    max_results: 25
+    categories:
+      - "cs.AI"
+      - "cs.LG"
+      - "cs.CL"
+      - "cs.IR"
+    queries:
+      - "cat:cs.CL retrieval augmented generation"
+      - "cat:cs.AI large language models enterprise deployment"
+      - "cat:cs.IR vector databases approximate nearest neighbor search"
+      - "cat:cs.AI LLM evaluation benchmarks hallucination"
+      - "cat:cs.CR prompt injection attacks defense LLM"
+      - "cat:cs.LG RAG pipeline knowledge base question answering"
+
+  wikipedia:
+    enabled: true
+    topics:
+      - "Large language model"
+      - "Retrieval-augmented generation"
+      - "Vector database"
+      - "FAISS"
+      - "Transformer (machine learning model)"
+      - "Prompt injection"
+      - "Word embedding"
+      - "Named-entity recognition"
+
+  rss:
+    enabled: true
+    feeds:
+      - name: "ArXiv CS.AI"
+        url: "http://arxiv.org/rss/cs.AI"
+      - name: "ArXiv CS.CL"
+        url: "http://arxiv.org/rss/cs.CL"
+      - name: "ArXiv CS.IR"
+        url: "http://arxiv.org/rss/cs.IR"
+      - name: "The Gradient"
+        url: "https://thegradient.pub/rss/"
+      - name: "Ahead of AI"
+        url: "https://magazine.sebastianraschka.com/feed"
+
+  local:
+    enabled: false
+    paths: []
+
+  # ── Enterprise MSP sources (TechVault back-office systems) ───────────────
+  billing:
+    enabled: true
+    # QuickBooks Enterprise - Invoice AR system
+    data_file: "data/enterprise/invoices.json"
+    description: "Accounts receivable invoices from QuickBooks Enterprise"
+    source_system: "QuickBooks Enterprise"
+
+  psa:
+    enabled: true
+    # ConnectWise Manage - Professional Services Automation
+    data_file: "data/enterprise/psa_tickets.json"
+    description: "Service tickets and work logs from ConnectWise Manage"
+    source_system: "ConnectWise Manage"
+
+  crm:
+    enabled: true
+    # HubSpot CRM - Client Relationship Management
+    data_file: "data/enterprise/crm_profiles.json"
+    description: "Client profiles and account health data from HubSpot CRM"
+    source_system: "HubSpot CRM"
+
+  communications:
+    enabled: true
+    # Microsoft Exchange Online - Email and reminder log
+    data_file: "data/enterprise/communications.json"
+    description: "Invoice reminder email history from Exchange Online"
+    source_system: "Microsoft Exchange Online"
+
+  contracts:
+    enabled: true
+    # SharePoint - Contract document repository
+    data_file: "data/enterprise/contracts.json"
+    description: "Service agreements and SLA terms from SharePoint"
+    source_system: "SharePoint Document Repository"
+
+validation:
+  min_content_length: 150
+  max_content_length: 500000
+  allowed_languages:
+    - "en"
+  duplicate_threshold: 0.95
+  quality_score_threshold: 0.40
+
+storage:
+  raw_dir: "data/raw"
+  validated_dir: "data/validated"
+  rejected_dir: "data/rejected"
+
+logging:
+  level: "INFO"
+  file: "logs/pipeline.log"
+
+# ── Phase II: Chunking, Embedding, Indexing ───────────────────────────────────
+chunking:
+  max_tokens: 512              # Hard ceiling per chunk
+  overlap_tokens: 64           # Token overlap for fixed-overlap windows
+  sentence_window: 8           # Sentences per window (sentence-window strategy)
+  sentence_overlap: 2          # Sentence overlap between windows
+  keep_whole_threshold: 600    # Docs below this token count stay as one chunk
+
+embedding:
+  model: "text-embedding-3-small"
+  dimensions: 1536
+  batch_size: 512              # API calls per request (max 2048)
+
+indexing:
+  index_dir: "data/index"
+  chunks_dir: "data/chunks"
+
+retrieval:
+  # Hybrid search weights (dense + sparse Reciprocal Rank Fusion)
+  dense_weight: 0.7            # FAISS semantic similarity weight
+  sparse_weight: 0.3           # BM25 keyword match weight
+  top_k: 10                    # Retrieved chunks per query
+  rerank_top_k: 5              # Chunks kept after reranking

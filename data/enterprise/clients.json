@@ -1,0 +1,2221 @@
+{
+  "source_system": "TechVault MSP Master Client List",
+  "records": [
+    {
+      "id": "CLT-001",
+      "name": "Lakewood Medical Group",
+      "industry": "Healthcare",
+      "size": "L",
+      "users": 95,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_ADV",
+        "CLOUD",
+        "BCP",
+        "COMPLY"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2021-03-15",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "lakewoodmedicalgroup.com",
+      "address": {
+        "street": "386 Shane Harbors",
+        "city": "North Judithbury",
+        "state": "SC",
+        "zip": "01352",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Noah Rhodes",
+          "email": "cfo@lakewoodmedicalgroup.com",
+          "phone": "001-626-254-2351x16155"
+        },
+        "it_manager": {
+          "name": "Angie Henderson",
+          "email": "it@lakewoodmedicalgroup.com",
+          "phone": "001-278-516-1849x5931"
+        },
+        "ar_contact": {
+          "name": "Daniel Wagner",
+          "email": "billing@lakewoodmedicalgroup.com",
+          "phone": "001-341-431-6475x25534"
+        }
+      },
+      "billing_contact_email": "billing@lakewoodmedicalgroup.com"
+    },
+    {
+      "id": "CLT-002",
+      "name": "Blue Ridge Dental Partners",
+      "industry": "Healthcare",
+      "size": "S",
+      "users": 18,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "BCP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-06-01",
+      "has_projects": false,
+      "manager": "James Wei",
+      "domain": "blueridgedentalpartn.com",
+      "address": {
+        "street": "1395 Diana Locks Suite 242",
+        "city": "East Steven",
+        "state": "ND",
+        "zip": "32826",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Timothy Watts",
+          "email": "cfo@blueridgedentalpartn.com",
+          "phone": "001-388-249-6965x3287"
+        },
+        "it_manager": {
+          "name": "Frederick Tate",
+          "email": "it@blueridgedentalpartn.com",
+          "phone": "922-669-1669"
+        },
+        "ar_contact": {
+          "name": "Rodney Trujillo",
+          "email": "billing@blueridgedentalpartn.com",
+          "phone": "+1-401-984-5146"
+        }
+      },
+      "billing_contact_email": "billing@blueridgedentalpartn.com"
+    },
+    {
+      "id": "CLT-003",
+      "name": "Northern Lights Healthcare System",
+      "industry": "Healthcare",
+      "size": "L",
+      "users": 210,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_ADV",
+        "CLOUD",
+        "NETWORK",
+        "BCP",
+        "COMPLY"
+      ],
+      "reliability": "POOR",
+      "terms": "NET45",
+      "start": "2020-11-01",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "northernlightshealth.com",
+      "address": {
+        "street": "570 Sarah Wells",
+        "city": "Teresaburgh",
+        "state": "AL",
+        "zip": "40807",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Ashley Garrett",
+          "email": "cfo@northernlightshealth.com",
+          "phone": "403.491.1718"
+        },
+        "it_manager": {
+          "name": "Katie Gonzalez",
+          "email": "it@northernlightshealth.com",
+          "phone": "+1-978-924-8963x83465"
+        },
+        "ar_contact": {
+          "name": "Christopher Ashley",
+          "email": "billing@northernlightshealth.com",
+          "phone": "533-215-0983"
+        }
+      },
+      "billing_contact_email": "billing@northernlightshealth.com"
+    },
+    {
+      "id": "CLT-004",
+      "name": "Summit Pediatric Associates",
+      "industry": "Healthcare",
+      "size": "S",
+      "users": 22,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET30",
+      "start": "2023-01-15",
+      "has_projects": false,
+      "manager": "James Wei",
+      "domain": "summitpediatricassoc.com",
+      "address": {
+        "street": "3116 Henderson Mountain Apt. 106",
+        "city": "East Carloston",
+        "state": "CA",
+        "zip": "95949",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Andrea Young",
+          "email": "cfo@summitpediatricassoc.com",
+          "phone": "913-333-8726x24731"
+        },
+        "it_manager": {
+          "name": "Cindy Anderson",
+          "email": "it@summitpediatricassoc.com",
+          "phone": "5808132677"
+        },
+        "ar_contact": {
+          "name": "Laura Kennedy",
+          "email": "billing@summitpediatricassoc.com",
+          "phone": "9264064746"
+        }
+      },
+      "billing_contact_email": "billing@summitpediatricassoc.com"
+    },
+    {
+      "id": "CLT-005",
+      "name": "Riverside Cardiology Center",
+      "industry": "Healthcare",
+      "size": "M",
+      "users": 45,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "BCP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-03-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "riversidecardiologyc.com",
+      "address": {
+        "street": "19136 Shelly Port",
+        "city": "Jeffton",
+        "state": "ID",
+        "zip": "32772",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Kimberly Adkins",
+          "email": "cfo@riversidecardiologyc.com",
+          "phone": "001-790-691-6998"
+        },
+        "it_manager": {
+          "name": "Kevin Shaw",
+          "email": "it@riversidecardiologyc.com",
+          "phone": "353.246.2475"
+        },
+        "ar_contact": {
+          "name": "Brooke Yu",
+          "email": "billing@riversidecardiologyc.com",
+          "phone": "599.711.8384x251"
+        }
+      },
+      "billing_contact_email": "billing@riversidecardiologyc.com"
+    },
+    {
+      "id": "CLT-006",
+      "name": "Valley Vision Eye Care",
+      "industry": "Healthcare",
+      "size": "S",
+      "users": 12,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET30",
+      "start": "2023-05-01",
+      "has_projects": false,
+      "manager": "James Wei",
+      "domain": "valleyvisioneyecare.com",
+      "address": {
+        "street": "1182 Campbell Fords",
+        "city": "South Martha",
+        "state": "LA",
+        "zip": "94559",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Lisa Archer",
+          "email": "cfo@valleyvisioneyecare.com",
+          "phone": "634-487-4016x40052"
+        },
+        "it_manager": {
+          "name": "Aimee Montoya",
+          "email": "it@valleyvisioneyecare.com",
+          "phone": "001-478-868-0112x8059"
+        },
+        "ar_contact": {
+          "name": "Matthew Mcmillan",
+          "email": "billing@valleyvisioneyecare.com",
+          "phone": "(704)850-5331"
+        }
+      },
+      "billing_contact_email": "billing@valleyvisioneyecare.com"
+    },
+    {
+      "id": "CLT-007",
+      "name": "Crestwood Physical Therapy",
+      "industry": "Healthcare",
+      "size": "S",
+      "users": 20,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "BCP"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2022-09-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "crestwoodphysicalthe.com",
+      "address": {
+        "street": "2160 Walker Viaduct",
+        "city": "East Michelle",
+        "state": "RI",
+        "zip": "60833",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Rita Keith",
+          "email": "cfo@crestwoodphysicalthe.com",
+          "phone": "(843)730-3654x145"
+        },
+        "it_manager": {
+          "name": "Norman Cook",
+          "email": "it@crestwoodphysicalthe.com",
+          "phone": "8147294019"
+        },
+        "ar_contact": {
+          "name": "Rebekah Shields",
+          "email": "billing@crestwoodphysicalthe.com",
+          "phone": "001-556-798-1693x4060"
+        }
+      },
+      "billing_contact_email": "billing@crestwoodphysicalthe.com"
+    },
+    {
+      "id": "CLT-008",
+      "name": "Meridian Urgent Care Network",
+      "industry": "Healthcare",
+      "size": "M",
+      "users": 58,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_ADV",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2021-07-15",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "meridianurgentcarene.com",
+      "address": {
+        "street": "299 Sullivan Village Apt. 443",
+        "city": "Lake Samanthamouth",
+        "state": "NE",
+        "zip": "56847",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Belinda Mccullough",
+          "email": "cfo@meridianurgentcarene.com",
+          "phone": "001-495-377-7387"
+        },
+        "it_manager": {
+          "name": "Mary Nguyen",
+          "email": "it@meridianurgentcarene.com",
+          "phone": "989-351-3433x2003"
+        },
+        "ar_contact": {
+          "name": "Kristen Lee",
+          "email": "billing@meridianurgentcarene.com",
+          "phone": "569.436.7632x016"
+        }
+      },
+      "billing_contact_email": "billing@meridianurgentcarene.com"
+    },
+    {
+      "id": "CLT-009",
+      "name": "Harrington & Associates LLP",
+      "industry": "Legal",
+      "size": "M",
+      "users": 38,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "COMPLY"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET30",
+      "start": "2021-01-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "harringtonandassocia.com",
+      "address": {
+        "street": "727 Green Gateway Suite 873",
+        "city": "Williamsbury",
+        "state": "AS",
+        "zip": "36493",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Barbara Anderson",
+          "email": "cfo@harringtonandassocia.com",
+          "phone": "814.434.5581x223"
+        },
+        "it_manager": {
+          "name": "Joseph Hansen",
+          "email": "it@harringtonandassocia.com",
+          "phone": "001-831-266-5876x036"
+        },
+        "ar_contact": {
+          "name": "Pedro Ramos",
+          "email": "billing@harringtonandassocia.com",
+          "phone": "001-596-670-5466x88937"
+        }
+      },
+      "billing_contact_email": "billing@harringtonandassocia.com"
+    },
+    {
+      "id": "CLT-010",
+      "name": "Morrison Caldwell Legal Group",
+      "industry": "Legal",
+      "size": "M",
+      "users": 52,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_ADV",
+        "NETWORK",
+        "COMPLY"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2020-08-01",
+      "has_projects": true,
+      "manager": "Jason Cho",
+      "domain": "morrisoncaldwelllega.com",
+      "address": {
+        "street": "62720 Gray Forest",
+        "city": "Johnsonmouth",
+        "state": "NE",
+        "zip": "60099",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Rebecca Ramsey",
+          "email": "cfo@morrisoncaldwelllega.com",
+          "phone": "256-246-4170x80531"
+        },
+        "it_manager": {
+          "name": "Tamara Hooper",
+          "email": "it@morrisoncaldwelllega.com",
+          "phone": "530.992.3271"
+        },
+        "ar_contact": {
+          "name": "Susan Vargas",
+          "email": "billing@morrisoncaldwelllega.com",
+          "phone": "001-645-829-9124x190"
+        }
+      },
+      "billing_contact_email": "billing@morrisoncaldwelllega.com"
+    },
+    {
+      "id": "CLT-011",
+      "name": "Pacific Coast Accounting Partners",
+      "industry": "Professional Services",
+      "size": "S",
+      "users": 25,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET45",
+      "start": "2023-03-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "pacificcoastaccounti.com",
+      "address": {
+        "street": "518 Smith Manor Suite 165",
+        "city": "North Brittany",
+        "state": "MO",
+        "zip": "83808",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Dana Terry",
+          "email": "cfo@pacificcoastaccounti.com",
+          "phone": "626.728.4987x769"
+        },
+        "it_manager": {
+          "name": "Michael Trujillo",
+          "email": "it@pacificcoastaccounti.com",
+          "phone": "714.273.7996"
+        },
+        "ar_contact": {
+          "name": "Kylie Williams",
+          "email": "billing@pacificcoastaccounti.com",
+          "phone": "552.373.5454x9480"
+        }
+      },
+      "billing_contact_email": "billing@pacificcoastaccounti.com"
+    },
+    {
+      "id": "CLT-012",
+      "name": "Apex Business Consulting",
+      "industry": "Professional Services",
+      "size": "S",
+      "users": 15,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "VOIP"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2022-11-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "apexbusinessconsulti.com",
+      "address": {
+        "street": "856 Bell Motorway Suite 443",
+        "city": "Freemanbury",
+        "state": "IA",
+        "zip": "16315",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Maria Henry",
+          "email": "cfo@apexbusinessconsulti.com",
+          "phone": "001-635-318-2337x4989"
+        },
+        "it_manager": {
+          "name": "Anna Walker",
+          "email": "it@apexbusinessconsulti.com",
+          "phone": "643.252.4082"
+        },
+        "ar_contact": {
+          "name": "Elizabeth Perkins",
+          "email": "billing@apexbusinessconsulti.com",
+          "phone": "9849271094"
+        }
+      },
+      "billing_contact_email": "billing@apexbusinessconsulti.com"
+    },
+    {
+      "id": "CLT-013",
+      "name": "Sterling Wealth Management",
+      "industry": "Finance",
+      "size": "S",
+      "users": 20,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_ADV",
+        "COMPLY"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET30",
+      "start": "2021-06-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "sterlingwealthmanage.com",
+      "address": {
+        "street": "31869 Kimberly Light Suite 749",
+        "city": "Jackton",
+        "state": "NV",
+        "zip": "56708",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Scott Wilson",
+          "email": "cfo@sterlingwealthmanage.com",
+          "phone": "399-409-1334x1232"
+        },
+        "it_manager": {
+          "name": "John Ray",
+          "email": "it@sterlingwealthmanage.com",
+          "phone": "6679974034"
+        },
+        "ar_contact": {
+          "name": "Brittany Shepherd",
+          "email": "billing@sterlingwealthmanage.com",
+          "phone": "434-693-6183"
+        }
+      },
+      "billing_contact_email": "billing@sterlingwealthmanage.com"
+    },
+    {
+      "id": "CLT-014",
+      "name": "Quantum Strategy Group",
+      "industry": "Professional Services",
+      "size": "S",
+      "users": 10,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "POOR",
+      "terms": "NET30",
+      "start": "2023-09-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "quantumstrategygroup.com",
+      "address": {
+        "street": "1906 Munoz Burg Apt. 399",
+        "city": "North Brian",
+        "state": "GU",
+        "zip": "03220",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Linda Holloway",
+          "email": "cfo@quantumstrategygroup.com",
+          "phone": "001-949-702-7874x29671"
+        },
+        "it_manager": {
+          "name": "Jessica Harrison",
+          "email": "it@quantumstrategygroup.com",
+          "phone": "(755)612-5674x68071"
+        },
+        "ar_contact": {
+          "name": "James Nelson",
+          "email": "billing@quantumstrategygroup.com",
+          "phone": "916-280-8760x38597"
+        }
+      },
+      "billing_contact_email": "billing@quantumstrategygroup.com"
+    },
+    {
+      "id": "CLT-015",
+      "name": "Premier HR Solutions",
+      "industry": "Professional Services",
+      "size": "S",
+      "users": 18,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "VOIP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-04-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "premierhrsolutions.com",
+      "address": {
+        "street": "17127 Hicks Groves",
+        "city": "Andreaport",
+        "state": "IL",
+        "zip": "54960",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Michael Martinez",
+          "email": "cfo@premierhrsolutions.com",
+          "phone": "873.778.2639x8214"
+        },
+        "it_manager": {
+          "name": "Lisa Allen",
+          "email": "it@premierhrsolutions.com",
+          "phone": "840.944.9972x78755"
+        },
+        "ar_contact": {
+          "name": "Juan Tran",
+          "email": "billing@premierhrsolutions.com",
+          "phone": "233-496-3605x76627"
+        }
+      },
+      "billing_contact_email": "billing@premierhrsolutions.com"
+    },
+    {
+      "id": "CLT-016",
+      "name": "Summit Financial Advisors",
+      "industry": "Finance",
+      "size": "M",
+      "users": 35,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_ADV",
+        "COMPLY",
+        "CLOUD"
+      ],
+      "reliability": "POOR",
+      "terms": "NET30",
+      "start": "2021-02-01",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "summitfinancialadvis.com",
+      "address": {
+        "street": "158 Finley Road Suite 809",
+        "city": "Mollymouth",
+        "state": "NY",
+        "zip": "09469",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Thomas Smith",
+          "email": "cfo@summitfinancialadvis.com",
+          "phone": "643.216.1172"
+        },
+        "it_manager": {
+          "name": "Seth Booker",
+          "email": "it@summitfinancialadvis.com",
+          "phone": "8504455623"
+        },
+        "ar_contact": {
+          "name": "Richard Baker",
+          "email": "billing@summitfinancialadvis.com",
+          "phone": "(421)596-9379"
+        }
+      },
+      "billing_contact_email": "billing@summitfinancialadvis.com"
+    },
+    {
+      "id": "CLT-017",
+      "name": "Riverfront Insurance Agency",
+      "industry": "Insurance",
+      "size": "M",
+      "users": 42,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "NETWORK"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2020-05-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "riverfrontinsurancea.com",
+      "address": {
+        "street": "3671 Patrick Knolls Suite 406",
+        "city": "Stevetown",
+        "state": "NH",
+        "zip": "36477",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Julie Roberts",
+          "email": "cfo@riverfrontinsurancea.com",
+          "phone": "5905974395"
+        },
+        "it_manager": {
+          "name": "Angela Landry",
+          "email": "it@riverfrontinsurancea.com",
+          "phone": "+1-642-710-4709x521"
+        },
+        "ar_contact": {
+          "name": "Elizabeth Hayden DDS",
+          "email": "billing@riverfrontinsurancea.com",
+          "phone": "001-662-732-8588x4247"
+        }
+      },
+      "billing_contact_email": "billing@riverfrontinsurancea.com"
+    },
+    {
+      "id": "CLT-018",
+      "name": "Coastal Capital Partners",
+      "industry": "Finance",
+      "size": "S",
+      "users": 22,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_ADV",
+        "COMPLY"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET45",
+      "start": "2022-07-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "coastalcapitalpartne.com",
+      "address": {
+        "street": "175 Richards View Suite 137",
+        "city": "South Sydneyberg",
+        "state": "AS",
+        "zip": "03781",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Courtney Rhodes",
+          "email": "cfo@coastalcapitalpartne.com",
+          "phone": "+1-285-693-1746x120"
+        },
+        "it_manager": {
+          "name": "Jennifer Singleton",
+          "email": "it@coastalcapitalpartne.com",
+          "phone": "811.338.2675x8692"
+        },
+        "ar_contact": {
+          "name": "Ann Foster",
+          "email": "billing@coastalcapitalpartne.com",
+          "phone": "796.240.5377x3515"
+        }
+      },
+      "billing_contact_email": "billing@coastalcapitalpartne.com"
+    },
+    {
+      "id": "CLT-019",
+      "name": "Heritage Bank & Trust",
+      "industry": "Finance",
+      "size": "L",
+      "users": 125,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_ADV",
+        "CLOUD",
+        "NETWORK",
+        "COMPLY"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET45",
+      "start": "2020-01-15",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "heritagebankandtrust.com",
+      "address": {
+        "street": "83933 Schroeder Turnpike",
+        "city": "Jamesville",
+        "state": "MO",
+        "zip": "78617",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Samantha Davis",
+          "email": "cfo@heritagebankandtrust.com",
+          "phone": "4422284210"
+        },
+        "it_manager": {
+          "name": "Mark Maddox",
+          "email": "it@heritagebankandtrust.com",
+          "phone": "(339)950-2402x681"
+        },
+        "ar_contact": {
+          "name": "Gavin Zhang",
+          "email": "billing@heritagebankandtrust.com",
+          "phone": "958.291.7839x084"
+        }
+      },
+      "billing_contact_email": "billing@heritagebankandtrust.com"
+    },
+    {
+      "id": "CLT-020",
+      "name": "Pinnacle Asset Management",
+      "industry": "Finance",
+      "size": "M",
+      "users": 48,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_ADV",
+        "COMPLY"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2021-09-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "pinnacleassetmanagem.com",
+      "address": {
+        "street": "9847 Garcia Squares Apt. 836",
+        "city": "Boonechester",
+        "state": "AR",
+        "zip": "59687",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Katherine Browning",
+          "email": "cfo@pinnacleassetmanagem.com",
+          "phone": "765.676.6156"
+        },
+        "it_manager": {
+          "name": "Bobby Franklin",
+          "email": "it@pinnacleassetmanagem.com",
+          "phone": "(227)711-1161x528"
+        },
+        "ar_contact": {
+          "name": "Donald Schultz",
+          "email": "billing@pinnacleassetmanagem.com",
+          "phone": "+1-416-956-0494x51983"
+        }
+      },
+      "billing_contact_email": "billing@pinnacleassetmanagem.com"
+    },
+    {
+      "id": "CLT-021",
+      "name": "Guardian Life Planning",
+      "industry": "Insurance",
+      "size": "S",
+      "users": 24,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "BCP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-12-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "guardianlifeplanning.com",
+      "address": {
+        "street": "24455 Howard Divide Suite 120",
+        "city": "West Meganstad",
+        "state": "IN",
+        "zip": "12527",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Donald Perez",
+          "email": "cfo@guardianlifeplanning.com",
+          "phone": "001-383-266-7525x4599"
+        },
+        "it_manager": {
+          "name": "Justin Saunders",
+          "email": "it@guardianlifeplanning.com",
+          "phone": "(929)801-4767"
+        },
+        "ar_contact": {
+          "name": "Megan Hawkins",
+          "email": "billing@guardianlifeplanning.com",
+          "phone": "238-515-6149x784"
+        }
+      },
+      "billing_contact_email": "billing@guardianlifeplanning.com"
+    },
+    {
+      "id": "CLT-022",
+      "name": "Crossroads Manufacturing Inc.",
+      "industry": "Manufacturing",
+      "size": "L",
+      "users": 145,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK",
+        "BCP"
+      ],
+      "reliability": "POOR",
+      "terms": "NET45",
+      "start": "2020-04-01",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "crossroadsmanufactur.com",
+      "address": {
+        "street": "60607 Michelle Ports Suite 966",
+        "city": "North Jamesborough",
+        "state": "MO",
+        "zip": "38448",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Pamela Roberts",
+          "email": "cfo@crossroadsmanufactur.com",
+          "phone": "860-352-9751"
+        },
+        "it_manager": {
+          "name": "Jonathan Jordan",
+          "email": "it@crossroadsmanufactur.com",
+          "phone": "569.768.1645"
+        },
+        "ar_contact": {
+          "name": "Joseph Hall",
+          "email": "billing@crossroadsmanufactur.com",
+          "phone": "001-621-581-8835x52312"
+        }
+      },
+      "billing_contact_email": "billing@crossroadsmanufactur.com"
+    },
+    {
+      "id": "CLT-023",
+      "name": "Ironworks Fabrication Co.",
+      "industry": "Manufacturing",
+      "size": "M",
+      "users": 62,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "NETWORK"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2021-10-01",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "ironworksfabrication.com",
+      "address": {
+        "street": "527 Taylor Roads Suite 490",
+        "city": "Port Katherine",
+        "state": "HI",
+        "zip": "46630",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Trevor Burton",
+          "email": "cfo@ironworksfabrication.com",
+          "phone": "814.977.0054x11998"
+        },
+        "it_manager": {
+          "name": "Justin Riley",
+          "email": "it@ironworksfabrication.com",
+          "phone": "001-480-279-3597"
+        },
+        "ar_contact": {
+          "name": "Sonia Day",
+          "email": "billing@ironworksfabrication.com",
+          "phone": "415.718.2037x788"
+        }
+      },
+      "billing_contact_email": "billing@ironworksfabrication.com"
+    },
+    {
+      "id": "CLT-024",
+      "name": "Precision Components Ltd.",
+      "industry": "Manufacturing",
+      "size": "M",
+      "users": 78,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-01-15",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "precisioncomponentsl.com",
+      "address": {
+        "street": "1925 Ponce Square",
+        "city": "Paulmouth",
+        "state": "MN",
+        "zip": "87288",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Amy Mccoy",
+          "email": "cfo@precisioncomponentsl.com",
+          "phone": "(729)214-8652x8168"
+        },
+        "it_manager": {
+          "name": "Gary Grant",
+          "email": "it@precisioncomponentsl.com",
+          "phone": "(342)235-7332x214"
+        },
+        "ar_contact": {
+          "name": "David York",
+          "email": "billing@precisioncomponentsl.com",
+          "phone": "+1-759-529-6222x92706"
+        }
+      },
+      "billing_contact_email": "billing@precisioncomponentsl.com"
+    },
+    {
+      "id": "CLT-025",
+      "name": "Atlas Industrial Systems",
+      "industry": "Manufacturing",
+      "size": "L",
+      "users": 188,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_ADV",
+        "CLOUD",
+        "NETWORK",
+        "BCP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET45",
+      "start": "2020-07-01",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "atlasindustrialsyste.com",
+      "address": {
+        "street": "8862 Laurie Dam Suite 075",
+        "city": "Karenmouth",
+        "state": "NV",
+        "zip": "73185",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "David Sheppard",
+          "email": "cfo@atlasindustrialsyste.com",
+          "phone": "481-841-2478"
+        },
+        "it_manager": {
+          "name": "Stephanie Lee",
+          "email": "it@atlasindustrialsyste.com",
+          "phone": "737-550-6068"
+        },
+        "ar_contact": {
+          "name": "Laura Alexander",
+          "email": "billing@atlasindustrialsyste.com",
+          "phone": "(415)930-5152x2047"
+        }
+      },
+      "billing_contact_email": "billing@atlasindustrialsyste.com"
+    },
+    {
+      "id": "CLT-026",
+      "name": "Keystone Plastics Group",
+      "industry": "Manufacturing",
+      "size": "M",
+      "users": 55,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "NETWORK"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2021-11-01",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "keystoneplasticsgrou.com",
+      "address": {
+        "street": "17980 Jennifer Highway Suite 095",
+        "city": "North Andrewborough",
+        "state": "NV",
+        "zip": "32032",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Kimberly Acosta",
+          "email": "cfo@keystoneplasticsgrou.com",
+          "phone": "001-262-818-5188"
+        },
+        "it_manager": {
+          "name": "Ashley Roberts",
+          "email": "it@keystoneplasticsgrou.com",
+          "phone": "406.254.0515x3195"
+        },
+        "ar_contact": {
+          "name": "Anthony Barnes",
+          "email": "billing@keystoneplasticsgrou.com",
+          "phone": "(585)227-7221x704"
+        }
+      },
+      "billing_contact_email": "billing@keystoneplasticsgrou.com"
+    },
+    {
+      "id": "CLT-027",
+      "name": "Frontier Metal Works",
+      "industry": "Manufacturing",
+      "size": "S",
+      "users": 30,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2023-02-01",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "frontiermetalworks.com",
+      "address": {
+        "street": "1566 Kline Lights Suite 277",
+        "city": "North Leslie",
+        "state": "WY",
+        "zip": "48649",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "James Ochoa",
+          "email": "cfo@frontiermetalworks.com",
+          "phone": "641.661.6928x45115"
+        },
+        "it_manager": {
+          "name": "Andrew Lucas",
+          "email": "it@frontiermetalworks.com",
+          "phone": "296.327.5705x964"
+        },
+        "ar_contact": {
+          "name": "Scott Williams",
+          "email": "billing@frontiermetalworks.com",
+          "phone": "+1-765-882-0297x02135"
+        }
+      },
+      "billing_contact_email": "billing@frontiermetalworks.com"
+    },
+    {
+      "id": "CLT-028",
+      "name": "Metro Construction Co.",
+      "industry": "Construction",
+      "size": "L",
+      "users": 95,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "VOIP"
+      ],
+      "reliability": "POOR",
+      "terms": "NET30",
+      "start": "2021-05-01",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "metroconstructionco..com",
+      "address": {
+        "street": "8681 Hampton Squares",
+        "city": "New Ericmouth",
+        "state": "OK",
+        "zip": "58994",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Jacqueline Hines",
+          "email": "cfo@metroconstructionco..com",
+          "phone": "494.973.1217"
+        },
+        "it_manager": {
+          "name": "Kendra Sanders",
+          "email": "it@metroconstructionco..com",
+          "phone": "455-718-8442"
+        },
+        "ar_contact": {
+          "name": "Danielle Wilson",
+          "email": "billing@metroconstructionco..com",
+          "phone": "431.332.3705x89578"
+        }
+      },
+      "billing_contact_email": "billing@metroconstructionco..com"
+    },
+    {
+      "id": "CLT-029",
+      "name": "Pacific Coast Realty Group",
+      "industry": "Real Estate",
+      "size": "M",
+      "users": 45,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "VOIP"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2022-02-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "pacificcoastrealtygr.com",
+      "address": {
+        "street": "68018 Kevin Estates",
+        "city": "Raymondfort",
+        "state": "CA",
+        "zip": "42792",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Patricia Morrow",
+          "email": "cfo@pacificcoastrealtygr.com",
+          "phone": "001-335-484-1438x424"
+        },
+        "it_manager": {
+          "name": "William Day",
+          "email": "it@pacificcoastrealtygr.com",
+          "phone": "001-292-329-9590"
+        },
+        "ar_contact": {
+          "name": "Michael Cooper",
+          "email": "billing@pacificcoastrealtygr.com",
+          "phone": "6946396907"
+        }
+      },
+      "billing_contact_email": "billing@pacificcoastrealtygr.com"
+    },
+    {
+      "id": "CLT-030",
+      "name": "Evergreen Property Management",
+      "industry": "Real Estate",
+      "size": "M",
+      "users": 38,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "VOIP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET45",
+      "start": "2021-08-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "evergreenpropertyman.com",
+      "address": {
+        "street": "562 Robertson Coves Suite 371",
+        "city": "Port Lindsay",
+        "state": "NJ",
+        "zip": "35559",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Jesse Barker",
+          "email": "cfo@evergreenpropertyman.com",
+          "phone": "732.510.4696x325"
+        },
+        "it_manager": {
+          "name": "Jason Marshall",
+          "email": "it@evergreenpropertyman.com",
+          "phone": "001-527-787-7470x16873"
+        },
+        "ar_contact": {
+          "name": "Charles Hensley",
+          "email": "billing@evergreenpropertyman.com",
+          "phone": "3048797480"
+        }
+      },
+      "billing_contact_email": "billing@evergreenpropertyman.com"
+    },
+    {
+      "id": "CLT-031",
+      "name": "Blackstone Development Group",
+      "industry": "Construction",
+      "size": "M",
+      "users": 55,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2022-10-01",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "blackstonedevelopmen.com",
+      "address": {
+        "street": "16558 Fischer Flat",
+        "city": "Jessicafurt",
+        "state": "DC",
+        "zip": "79467",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "James Hudson",
+          "email": "cfo@blackstonedevelopmen.com",
+          "phone": "468.700.0257x87298"
+        },
+        "it_manager": {
+          "name": "Juan Jones",
+          "email": "it@blackstonedevelopmen.com",
+          "phone": "+1-652-969-4958x887"
+        },
+        "ar_contact": {
+          "name": "Pamela Ramirez",
+          "email": "billing@blackstonedevelopmen.com",
+          "phone": "9556169409"
+        }
+      },
+      "billing_contact_email": "billing@blackstonedevelopmen.com"
+    },
+    {
+      "id": "CLT-032",
+      "name": "Horizon Architecture & Design",
+      "industry": "Construction",
+      "size": "S",
+      "users": 28,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2023-04-01",
+      "has_projects": false,
+      "manager": "Sarah Park",
+      "domain": "horizonarchitecturea.com",
+      "address": {
+        "street": "6263 Shaw Ridge Suite 028",
+        "city": "Lake Brett",
+        "state": "SD",
+        "zip": "27677",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Mr. Nathan Hampton",
+          "email": "cfo@horizonarchitecturea.com",
+          "phone": "+1-757-786-5278"
+        },
+        "it_manager": {
+          "name": "Roberto Allen",
+          "email": "it@horizonarchitecturea.com",
+          "phone": "+1-749-973-3484x34437"
+        },
+        "ar_contact": {
+          "name": "Melody Lee",
+          "email": "billing@horizonarchitecturea.com",
+          "phone": "(284)641-9866x524"
+        }
+      },
+      "billing_contact_email": "billing@horizonarchitecturea.com"
+    },
+    {
+      "id": "CLT-033",
+      "name": "Skyline Hospitality Group",
+      "industry": "Hospitality",
+      "size": "M",
+      "users": 68,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "NETWORK",
+        "VOIP"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2021-12-01",
+      "has_projects": true,
+      "manager": "Linda Torres",
+      "domain": "skylinehospitalitygr.com",
+      "address": {
+        "street": "833 Craig Isle",
+        "city": "West Sandraview",
+        "state": "VT",
+        "zip": "94526",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Cindy Clayton",
+          "email": "cfo@skylinehospitalitygr.com",
+          "phone": "212.308.2677x3454"
+        },
+        "it_manager": {
+          "name": "Justin Nelson",
+          "email": "it@skylinehospitalitygr.com",
+          "phone": "+1-293-280-2620x6724"
+        },
+        "ar_contact": {
+          "name": "Patrick Allen",
+          "email": "billing@skylinehospitalitygr.com",
+          "phone": "699-515-4788x7287"
+        }
+      },
+      "billing_contact_email": "billing@skylinehospitalitygr.com"
+    },
+    {
+      "id": "CLT-034",
+      "name": "Pinnacle Retail Solutions",
+      "industry": "Retail",
+      "size": "M",
+      "users": 52,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-03-15",
+      "has_projects": false,
+      "manager": "Linda Torres",
+      "domain": "pinnacleretailsoluti.com",
+      "address": {
+        "street": "8516 Jack Dam Suite 530",
+        "city": "West Franciscomouth",
+        "state": "AS",
+        "zip": "34682",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Michelle Smith",
+          "email": "cfo@pinnacleretailsoluti.com",
+          "phone": "(337)945-4990x4530"
+        },
+        "it_manager": {
+          "name": "Edward Craig",
+          "email": "it@pinnacleretailsoluti.com",
+          "phone": "426-984-1459x3327"
+        },
+        "ar_contact": {
+          "name": "Levi Fowler",
+          "email": "billing@pinnacleretailsoluti.com",
+          "phone": "001-795-368-7833x9187"
+        }
+      },
+      "billing_contact_email": "billing@pinnacleretailsoluti.com"
+    },
+    {
+      "id": "CLT-035",
+      "name": "Grand Vista Hotels",
+      "industry": "Hospitality",
+      "size": "L",
+      "users": 115,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK",
+        "VOIP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2020-09-01",
+      "has_projects": true,
+      "manager": "Linda Torres",
+      "domain": "grandvistahotels.com",
+      "address": {
+        "street": "72867 Angelica Spring Suite 064",
+        "city": "North Mariahaven",
+        "state": "PW",
+        "zip": "00896",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Joshua Martin",
+          "email": "cfo@grandvistahotels.com",
+          "phone": "001-639-810-6518x0170"
+        },
+        "it_manager": {
+          "name": "Jessica Frazier",
+          "email": "it@grandvistahotels.com",
+          "phone": "(426)756-7661"
+        },
+        "ar_contact": {
+          "name": "Katherine Nolan",
+          "email": "billing@grandvistahotels.com",
+          "phone": "628-968-2300"
+        }
+      },
+      "billing_contact_email": "billing@grandvistahotels.com"
+    },
+    {
+      "id": "CLT-036",
+      "name": "Coastline Restaurant Group",
+      "industry": "Hospitality",
+      "size": "M",
+      "users": 42,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "VOIP"
+      ],
+      "reliability": "POOR",
+      "terms": "NET30",
+      "start": "2021-03-01",
+      "has_projects": false,
+      "manager": "Linda Torres",
+      "domain": "coastlinerestaurantg.com",
+      "address": {
+        "street": "31190 Harper Squares",
+        "city": "Patelbury",
+        "state": "TX",
+        "zip": "06881",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Gregory Hill",
+          "email": "cfo@coastlinerestaurantg.com",
+          "phone": "606.573.8302"
+        },
+        "it_manager": {
+          "name": "Molly Rodriguez",
+          "email": "it@coastlinerestaurantg.com",
+          "phone": "001-695-299-5342x8364"
+        },
+        "ar_contact": {
+          "name": "Jennifer Miranda",
+          "email": "billing@coastlinerestaurantg.com",
+          "phone": "+1-792-868-7056"
+        }
+      },
+      "billing_contact_email": "billing@coastlinerestaurantg.com"
+    },
+    {
+      "id": "CLT-037",
+      "name": "Aurora Luxury Spa & Wellness",
+      "industry": "Retail",
+      "size": "S",
+      "users": 22,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2023-07-01",
+      "has_projects": false,
+      "manager": "Linda Torres",
+      "domain": "auroraluxuryspaandwe.com",
+      "address": {
+        "street": "3435 Sandra Vista",
+        "city": "West Nicholas",
+        "state": "MT",
+        "zip": "49138",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Kara Atkinson",
+          "email": "cfo@auroraluxuryspaandwe.com",
+          "phone": "383-504-6990"
+        },
+        "it_manager": {
+          "name": "Michael Shaffer",
+          "email": "it@auroraluxuryspaandwe.com",
+          "phone": "001-598-837-3540x33173"
+        },
+        "ar_contact": {
+          "name": "Kristina Faulkner",
+          "email": "billing@auroraluxuryspaandwe.com",
+          "phone": "685.746.7854"
+        }
+      },
+      "billing_contact_email": "billing@auroraluxuryspaandwe.com"
+    },
+    {
+      "id": "CLT-038",
+      "name": "Marketbridge Commerce Solutions",
+      "industry": "Retail",
+      "size": "M",
+      "users": 58,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2022-06-15",
+      "has_projects": true,
+      "manager": "Linda Torres",
+      "domain": "marketbridgecommerce.com",
+      "address": {
+        "street": "2353 Hudson Gardens Suite 854",
+        "city": "Owensfort",
+        "state": "NY",
+        "zip": "64545",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Erica Harris",
+          "email": "cfo@marketbridgecommerce.com",
+          "phone": "001-277-325-2287x2808"
+        },
+        "it_manager": {
+          "name": "Angel Shields",
+          "email": "it@marketbridgecommerce.com",
+          "phone": "+1-900-962-3120x38750"
+        },
+        "ar_contact": {
+          "name": "Alexis Tran",
+          "email": "billing@marketbridgecommerce.com",
+          "phone": "6082860084"
+        }
+      },
+      "billing_contact_email": "billing@marketbridgecommerce.com"
+    },
+    {
+      "id": "CLT-039",
+      "name": "Oakdale Unified School District",
+      "industry": "Education",
+      "size": "L",
+      "users": 280,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET45",
+      "start": "2020-08-15",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "oakdaleunifiedschool.com",
+      "address": {
+        "street": "9334 Desiree Walks Apt. 166",
+        "city": "Drakeburgh",
+        "state": "NY",
+        "zip": "49937",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Brent Hernandez",
+          "email": "cfo@oakdaleunifiedschool.com",
+          "phone": "+1-370-202-1765"
+        },
+        "it_manager": {
+          "name": "Joseph Ochoa",
+          "email": "it@oakdaleunifiedschool.com",
+          "phone": "239.474.0148"
+        },
+        "ar_contact": {
+          "name": "James Watson",
+          "email": "billing@oakdaleunifiedschool.com",
+          "phone": "703-892-6142x93968"
+        }
+      },
+      "billing_contact_email": "billing@oakdaleunifiedschool.com"
+    },
+    {
+      "id": "CLT-040",
+      "name": "Westfield Community College",
+      "industry": "Education",
+      "size": "L",
+      "users": 185,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET45",
+      "start": "2021-01-01",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "westfieldcommunityco.com",
+      "address": {
+        "street": "0477 Michael Lane Suite 296",
+        "city": "Port Vanessa",
+        "state": "WV",
+        "zip": "11733",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Kathryn Mccann",
+          "email": "cfo@westfieldcommunityco.com",
+          "phone": "001-394-231-1426x26551"
+        },
+        "it_manager": {
+          "name": "Jeffrey Roberson",
+          "email": "it@westfieldcommunityco.com",
+          "phone": "875-341-2126x7888"
+        },
+        "ar_contact": {
+          "name": "Randy Friedman",
+          "email": "billing@westfieldcommunityco.com",
+          "phone": "2156819956"
+        }
+      },
+      "billing_contact_email": "billing@westfieldcommunityco.com"
+    },
+    {
+      "id": "CLT-041",
+      "name": "Innovation Academy Charter School",
+      "industry": "Education",
+      "size": "M",
+      "users": 65,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-08-15",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "innovationacademycha.com",
+      "address": {
+        "street": "6471 King Gateway Suite 993",
+        "city": "Maxwellside",
+        "state": "MT",
+        "zip": "60513",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Vanessa Armstrong",
+          "email": "cfo@innovationacademycha.com",
+          "phone": "924-706-5965"
+        },
+        "it_manager": {
+          "name": "James Taylor",
+          "email": "it@innovationacademycha.com",
+          "phone": "(592)745-9375x26547"
+        },
+        "ar_contact": {
+          "name": "Johnny Brown",
+          "email": "billing@innovationacademycha.com",
+          "phone": "(546)951-9398x2807"
+        }
+      },
+      "billing_contact_email": "billing@innovationacademycha.com"
+    },
+    {
+      "id": "CLT-042",
+      "name": "Cypress Learning Institute",
+      "industry": "Education",
+      "size": "S",
+      "users": 32,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2023-08-15",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "cypresslearninginsti.com",
+      "address": {
+        "street": "688 Stephens Turnpike Suite 891",
+        "city": "Marieland",
+        "state": "AS",
+        "zip": "14836",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Rebecca Ortiz",
+          "email": "cfo@cypresslearninginsti.com",
+          "phone": "001-535-529-0965x61014"
+        },
+        "it_manager": {
+          "name": "Mr. David Hopkins DDS",
+          "email": "it@cypresslearninginsti.com",
+          "phone": "856.379.8250x714"
+        },
+        "ar_contact": {
+          "name": "Angela Ewing",
+          "email": "billing@cypresslearninginsti.com",
+          "phone": "725-945-7387"
+        }
+      },
+      "billing_contact_email": "billing@cypresslearninginsti.com"
+    },
+    {
+      "id": "CLT-043",
+      "name": "Desert Wind Energy",
+      "industry": "Energy",
+      "size": "M",
+      "users": 48,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "BCP"
+      ],
+      "reliability": "EXCELLENT",
+      "terms": "NET30",
+      "start": "2021-04-01",
+      "has_projects": true,
+      "manager": "Jason Cho",
+      "domain": "desertwindenergy.com",
+      "address": {
+        "street": "282 Castro Mountain",
+        "city": "Bowenmouth",
+        "state": "CT",
+        "zip": "30890",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Eric Patrick",
+          "email": "cfo@desertwindenergy.com",
+          "phone": "(522)566-0937x9660"
+        },
+        "it_manager": {
+          "name": "Samuel Wong",
+          "email": "it@desertwindenergy.com",
+          "phone": "919-718-2553x714"
+        },
+        "ar_contact": {
+          "name": "Carly Riggs",
+          "email": "billing@desertwindenergy.com",
+          "phone": "+1-369-469-1557x924"
+        }
+      },
+      "billing_contact_email": "billing@desertwindenergy.com"
+    },
+    {
+      "id": "CLT-044",
+      "name": "Pacific Solar Solutions",
+      "industry": "Energy",
+      "size": "M",
+      "users": 42,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-05-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "pacificsolarsolution.com",
+      "address": {
+        "street": "274 Jacob Ville",
+        "city": "East Kevinburgh",
+        "state": "MD",
+        "zip": "59614",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Charles Price",
+          "email": "cfo@pacificsolarsolution.com",
+          "phone": "+1-905-807-2368x876"
+        },
+        "it_manager": {
+          "name": "Laura Henderson",
+          "email": "it@pacificsolarsolution.com",
+          "phone": "001-677-421-9034x043"
+        },
+        "ar_contact": {
+          "name": "Mr. Thomas Arias",
+          "email": "billing@pacificsolarsolution.com",
+          "phone": "001-979-578-8191x48580"
+        }
+      },
+      "billing_contact_email": "billing@pacificsolarsolution.com"
+    },
+    {
+      "id": "CLT-045",
+      "name": "Cascade Power Management",
+      "industry": "Energy",
+      "size": "S",
+      "users": 28,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD",
+        "BCP"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2023-01-01",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "cascadepowermanageme.com",
+      "address": {
+        "street": "962 Kristen Via Apt. 095",
+        "city": "Lake Mariabury",
+        "state": "NE",
+        "zip": "70268",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Zachary Cole",
+          "email": "cfo@cascadepowermanageme.com",
+          "phone": "898-225-4494x812"
+        },
+        "it_manager": {
+          "name": "Robert Gonzales",
+          "email": "it@cascadepowermanageme.com",
+          "phone": "822-832-5367x294"
+        },
+        "ar_contact": {
+          "name": "Patricia Young PhD",
+          "email": "billing@cascadepowermanageme.com",
+          "phone": "311.968.4577x590"
+        }
+      },
+      "billing_contact_email": "billing@cascadepowermanageme.com"
+    },
+    {
+      "id": "CLT-046",
+      "name": "BlueSky Environmental Services",
+      "industry": "Energy",
+      "size": "S",
+      "users": 22,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET45",
+      "start": "2022-09-15",
+      "has_projects": false,
+      "manager": "Jason Cho",
+      "domain": "blueskyenvironmental.com",
+      "address": {
+        "street": "17012 Bryant Meadow",
+        "city": "Melissaside",
+        "state": "SC",
+        "zip": "27019",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Walter Summers",
+          "email": "cfo@blueskyenvironmental.com",
+          "phone": "001-824-624-1541x520"
+        },
+        "it_manager": {
+          "name": "Frank Campbell MD",
+          "email": "it@blueskyenvironmental.com",
+          "phone": "001-936-211-0371x2938"
+        },
+        "ar_contact": {
+          "name": "Samuel Kramer",
+          "email": "billing@blueskyenvironmental.com",
+          "phone": "3513627136"
+        }
+      },
+      "billing_contact_email": "billing@blueskyenvironmental.com"
+    },
+    {
+      "id": "CLT-047",
+      "name": "Harbor Logistics Solutions",
+      "industry": "Logistics",
+      "size": "M",
+      "users": 72,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "FAIR",
+      "terms": "NET30",
+      "start": "2021-06-15",
+      "has_projects": true,
+      "manager": "Marcus Johnson",
+      "domain": "harborlogisticssolut.com",
+      "address": {
+        "street": "3269 Heath Corners Apt. 219",
+        "city": "Michaelport",
+        "state": "CT",
+        "zip": "96184",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Raymond Mullins",
+          "email": "cfo@harborlogisticssolut.com",
+          "phone": "(656)252-3413x8999"
+        },
+        "it_manager": {
+          "name": "Willie Thomas",
+          "email": "it@harborlogisticssolut.com",
+          "phone": "+1-543-989-8364x03761"
+        },
+        "ar_contact": {
+          "name": "Alejandra Santos",
+          "email": "billing@harborlogisticssolut.com",
+          "phone": "+1-491-980-5526x9658"
+        }
+      },
+      "billing_contact_email": "billing@harborlogisticssolut.com"
+    },
+    {
+      "id": "CLT-048",
+      "name": "Rapid Transit Freight",
+      "industry": "Logistics",
+      "size": "M",
+      "users": 58,
+      "services": [
+        "MSP_T2",
+        "M365",
+        "SEC_STD",
+        "NETWORK"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET30",
+      "start": "2022-01-01",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "rapidtransitfreight.com",
+      "address": {
+        "street": "889 Joshua Inlet",
+        "city": "North Brendatown",
+        "state": "WI",
+        "zip": "10858",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Andrew Brown",
+          "email": "cfo@rapidtransitfreight.com",
+          "phone": "832.385.6914x63031"
+        },
+        "it_manager": {
+          "name": "Katie Fuller",
+          "email": "it@rapidtransitfreight.com",
+          "phone": "799.604.2102x027"
+        },
+        "ar_contact": {
+          "name": "Jennifer Miles",
+          "email": "billing@rapidtransitfreight.com",
+          "phone": "(352)641-0564"
+        }
+      },
+      "billing_contact_email": "billing@rapidtransitfreight.com"
+    },
+    {
+      "id": "CLT-049",
+      "name": "Continental Supply Chain Partners",
+      "industry": "Logistics",
+      "size": "L",
+      "users": 112,
+      "services": [
+        "MSP_T3",
+        "M365",
+        "SEC_STD",
+        "CLOUD",
+        "NETWORK"
+      ],
+      "reliability": "GOOD",
+      "terms": "NET45",
+      "start": "2020-11-01",
+      "has_projects": true,
+      "manager": "Diana Reyes",
+      "domain": "continentalsupplycha.com",
+      "address": {
+        "street": "03075 Mora Fall",
+        "city": "South Spencerstad",
+        "state": "VT",
+        "zip": "05136",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Scott Jackson",
+          "email": "cfo@continentalsupplycha.com",
+          "phone": "+1-763-353-6541"
+        },
+        "it_manager": {
+          "name": "Raymond Shannon",
+          "email": "it@continentalsupplycha.com",
+          "phone": "902.238.0617x44518"
+        },
+        "ar_contact": {
+          "name": "Ashley Yang",
+          "email": "billing@continentalsupplycha.com",
+          "phone": "(534)494-9375x973"
+        }
+      },
+      "billing_contact_email": "billing@continentalsupplycha.com"
+    },
+    {
+      "id": "CLT-050",
+      "name": "Velocity Courier Network",
+      "industry": "Logistics",
+      "size": "S",
+      "users": 30,
+      "services": [
+        "MSP_T1",
+        "M365",
+        "SEC_STD"
+      ],
+      "reliability": "POOR",
+      "terms": "NET30",
+      "start": "2022-07-01",
+      "has_projects": false,
+      "manager": "Marcus Johnson",
+      "domain": "velocitycouriernetwo.com",
+      "address": {
+        "street": "7024 Bradley Fort",
+        "city": "Johnsonside",
+        "state": "AL",
+        "zip": "68626",
+        "country": "US"
+      },
+      "contacts": {
+        "cfo": {
+          "name": "Ryan Wiley",
+          "email": "cfo@velocitycouriernetwo.com",
+          "phone": "(457)519-1826x19906"
+        },
+        "it_manager": {
+          "name": "April Sandoval",
+          "email": "it@velocitycouriernetwo.com",
+          "phone": "345-465-5743x1329"
+        },
+        "ar_contact": {
+          "name": "Monica Garcia",
+          "email": "billing@velocitycouriernetwo.com",
+          "phone": "527-975-6185"
+        }
+      },
+      "billing_contact_email": "billing@velocitycouriernetwo.com"
+    }
+  ]
+}
