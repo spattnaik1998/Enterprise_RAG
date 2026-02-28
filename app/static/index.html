@@ -703,6 +703,67 @@
     }
     .footer-hint span { color: var(--border-mid); }
 
+    /* ─── Model Selector ─────────────────────────────────────────────────────── */
+    .model-row {
+      max-width: 820px;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .model-row-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .model-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .model-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-faint);
+      background: transparent;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .model-pill:hover {
+      border-color: var(--border-subtle);
+      color: var(--text-body);
+    }
+    /* OpenAI active state — cyan */
+    .model-pill.openai.active {
+      border-color: rgba(0, 200, 255, 0.45);
+      background: rgba(0, 200, 255, 0.08);
+      color: var(--accent);
+    }
+    /* Anthropic active state — amber */
+    .model-pill.anthropic.active {
+      border-color: rgba(245, 166, 35, 0.45);
+      background: rgba(245, 166, 35, 0.08);
+      color: var(--accent-amber);
+    }
+    .mpill-icon { font-size: 9px; opacity: 0.65; }
+    .mpill-name { font-weight: 500; }
+    .mpill-tag  {
+      font-size: 9px;
+      opacity: 0.45;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
     /* ─── Utility ─────────────────────────────────────────────────────────────── */
     .hidden { display: none !important; }
 
@@ -711,6 +772,8 @@
       .brand-secondary { display: none; }
       .messages-inner { padding: 0 16px; }
       .bubble-user { max-width: 88%; }
+      .model-row { flex-wrap: wrap; }
+      .mpill-tag { display: none; }
     }
   </style>
 </head>
@@ -779,6 +842,39 @@
 
   <!-- ─── Footer / Input ─────────────────────────────────────────────────────── -->
   <footer class="chat-footer">
+
+    <!-- Model selector -->
+    <div class="model-row">
+      <span class="model-row-label">Model</span>
+      <div class="model-pills" id="modelPills">
+        <button class="model-pill openai active"
+          data-provider="openai" data-model="gpt-4o-mini">
+          <span class="mpill-icon">○</span>
+          <span class="mpill-name">GPT-4o Mini</span>
+          <span class="mpill-tag">fast</span>
+        </button>
+        <button class="model-pill openai"
+          data-provider="openai" data-model="gpt-4o">
+          <span class="mpill-icon">○</span>
+          <span class="mpill-name">GPT-4o</span>
+          <span class="mpill-tag">smart</span>
+        </button>
+        <button class="model-pill anthropic"
+          data-provider="anthropic" data-model="claude-haiku-4-5-20251001">
+          <span class="mpill-icon">◇</span>
+          <span class="mpill-name">Claude Haiku</span>
+          <span class="mpill-tag">fast</span>
+        </button>
+        <button class="model-pill anthropic"
+          data-provider="anthropic" data-model="claude-sonnet-4-6">
+          <span class="mpill-icon">◇</span>
+          <span class="mpill-name">Claude Sonnet</span>
+          <span class="mpill-tag">smart</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Input -->
     <div class="input-row">
       <div class="input-wrapper">
         <textarea
@@ -798,7 +894,6 @@
       <p class="footer-hint">
         <span>↵</span> send &nbsp;·&nbsp; <span>⇧↵</span> new line
         &nbsp;·&nbsp; <span id="hintVectors">1,996</span> vectors indexed
-        &nbsp;·&nbsp; gpt-4o-mini
       </p>
     </div>
   </footer>
@@ -814,8 +909,10 @@
     marked.setOptions({ breaks: true, gfm: true });
 
     // ── State ──────────────────────────────────────────────────────────────────
-    let isLoading = false;
-    let welcomeVisible = true;
+    let isLoading        = false;
+    let welcomeVisible   = true;
+    let selectedProvider = 'openai';
+    let selectedModel    = 'gpt-4o-mini';
 
     // ── DOM refs ───────────────────────────────────────────────────────────────
     const messagesScroll = document.getElementById('messagesScroll');
@@ -828,6 +925,24 @@
     const statStatus     = document.getElementById('statStatus');
     const hintVectors    = document.getElementById('hintVectors');
 
+    // ── Model selector ─────────────────────────────────────────────────────────
+    document.querySelectorAll('.model-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.model-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        selectedProvider = pill.dataset.provider;
+        selectedModel    = pill.dataset.model;
+        // Reflect in header stat
+        const shortNames = {
+          'gpt-4o-mini':               'GPT-4o Mini',
+          'gpt-4o':                    'GPT-4o',
+          'claude-haiku-4-5-20251001': 'Claude Haiku',
+          'claude-sonnet-4-6':         'Claude Sonnet',
+        };
+        statModel.textContent = shortNames[selectedModel] || selectedModel;
+      });
+    });
+
     // ── Startup ────────────────────────────────────────────────────────────────
     async function initApp() {
       try {
@@ -836,7 +951,7 @@
         const data = await res.json();
 
         statVectors.textContent    = `${data.vectors.toLocaleString()} vectors`;
-        statModel.textContent      = data.model;
+        statModel.textContent      = 'GPT-4o Mini';   // default selection
         statStatus.textContent     = 'online';
         statStatus.className       = 'sys-stat online';
         hintVectors.textContent    = data.vectors.toLocaleString();
@@ -966,8 +1081,21 @@
       const totalS   = (data.latency_ms.total / 1000).toFixed(1);
       const totalTok = data.tokens.prompt + data.tokens.completion;
       const cost     = data.estimated_cost_usd.toFixed(5);
+      const modelShort = {
+        'gpt-4o-mini':               'GPT-4o Mini',
+        'gpt-4o':                    'GPT-4o',
+        'claude-haiku-4-5-20251001': 'Claude Haiku',
+        'claude-sonnet-4-6':         'Claude Sonnet',
+      }[data.model] || data.model;
+      const providerColor = data.provider === 'anthropic'
+        ? 'style="color:var(--accent-amber)"'
+        : 'style="color:var(--accent)"';
       const statsHtml = `
         <div class="response-stats">
+          <div class="stat-item">
+            <span class="stat-icon">◈</span>
+            <span class="stat-val" ${providerColor}>${modelShort}</span>
+          </div>
           <div class="stat-item">
             <span class="stat-icon">⏱</span>
             <span class="stat-val">${totalS}s</span>
@@ -981,7 +1109,7 @@
             <span class="stat-val">${data.latency_ms.rerank.toFixed(0)}ms rerank</span>
           </div>
           <div class="stat-item">
-            <span class="stat-icon">◈</span>
+            <span class="stat-icon">⬡</span>
             <span class="stat-val">${totalTok.toLocaleString()} tokens</span>
           </div>
           <div class="stat-item">
@@ -1046,7 +1174,11 @@
         const res = await fetch(`${API}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({
+            message: text,
+            provider: selectedProvider,
+            model: selectedModel,
+          }),
         });
 
         if (!res.ok) {

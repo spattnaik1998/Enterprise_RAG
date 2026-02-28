@@ -5,8 +5,8 @@ FastAPI server that wraps the Phase III RAGPipeline and serves the chat UI.
 
 Endpoints:
   GET  /              -> serve app/static/index.html
-  GET  /api/health    -> pipeline status, vector count, model name
-  POST /api/chat      -> run full RAG query, return answer + citations
+  GET  /api/health    -> pipeline status, vector count, available models
+  POST /api/chat      -> run full RAG query with user-selected LLM
 
 Run from the project root (Enterprise_RAG/):
     uvicorn app.server:app --reload --port 8000
@@ -19,8 +19,9 @@ from __future__ import annotations
 import asyncio
 import sys
 from contextlib import asynccontextmanager
+from functools import partial
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 # Windows cp1252 terminal fix
 if sys.platform == "win32":
@@ -33,16 +34,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Paths
+# Paths & constants
 # ---------------------------------------------------------------------------
 
 STATIC_DIR = Path(__file__).parent / "static"
-INDEX_DIR = "data/index"
+INDEX_DIR  = "data/index"
+
+# Allowed model identifiers and their providers
+_OPENAI_MODELS    = {"gpt-4o-mini", "gpt-4o"}
+_ANTHROPIC_MODELS = {"claude-haiku-4-5-20251001", "claude-sonnet-4-6"}
+_ALL_MODELS       = _OPENAI_MODELS | _ANTHROPIC_MODELS
 
 # ---------------------------------------------------------------------------
 # Pipeline singleton
@@ -65,7 +71,7 @@ async def lifespan(app: FastAPI):
         logger.info(
             f"[Server] Pipeline ready | "
             f"{_pipeline.index.faiss_index.ntotal:,} vectors | "
-            f"model={_pipeline.generator.model}"
+            f"default model={_pipeline.generator.model}"
         )
     except FileNotFoundError as exc:
         logger.error(
@@ -85,7 +91,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="TechVault Enterprise RAG API",
     description="Retrieval-Augmented Generation over MSP operations and AI research",
-    version="3.0.0",
+    version="3.1.0",
     lifespan=lifespan,
 )
 
@@ -97,7 +103,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve static assets (CSS / JS if ever split out)
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -108,7 +113,30 @@ if STATIC_DIR.exists():
 
 class ChatRequest(BaseModel):
     message: str
+    provider: Literal["openai", "anthropic"] = "openai"
+    model: str = "gpt-4o-mini"
     session_id: Optional[str] = None
+
+    @field_validator("model")
+    @classmethod
+    def validate_model(cls, v: str) -> str:
+        if v not in _ALL_MODELS:
+            raise ValueError(
+                f"Unknown model '{v}'. "
+                f"Allowed: {sorted(_ALL_MODELS)}"
+            )
+        return v
+
+    @field_validator("provider")
+    @classmethod
+    def validate_provider_model_match(cls, v: str, info) -> str:
+        # info.data contains already-validated fields
+        model = info.data.get("model", "gpt-4o-mini")
+        if v == "openai" and model in _ANTHROPIC_MODELS:
+            raise ValueError(f"Model '{model}' is not an OpenAI model.")
+        if v == "anthropic" and model in _OPENAI_MODELS:
+            raise ValueError(f"Model '{model}' is not an Anthropic model.")
+        return v
 
 
 class CitationModel(BaseModel):
@@ -144,6 +172,20 @@ class ChatResponse(BaseModel):
     estimated_cost_usd: float
     pii_redacted: list[str]
     model: str
+    provider: str
+
+
+# ---------------------------------------------------------------------------
+# Generator factory
+# ---------------------------------------------------------------------------
+
+def _make_generator(provider: str, model: str):
+    """Instantiate the correct generator class for the given provider/model."""
+    if provider == "anthropic":
+        from src.generation.generator import AnthropicGenerator
+        return AnthropicGenerator(model=model)
+    from src.generation.generator import RAGGenerator
+    return RAGGenerator(model=model)
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +194,6 @@ class ChatResponse(BaseModel):
 
 @app.get("/", include_in_schema=False)
 async def serve_ui():
-    """Serve the chat UI."""
     index_path = STATIC_DIR / "index.html"
     if not index_path.exists():
         raise HTTPException(status_code=404, detail="UI not found at app/static/index.html")
@@ -161,16 +202,20 @@ async def serve_ui():
 
 @app.get("/api/health")
 async def health():
-    """Return pipeline status and index metadata."""
+    """Return pipeline status, index metadata, and available models."""
     if _pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not ready")
     return {
         "status": "ok",
         "vectors": _pipeline.index.faiss_index.ntotal,
-        "model": _pipeline.generator.model,
+        "default_model": _pipeline.generator.model,
         "reranking_enabled": _pipeline.enable_reranking,
         "rerank_top_k": _pipeline.rerank_top_k,
         "top_k": _pipeline.retriever.top_k,
+        "available_models": {
+            "openai": sorted(_OPENAI_MODELS),
+            "anthropic": sorted(_ANTHROPIC_MODELS),
+        },
     }
 
 
@@ -179,8 +224,12 @@ async def chat(request: ChatRequest):
     """
     Run the full RAG pipeline for a user question.
 
-    The pipeline.query() call is blocking (synchronous OpenAI SDK calls),
-    so it runs in a thread-pool executor to avoid blocking the event loop.
+    The user selects which LLM to use via the `provider` + `model` fields.
+    Retrieval and reranking always use the pipeline's defaults (gpt-4o-mini
+    for reranking) — only the final generation step uses the chosen model.
+
+    The blocking pipeline.query() call runs in a thread-pool executor to
+    avoid stalling FastAPI's async event loop.
     """
     if _pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not ready")
@@ -189,11 +238,17 @@ async def chat(request: ChatRequest):
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    logger.info(f"[API] Chat request: {message[:80]!r}")
+    logger.info(
+        f"[API] Chat | provider={request.provider} model={request.model} | "
+        f"query={message[:80]!r}"
+    )
 
-    # Run blocking pipeline in thread pool
+    generator = _make_generator(request.provider, request.model)
+
     loop = asyncio.get_event_loop()
-    result = await loop.run_in_executor(None, _pipeline.query, message)
+    result = await loop.run_in_executor(
+        None, partial(_pipeline.query, message, generator)
+    )
 
     citations = [
         CitationModel(
@@ -208,9 +263,6 @@ async def chat(request: ChatRequest):
         for cit in result.citations
     ]
 
-    prompt_tok = result.prompt_tokens
-    comp_tok = result.completion_tokens
-
     return ChatResponse(
         answer=result.answer,
         citations=citations,
@@ -223,11 +275,12 @@ async def chat(request: ChatRequest):
             total=round(result.total_ms, 1),
         ),
         tokens=TokenModel(
-            prompt=prompt_tok,
-            completion=comp_tok,
-            total=prompt_tok + comp_tok,
+            prompt=result.prompt_tokens,
+            completion=result.completion_tokens,
+            total=result.prompt_tokens + result.completion_tokens,
         ),
         estimated_cost_usd=round(result.estimated_cost_usd, 6),
         pii_redacted=result.pii_redacted,
         model=result.model,
+        provider=request.provider,
     )

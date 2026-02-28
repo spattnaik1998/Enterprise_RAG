@@ -39,7 +39,12 @@ from loguru import logger
 
 from src.embedding.embedder import Embedder
 from src.embedding.faiss_index import FAISSIndex
-from src.generation.generator import RAGGenerator, RAGResponse
+from src.generation.generator import (
+    RAGGenerator,
+    RAGResponse,
+    _MODEL_PRICING,
+    _cost_usd,
+)
 from src.retrieval.guardrails import PIIFilter, PromptGuard
 from src.retrieval.reranker import LLMReranker
 from src.retrieval.retriever import HybridRetriever
@@ -91,10 +96,8 @@ class QueryResult:
 
     @property
     def estimated_cost_usd(self) -> float:
-        """Approx cost for gpt-4o-mini ($0.15/M input, $0.60/M output)."""
-        return (
-            self.prompt_tokens * 0.15 + self.completion_tokens * 0.60
-        ) / 1_000_000
+        """Cost estimate using per-model pricing from _MODEL_PRICING table."""
+        return _cost_usd(self.model, self.prompt_tokens, self.completion_tokens)
 
     def to_dict(self) -> dict:
         return {
@@ -181,7 +184,7 @@ class RAGPipeline:
         )
 
     @traceable(name="rag_query", run_type="chain")
-    def query(self, user_query: str) -> QueryResult:
+    def query(self, user_query: str, generator=None) -> QueryResult:
         """
         Run the full RAG pipeline for a single user query.
 
@@ -194,6 +197,9 @@ class RAGPipeline:
 
         Args:
             user_query: The raw question from the user.
+            generator:  Optional generator instance (RAGGenerator or
+                        AnthropicGenerator).  Falls back to self.generator
+                        (gpt-4o-mini) when not provided.
 
         Returns:
             QueryResult with answer, citations, timing, and token stats.
@@ -227,7 +233,8 @@ class RAGPipeline:
 
         # -- 4. Generate --------------------------------------------------------
         t2 = time.perf_counter()
-        rag_response: RAGResponse = self.generator.generate(user_query, reranked)
+        active_generator = generator if generator is not None else self.generator
+        rag_response: RAGResponse = active_generator.generate(user_query, reranked)
         generation_ms = (time.perf_counter() - t2) * 1000
 
         # -- 5. PII Filter ------------------------------------------------------
