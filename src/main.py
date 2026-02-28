@@ -6,6 +6,9 @@ Exposes Typer commands for each pipeline phase.
 Usage:
     python -m src.main phase1               # Run full collection + validation
     python -m src.main phase1 --dry-run     # Validate config only
+    python -m src.main phase2               # Chunk, embed, index
+    python -m src.main phase3               # Interactive RAG Q&A
+    python -m src.main phase3 --query "..."  # Single-shot query
     python -m src.main status               # Show current checkpoint state
 """
 from __future__ import annotations
@@ -19,13 +22,19 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 import asyncio
+import json
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 import typer
 import yaml
 from loguru import logger
+from rich import box
 from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.table import Table
 
 from src.checkpoint import PhaseICheckpoint
 from src.collection.pipeline import CollectionPipeline
@@ -108,6 +117,184 @@ def phase2(
         validated_dir=validated_dir,
         index_dir=index_dir,
         batch_size=batch_size,
+    )
+
+
+@app.command()
+def phase3(
+    query: Optional[str] = typer.Option(
+        None, "--query", "-q", help="Single query (omit for interactive loop)"
+    ),
+    index_dir: str = typer.Option(
+        "data/index", "--index-dir", help="FAISS index directory"
+    ),
+    top_k: int = typer.Option(
+        10, "--top-k", help="Candidates to retrieve before reranking"
+    ),
+    rerank_top_k: int = typer.Option(
+        5, "--rerank-top-k", help="Chunks kept after LLM reranking"
+    ),
+    model: str = typer.Option(
+        "gpt-4o-mini", "--model", help="OpenAI model for generation and reranking"
+    ),
+    no_rerank: bool = typer.Option(
+        False, "--no-rerank", help="Skip LLM reranking (faster, lower cost)"
+    ),
+    no_pii: bool = typer.Option(
+        False, "--no-pii", help="Disable PII redaction on output"
+    ),
+    json_out: bool = typer.Option(
+        False, "--json", help="Print result as JSON (single-query mode only)"
+    ),
+) -> None:
+    """
+    Phase III: Retrieve, rerank, and generate answers from the RAG index.
+
+    \b
+    Steps per query:
+      1. Prompt injection guardrail check
+      2. Hybrid retrieval  (FAISS dense + BM25 sparse -> RRF fusion)
+      3. LLM reranking     (one OpenAI call scores all candidates)
+      4. Answer generation (gpt-4o-mini with grounded context)
+      5. PII redaction     (email / phone / SSN / CC / IP)
+    """
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    setup_logger()
+
+    from src.serving.pipeline import RAGPipeline
+
+    # Verify index exists before loading
+    if not Path(index_dir).exists():
+        console.print(
+            f"[red]Index directory not found: {index_dir}[/red]\n"
+            "Run Phase II first: [bold]python -m src.main phase2[/bold]"
+        )
+        raise typer.Exit(1)
+
+    console.print()
+    console.print(
+        Panel(
+            "[bold cyan]Enterprise RAG Pipeline[/bold cyan]\n"
+            "[white]Phase III - Retrieval, Reranking & Generation[/white]",
+            box=box.DOUBLE_EDGE,
+            expand=False,
+        )
+    )
+
+    with console.status("[cyan]Loading FAISS + BM25 index...[/cyan]"):
+        pipeline = RAGPipeline(
+            index_dir=index_dir,
+            top_k=top_k,
+            rerank_top_k=rerank_top_k,
+            generator_model=model,
+            reranker_model=model,
+            enable_reranking=not no_rerank,
+            enable_pii_filter=not no_pii,
+        )
+
+    console.print(
+        f"[green][OK] Index loaded[/green] "
+        f"| {pipeline.index.faiss_index.ntotal:,} vectors "
+        f"| rerank={'off' if no_rerank else 'on'} "
+        f"| pii-filter={'off' if no_pii else 'on'}"
+    )
+
+    # --- Single-shot mode -----------------------------------------------------
+    if query:
+        result = pipeline.query(query)
+        if json_out:
+            console.print_json(json.dumps(result.to_dict(), indent=2))
+        else:
+            _print_result(result)
+        return
+
+    # --- Interactive loop -----------------------------------------------------
+    console.print()
+    console.print(
+        "[bold]Ask anything about TechVault's operations or AI/ML research.[/bold]"
+    )
+    console.print("[dim]Type 'exit', 'quit', or press Ctrl+C to quit.[/dim]\n")
+
+    while True:
+        try:
+            raw = console.input("[bold cyan]You[/bold cyan] > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            console.print("\n[dim]Goodbye.[/dim]")
+            break
+
+        if not raw:
+            continue
+        if raw.lower() in {"exit", "quit", "q"}:
+            console.print("[dim]Goodbye.[/dim]")
+            break
+
+        with console.status("[cyan]Thinking...[/cyan]"):
+            result = pipeline.query(raw)
+
+        _print_result(result)
+
+
+def _print_result(result) -> None:
+    """Render a QueryResult to the terminal using Rich."""
+    if result.blocked:
+        console.print(
+            Panel(
+                f"[red]Blocked:[/red] {result.blocked_reason}",
+                title="[red]Guardrail[/red]",
+                border_style="red",
+                expand=False,
+            )
+        )
+        return
+
+    # Answer panel
+    console.print()
+    console.print(
+        Panel(
+            Markdown(result.answer),
+            title="[bold green]Answer[/bold green]",
+            border_style="green",
+            expand=True,
+        )
+    )
+
+    # Citations table
+    if result.citations:
+        table = Table(
+            "No.", "Source Type", "Title", "Source", "Score",
+            box=box.SIMPLE,
+            show_header=True,
+            header_style="bold dim",
+        )
+        for cit in result.citations:
+            table.add_row(
+                str(cit["index"]),
+                cit["source_type"],
+                cit["title"][:55] + ("..." if len(cit["title"]) > 55 else ""),
+                cit["source"][:50] + ("..." if len(cit["source"]) > 50 else ""),
+                f"{cit['relevance_score']:.2f}",
+            )
+        console.print(table)
+
+    # PII notice
+    if result.pii_redacted:
+        console.print(
+            f"[yellow]PII redacted:[/yellow] {', '.join(result.pii_redacted)}"
+        )
+
+    # Stats footer
+    total_s = result.total_ms / 1000
+    console.print(
+        f"[dim]"
+        f"retrieve={result.retrieval_ms:.0f}ms  "
+        f"rerank={result.rerank_ms:.0f}ms  "
+        f"generate={result.generation_ms:.0f}ms  "
+        f"total={total_s:.1f}s  |  "
+        f"tokens={result.prompt_tokens}+{result.completion_tokens}  "
+        f"cost=${result.estimated_cost_usd:.5f}"
+        f"[/dim]\n"
     )
 
 
