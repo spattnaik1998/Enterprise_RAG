@@ -57,6 +57,11 @@ nltk>=3.8.0
 # LangSmith observability + cost tracking
 langsmith>=0.1.0
 
+# ── Web Application (Phase III serving layer) ─────────────────────────────────
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
 # ── Testing ──────────────────────────────────────────────────────────────────
 pytest>=8.0.0
 pytest-asyncio>=0.23.0
