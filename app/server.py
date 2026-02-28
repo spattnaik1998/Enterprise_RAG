@@ -34,7 +34,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 load_dotenv()
 
@@ -127,16 +127,13 @@ class ChatRequest(BaseModel):
             )
         return v
 
-    @field_validator("provider")
-    @classmethod
-    def validate_provider_model_match(cls, v: str, info) -> str:
-        # info.data contains already-validated fields
-        model = info.data.get("model", "gpt-4o-mini")
-        if v == "openai" and model in _ANTHROPIC_MODELS:
-            raise ValueError(f"Model '{model}' is not an OpenAI model.")
-        if v == "anthropic" and model in _OPENAI_MODELS:
-            raise ValueError(f"Model '{model}' is not an Anthropic model.")
-        return v
+    @model_validator(mode="after")
+    def validate_provider_model_match(self) -> "ChatRequest":
+        if self.provider == "openai" and self.model in _ANTHROPIC_MODELS:
+            raise ValueError(f"Model '{self.model}' is not an OpenAI model.")
+        if self.provider == "anthropic" and self.model in _OPENAI_MODELS:
+            raise ValueError(f"Model '{self.model}' is not an Anthropic model.")
+        return self
 
 
 class CitationModel(BaseModel):
