@@ -1,0 +1,142 @@
+{
+  "version": "1.0.0",
+  "category": "psa",
+  "description": "Queries targeting the ConnectWise synthetic PSA data (service tickets, technicians, hours billed, ticket types)",
+  "queries": [
+    {
+      "id": "psa_001",
+      "query": "Which technician has billed the most hours?",
+      "ground_truth": "Sam Park has billed the most hours among TechVault MSP technicians, with a total of 344 hours billed across all service tickets.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Sam Park", "344"],
+      "difficulty": "easy",
+      "notes": "Aggregate hours_billed by technician; Sam Park leads at 344 hours"
+    },
+    {
+      "id": "psa_002",
+      "query": "Which client has the most service desk tickets?",
+      "ground_truth": "Frontier Metal and Coastline Restaurant Group are tied for the most service desk tickets, each with 19 tickets in the PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Frontier Metal", "Coastline Restaurant", "19"],
+      "difficulty": "easy",
+      "notes": "Ticket count by client; Frontier Metal and Coastline both have 19"
+    },
+    {
+      "id": "psa_003",
+      "query": "What are the different types of service tickets in the PSA?",
+      "ground_truth": "The TechVault MSP PSA system uses four service ticket types: Incident (unexpected failures or outages), Service Request (planned or routine work), Change Request (infrastructure configuration changes), and Problem (recurring or systemic issues).",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Incident", "Service Request", "Change Request", "Problem"],
+      "difficulty": "easy",
+      "notes": "Schema-level question about ticket type enum values"
+    },
+    {
+      "id": "psa_004",
+      "query": "How many total hours has Mia Chen billed?",
+      "ground_truth": "Mia Chen has billed a total of 322 hours across all service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Mia Chen", "322"],
+      "difficulty": "medium",
+      "notes": "Aggregate hours_billed for Mia Chen specifically"
+    },
+    {
+      "id": "psa_005",
+      "query": "Which technicians are on the TechVault MSP team?",
+      "ground_truth": "The TechVault MSP technical team includes five technicians: Sam Park (344 hours billed), Mia Chen (322 hours), Priya Nair (309 hours), Fatima Hassan (301 hours), and Luis Morales.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Sam Park", "Mia Chen", "Priya Nair", "Fatima Hassan", "Luis Morales"],
+      "difficulty": "medium",
+      "notes": "Requires listing all unique technician names from PSA chunks"
+    },
+    {
+      "id": "psa_006",
+      "query": "How many tickets does Marketbridge Commerce Solutions have?",
+      "ground_truth": "Marketbridge Commerce Solutions has 19 service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Marketbridge", "19"],
+      "difficulty": "medium",
+      "notes": "Marketbridge is tied with Frontier Metal and Coastline at 19 tickets"
+    },
+    {
+      "id": "psa_007",
+      "query": "What type of ticket was filed for a ransomware attempt?",
+      "ground_truth": "A ransomware attempt would be classified as an Incident ticket in the TechVault MSP PSA system, as it represents an unexpected security event requiring immediate response.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Incident", "ransomware"],
+      "difficulty": "medium",
+      "notes": "Semantic lookup; ransomware is mentioned in resolution notes or ticket titles"
+    },
+    {
+      "id": "psa_008",
+      "query": "What is the total hours billed by Priya Nair?",
+      "ground_truth": "Priya Nair has billed a total of 309 hours across all service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Priya Nair", "309"],
+      "difficulty": "medium",
+      "notes": "Aggregate hours_billed for Priya Nair"
+    },
+    {
+      "id": "psa_009",
+      "query": "Which clients tied for the most tickets?",
+      "ground_truth": "Three clients are tied for the most service tickets with 19 each: Frontier Metal, Coastline Restaurant Group, and Marketbridge Commerce Solutions.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Frontier Metal", "Coastline Restaurant", "Marketbridge"],
+      "difficulty": "medium",
+      "notes": "Three-way tie at 19 tickets each"
+    },
+    {
+      "id": "psa_010",
+      "query": "What is the status of service tickets in the PSA system?",
+      "ground_truth": "Service tickets in the TechVault MSP PSA system are primarily CLOSED, indicating that the synthetic dataset represents resolved historical tickets. Active or open tickets would have different status values.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["CLOSED", "all tickets"],
+      "difficulty": "hard",
+      "notes": "Synthetic PSA data; most/all tickets are CLOSED in the dataset"
+    },
+    {
+      "id": "psa_011",
+      "query": "How many hours has Fatima Hassan billed?",
+      "ground_truth": "Fatima Hassan has billed a total of 301 hours across all service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Fatima Hassan", "301"],
+      "difficulty": "medium",
+      "notes": "Aggregate hours_billed for Fatima Hassan"
+    },
+    {
+      "id": "psa_012",
+      "query": "What types of incidents has TechVault MSP handled?",
+      "ground_truth": "TechVault MSP has handled various incident types including ransomware attempts, Blue Screen of Death (BSOD) issues, firewall failures, network outages, and other security and infrastructure incidents.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["ransomware", "BSOD", "firewall"],
+      "difficulty": "medium",
+      "notes": "Semantic aggregation of incident descriptions from ticket titles and resolution notes"
+    },
+    {
+      "id": "psa_013",
+      "query": "How many tickets does Lakewood Medical Group have?",
+      "ground_truth": "Lakewood Medical Group has 18 service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Lakewood Medical", "18"],
+      "difficulty": "medium",
+      "notes": "Ticket count for Lakewood Medical; one less than the three-way tie leaders"
+    },
+    {
+      "id": "psa_014",
+      "query": "Which technician handled a BSOD incident?",
+      "ground_truth": "Priya Nair handled a BSOD (Blue Screen of Death) incident ticket in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Priya Nair"],
+      "difficulty": "hard",
+      "notes": "Requires finding a specific ticket where title or resolution_note mentions BSOD and retrieving the technician"
+    },
+    {
+      "id": "psa_015",
+      "query": "What is a Change Request ticket used for in the PSA?",
+      "ground_truth": "A Change Request ticket in TechVault MSP's PSA system is used for planned infrastructure configuration changes such as firewall rule updates, VLAN configuration changes, patch deployments, and other controlled modifications that require formal change management.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["firewall", "VLAN", "patch", "configuration"],
+      "difficulty": "medium",
+      "notes": "Semantic definition based on Change Request ticket examples in the PSA"
+    }
+  ]
+}

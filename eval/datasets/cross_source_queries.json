@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "category": "cross_source",
+  "description": "Multi-source queries requiring retrieval from 2+ enterprise data systems (billing + CRM + PSA + contracts + communications)",
+  "queries": [
+    {
+      "id": "cross_001",
+      "query": "Summarize Northern Lights Healthcare System's current situation across billing, CRM, and communications.",
+      "ground_truth": "Northern Lights Healthcare System is in a critical situation: their CRM account health is RED, they have the highest overdue balance of approximately $44,840 in OVERDUE_CRITICAL invoices, and they have received 18 invoice reminder emails with some showing NO_RESPONSE. Their oldest invoice is 315 days overdue. Immediate intervention is warranted.",
+      "expected_source_types": ["billing", "crm", "communications"],
+      "expected_keywords": ["Northern Lights", "RED", "overdue", "18 emails"],
+      "difficulty": "hard",
+      "notes": "Requires chunks from billing, crm, and communications to synthesize a complete picture"
+    },
+    {
+      "id": "cross_002",
+      "query": "Which clients appear on both the RED CRM health list and the OVERDUE_CRITICAL billing list?",
+      "ground_truth": "Northern Lights Healthcare System, Crossroads Manufacturing, and Metro Construction appear on both the RED CRM health list and the OVERDUE_CRITICAL billing list, indicating the highest-risk clients requiring immediate attention.",
+      "expected_source_types": ["billing", "crm"],
+      "expected_keywords": ["Northern Lights", "Crossroads", "Metro Construction"],
+      "difficulty": "hard",
+      "notes": "Requires joining CRM and billing data across retrieved chunks"
+    },
+    {
+      "id": "cross_003",
+      "query": "What is Heritage Bank & Trust's SLA commitment and when do they need to renew?",
+      "ground_truth": "Heritage Bank & Trust's SLA commitment includes a 1-hour response time for CRITICAL issues and their contract expires on January 15, 2027 (2027-01-15). This gives TechVault MSP approximately 10 months to initiate renewal discussions.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "1 hour", "2027-01-15"],
+      "difficulty": "hard",
+      "notes": "Combines SLA terms and expiry date from contracts; single source but multi-field"
+    },
+    {
+      "id": "cross_004",
+      "query": "What is the relationship between Coastline Restaurant Group's CRM health and their billing status?",
+      "ground_truth": "Coastline Restaurant Group has a RED CRM health status which is directly correlated with their OVERDUE_CRITICAL billing status. Their overdue invoices have triggered the RED flag in the CRM system, and their contract is also expiring in March 2026.",
+      "expected_source_types": ["billing", "crm"],
+      "expected_keywords": ["Coastline Restaurant", "RED", "overdue"],
+      "difficulty": "hard",
+      "notes": "Requires reasoning across CRM and billing chunks for Coastline"
+    },
+    {
+      "id": "cross_005",
+      "query": "Which clients have both overdue invoices and received reminder emails?",
+      "ground_truth": "Northern Lights Healthcare System (18 reminders, $44,840 overdue), Crossroads Manufacturing (16 reminders, $28,688 overdue), and Harbor Logistics Solutions are among the clients who appear in both the overdue billing records and the communications reminder history.",
+      "expected_source_types": ["billing", "communications"],
+      "expected_keywords": ["Northern Lights", "Crossroads", "Harbor Logistics"],
+      "difficulty": "hard",
+      "notes": "Intersection of billing overdue clients and communications reminder recipients"
+    },
+    {
+      "id": "cross_006",
+      "query": "What is Sam Park's specialization and how does workload compare across the team?",
+      "ground_truth": "Sam Park is TechVault MSP's highest-billing technician with 344 hours, followed by Mia Chen (322 hours), Priya Nair (309 hours), and Fatima Hassan (301 hours). The workload is relatively balanced across the team with Sam Park leading by approximately 22 hours over the next technician.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Sam Park", "344", "Mia Chen", "balanced"],
+      "difficulty": "hard",
+      "notes": "Requires aggregating and comparing hours_billed across all technicians from PSA chunks"
+    },
+    {
+      "id": "cross_007",
+      "query": "Which client has the highest-value contract and the worst payment history?",
+      "ground_truth": "Northern Lights Healthcare System has the highest-value contract at approximately $11,620 per month and also has the worst payment history with $44,840 in OVERDUE_CRITICAL invoices, 18 reminder emails, and invoices up to 315 days overdue.",
+      "expected_source_types": ["contracts", "billing"],
+      "expected_keywords": ["Northern Lights", "11620", "overdue"],
+      "difficulty": "hard",
+      "notes": "Cross-source query joining contracts (monthly_value) and billing (overdue balance)"
+    },
+    {
+      "id": "cross_008",
+      "query": "Compare the SLA response times in TechVault MSP contracts with the ticket types in the PSA.",
+      "ground_truth": "TechVault MSP contracts commit to 1-hour response for CRITICAL issues, which maps to Incident tickets in the PSA (e.g., ransomware, BSOD, outages). HIGH priority (4 hours) maps to urgent Service Requests. Change Requests and Problems typically fall under MEDIUM or LOW SLA tiers (8 hours to next business day).",
+      "expected_source_types": ["contracts", "psa"],
+      "expected_keywords": ["1 hour", "CRITICAL", "Incident"],
+      "difficulty": "hard",
+      "notes": "Cross-source synthesis: contracts SLA dict + PSA ticket type taxonomy"
+    }
+  ]
+}

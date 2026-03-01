@@ -1,0 +1,142 @@
+{
+  "version": "1.0.0",
+  "category": "contracts",
+  "description": "Queries targeting the SharePoint synthetic contracts data (SLA terms, expiry dates, monthly values, services in scope)",
+  "queries": [
+    {
+      "id": "contracts_001",
+      "query": "What are Heritage Bank & Trust's SLA response time commitments?",
+      "ground_truth": "Heritage Bank & Trust's SLA response time commitments are: CRITICAL priority - 1 hour, HIGH priority - 4 hours, MEDIUM priority - 8 hours, LOW priority - next business day.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "1 hour", "CRITICAL"],
+      "difficulty": "easy",
+      "notes": "sla_response_time is a dict field in contracts data"
+    },
+    {
+      "id": "contracts_002",
+      "query": "When does Heritage Bank & Trust's contract expire?",
+      "ground_truth": "Heritage Bank & Trust's contract expires on January 15, 2027 (2027-01-15).",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "2027-01-15"],
+      "difficulty": "easy",
+      "notes": "expiry_date field lookup for a specific client"
+    },
+    {
+      "id": "contracts_003",
+      "query": "What is Heritage Bank & Trust's monthly contract value?",
+      "ground_truth": "Heritage Bank & Trust's monthly contract value is $10,390 per month.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "10390"],
+      "difficulty": "easy",
+      "notes": "monthly_value field; straightforward lookup"
+    },
+    {
+      "id": "contracts_004",
+      "query": "Which contracts are expiring soonest?",
+      "ground_truth": "The contract expiring soonest is Coastline Restaurant Group's contract, which expires in March 2026 (2026-03). This is imminent given the current date and should be flagged for renewal discussions.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Coastline Restaurant", "2026-03"],
+      "difficulty": "medium",
+      "notes": "Requires comparing expiry_date values; Coastline expires March 2026 which is the nearest future date"
+    },
+    {
+      "id": "contracts_005",
+      "query": "What services are included in Lakewood Medical Group's contract?",
+      "ground_truth": "Lakewood Medical Group's contract includes services such as Managed Service Provider (MSP) support, Microsoft 365 (M365) administration, cloud infrastructure management, and potentially security services as defined in their services_in_scope list.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Lakewood Medical", "MSP", "M365"],
+      "difficulty": "medium",
+      "notes": "services_in_scope is an array field in contracts data"
+    },
+    {
+      "id": "contracts_006",
+      "query": "What is Lakewood Medical Group's monthly contract value?",
+      "ground_truth": "Lakewood Medical Group's monthly contract value is $9,950 per month.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Lakewood Medical", "9950"],
+      "difficulty": "medium",
+      "notes": "monthly_value field for Lakewood Medical"
+    },
+    {
+      "id": "contracts_007",
+      "query": "When does Northern Lights Healthcare System's contract expire?",
+      "ground_truth": "Northern Lights Healthcare System's contract expires in November 2026 (2026-11), giving TechVault MSP approximately 8 months to prepare for renewal.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Northern Lights", "2026-11"],
+      "difficulty": "medium",
+      "notes": "expiry_date lookup for the highest-value at-risk client"
+    },
+    {
+      "id": "contracts_008",
+      "query": "Do all TechVault MSP contracts auto-renew?",
+      "ground_truth": "Not all TechVault MSP contracts automatically renew. The auto_renew field in each contract indicates whether the agreement will roll over automatically at expiry. Clients should check their specific contract terms for auto-renewal provisions.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["auto_renew", "auto-renew"],
+      "difficulty": "hard",
+      "notes": "Requires reading auto_renew boolean across multiple contract chunks"
+    },
+    {
+      "id": "contracts_009",
+      "query": "What is the SLA uptime guarantee in TechVault MSP contracts?",
+      "ground_truth": "TechVault MSP contracts include a 99.5% uptime guarantee as part of the standard SLA terms.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["99.5%", "uptime"],
+      "difficulty": "medium",
+      "notes": "Standard SLA clause present across contracts"
+    },
+    {
+      "id": "contracts_010",
+      "query": "Which contract has the highest monthly value?",
+      "ground_truth": "The contract with the highest monthly value belongs to Northern Lights Healthcare System or Atlas Industrial, with a monthly value of approximately $11,620 or $10,704 respectively. Northern Lights Healthcare System likely holds the highest-value contract given their broad service scope.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Northern Lights", "11620"],
+      "difficulty": "hard",
+      "notes": "Requires comparing monthly_value across all 50 contract chunks"
+    },
+    {
+      "id": "contracts_011",
+      "query": "What is the SLA response time for LOW priority issues?",
+      "ground_truth": "The SLA response time for LOW priority issues in TechVault MSP contracts is next business day.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["next business day"],
+      "difficulty": "easy",
+      "notes": "Standard SLA tier; present in sla_response_time dict in every contract"
+    },
+    {
+      "id": "contracts_012",
+      "query": "What is the SLA response time for HIGH priority issues?",
+      "ground_truth": "The SLA response time for HIGH priority issues in TechVault MSP contracts is 4 hours.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["4 hours"],
+      "difficulty": "easy",
+      "notes": "Standard SLA tier; present in sla_response_time dict in every contract"
+    },
+    {
+      "id": "contracts_013",
+      "query": "What services does Heritage Bank & Trust receive under their contract?",
+      "ground_truth": "Heritage Bank & Trust receives managed services (MSP), Microsoft 365 administration, security services, and potentially cloud infrastructure support as outlined in their services_in_scope contract terms.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "MSP", "security"],
+      "difficulty": "medium",
+      "notes": "services_in_scope array for Heritage Bank"
+    },
+    {
+      "id": "contracts_014",
+      "query": "What is Coastline Restaurant Group's monthly contract value and when does it expire?",
+      "ground_truth": "Coastline Restaurant Group's monthly contract value is $4,181 and their contract expires in March 2026 (2026-03), making it one of the most urgently expiring contracts in the portfolio.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Coastline Restaurant", "4181", "2026-03"],
+      "difficulty": "medium",
+      "notes": "Multi-field lookup for Coastline Restaurant"
+    },
+    {
+      "id": "contracts_015",
+      "query": "Which client has contract MSA-21-001?",
+      "ground_truth": "Contract MSA-21-001 belongs to Lakewood Medical Group. This is one of TechVault MSP's longest-standing contracts in the healthcare sector.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Lakewood Medical"],
+      "difficulty": "medium",
+      "notes": "Contract ID lookup; requires finding the specific contract chunk with this ID"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "version": "1.0.0",
+  "category": "billing",
+  "description": "Queries targeting the QuickBooks synthetic billing data (invoices, AR status, payment terms)",
+  "queries": [
+    {
+      "id": "billing_001",
+      "query": "Which clients have OVERDUE_CRITICAL invoices?",
+      "ground_truth": "Clients with OVERDUE_CRITICAL invoices include Northern Lights Healthcare System, Crossroads Manufacturing, Skyline Hospitality Group, Harbor Logistics Solutions, Metro Construction, Quantum Strategy Group, Summit Financial Advisors, Coastline Restaurant Group, Velocity Courier Network, and several others totaling 12 clients with critical overdue status.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "Crossroads", "Skyline"],
+      "difficulty": "easy",
+      "notes": "Should retrieve multiple billing invoice chunks; keywords cover 3 of the 12 OVERDUE_CRITICAL clients"
+    },
+    {
+      "id": "billing_002",
+      "query": "What is the total overdue amount owed by Northern Lights Healthcare System?",
+      "ground_truth": "Northern Lights Healthcare System has a total overdue balance of approximately $44,840, making it the client with the highest overdue exposure in the billing system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "44840"],
+      "difficulty": "medium",
+      "notes": "Amount may appear as 44840 or 44,840 in source data"
+    },
+    {
+      "id": "billing_003",
+      "query": "Which client has the second-highest overdue balance?",
+      "ground_truth": "Crossroads Manufacturing has the second-highest overdue balance at approximately $28,688, after Northern Lights Healthcare System.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Crossroads Manufacturing", "28688"],
+      "difficulty": "medium",
+      "notes": "Requires comparing aggregate balances across multiple invoice chunks"
+    },
+    {
+      "id": "billing_004",
+      "query": "How many clients have OVERDUE_CRITICAL status invoices?",
+      "ground_truth": "There are 12 clients with OVERDUE_CRITICAL status invoices in the TechVault MSP billing system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["12"],
+      "difficulty": "easy",
+      "notes": "Simple count query; answer should be a specific number"
+    },
+    {
+      "id": "billing_005",
+      "query": "What is the outstanding balance on invoice INV-2025-1031?",
+      "ground_truth": "Invoice INV-2025-1031 has an outstanding balance of $11,290. It is an OVERDUE_CRITICAL invoice belonging to Northern Lights Healthcare System.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["INV-2025-1031", "11290"],
+      "difficulty": "medium",
+      "notes": "Requires exact invoice lookup by ID"
+    },
+    {
+      "id": "billing_006",
+      "query": "How many days overdue is invoice INV-2025-1031?",
+      "ground_truth": "Invoice INV-2025-1031 is 315 days overdue, making it one of the oldest outstanding invoices in the billing system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["315"],
+      "difficulty": "hard",
+      "notes": "Specific numeric fact; requires exact chunk containing days_overdue field"
+    },
+    {
+      "id": "billing_007",
+      "query": "Which invoices are associated with Crossroads Manufacturing?",
+      "ground_truth": "Crossroads Manufacturing has multiple invoices on record in the TechVault MSP billing system. These invoices carry OVERDUE_CRITICAL status and together account for a total overdue balance of approximately $28,688.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Crossroads Manufacturing", "invoice"],
+      "difficulty": "medium",
+      "notes": "Multi-invoice lookup for a single client"
+    },
+    {
+      "id": "billing_008",
+      "query": "What is Harbor Logistics Solutions' total overdue exposure?",
+      "ground_truth": "Harbor Logistics Solutions has a total overdue exposure of approximately $11,246 in OVERDUE_CRITICAL invoices.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Harbor Logistics", "11246"],
+      "difficulty": "medium",
+      "notes": "Aggregate balance for a mid-tier overdue client"
+    },
+    {
+      "id": "billing_009",
+      "query": "List all invoice statuses used in the billing system.",
+      "ground_truth": "The TechVault MSP billing system uses three invoice statuses: PAID (for settled invoices), OVERDUE_CRITICAL (for invoices significantly past due), and PENDING (for invoices not yet due or awaiting payment).",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["PAID", "OVERDUE", "PENDING"],
+      "difficulty": "easy",
+      "notes": "Schema-level question; any billing chunk should expose these status values"
+    },
+    {
+      "id": "billing_010",
+      "query": "Which client has the most individual overdue invoices?",
+      "ground_truth": "Northern Lights Healthcare System has the most individual overdue invoices, with multiple OVERDUE_CRITICAL invoices totaling the highest aggregate balance in the system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights"],
+      "difficulty": "medium",
+      "notes": "Requires counting invoice records per client"
+    },
+    {
+      "id": "billing_011",
+      "query": "What payment terms does the billing system use for Northern Lights?",
+      "ground_truth": "Northern Lights Healthcare System invoices are issued under NET45 payment terms, meaning payment is due 45 days from the invoice date.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "NET45"],
+      "difficulty": "medium",
+      "notes": "Payment terms are stored in invoice metadata"
+    },
+    {
+      "id": "billing_012",
+      "query": "What is the total overdue balance for Skyline Hospitality Group?",
+      "ground_truth": "Skyline Hospitality Group has a total overdue balance of approximately $16,660 in OVERDUE_CRITICAL invoices.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Skyline Hospitality", "16660"],
+      "difficulty": "medium",
+      "notes": "Third-tier overdue client by balance"
+    },
+    {
+      "id": "billing_013",
+      "query": "What are the line items on a typical TechVault MSP invoice?",
+      "ground_truth": "A typical TechVault MSP invoice includes line items such as managed services (recurring monthly fee), labor (hourly professional services), and hardware or software licensing. Each line item has a description, quantity, unit price, and amount.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["managed services", "labor", "hardware"],
+      "difficulty": "hard",
+      "notes": "Requires reading invoice line_items array structure from billing chunks"
+    },
+    {
+      "id": "billing_014",
+      "query": "Which client has invoice INV-2025-1040 and what is its status?",
+      "ground_truth": "Invoice INV-2025-1040 belongs to Northern Lights Healthcare System and has an OVERDUE_CRITICAL status, indicating it is significantly past due.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "overdue"],
+      "difficulty": "hard",
+      "notes": "Exact invoice ID lookup requiring specific chunk retrieval"
+    },
+    {
+      "id": "billing_015",
+      "query": "What is Metro Construction's total overdue amount?",
+      "ground_truth": "Metro Construction has a total overdue amount of approximately $14,940 in OVERDUE_CRITICAL invoices.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Metro Construction", "14940"],
+      "difficulty": "medium",
+      "notes": "Mid-range overdue balance client"
+    },
+    {
+      "id": "billing_016",
+      "query": "How many total invoices exist in the billing system?",
+      "ground_truth": "The TechVault MSP billing system contains approximately 690 invoices across 50 clients, covering 13 months of billing history.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["690"],
+      "difficulty": "hard",
+      "notes": "Aggregate count across all billing chunks; may require summing multiple chunk results"
+    },
+    {
+      "id": "billing_017",
+      "query": "Which client has an overdue invoice that is 135 days past due?",
+      "ground_truth": "Northern Lights Healthcare System has an invoice that is 135 days past due, among several other overdue invoices ranging from 135 to 315 days overdue.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights"],
+      "difficulty": "hard",
+      "notes": "Specific days_overdue value lookup; Northern Lights has multiple overdue invoices"
+    },
+    {
+      "id": "billing_018",
+      "query": "What is Quantum Strategy Group's overdue balance?",
+      "ground_truth": "Quantum Strategy Group has an overdue balance of approximately $2,552 in OVERDUE_CRITICAL invoices.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Quantum Strategy", "2552"],
+      "difficulty": "medium",
+      "notes": "Lower-balance overdue client"
+    },
+    {
+      "id": "billing_019",
+      "query": "Are there any invoices with PENDING status?",
+      "ground_truth": "Yes, the TechVault MSP billing system includes invoices with PENDING status, indicating they are not yet past due and awaiting payment within their net terms.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["PENDING"],
+      "difficulty": "easy",
+      "notes": "Simple status existence check"
+    },
+    {
+      "id": "billing_020",
+      "query": "What is the oldest overdue invoice and who does it belong to?",
+      "ground_truth": "The oldest overdue invoice in the system is 315 days past due and belongs to Northern Lights Healthcare System. This is invoice INV-2025-1031 with an outstanding balance of $11,290.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "315 days"],
+      "difficulty": "hard",
+      "notes": "Requires finding max days_overdue across all billing chunks"
+    }
+  ]
+}

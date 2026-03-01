@@ -1,0 +1,115 @@
+{
+  "version": "1.0.0",
+  "category": "crm",
+  "description": "Queries targeting the HubSpot synthetic CRM data (account health, contacts, health notes)",
+  "queries": [
+    {
+      "id": "crm_001",
+      "query": "Which clients are flagged as RED health status?",
+      "ground_truth": "Clients flagged as RED health status include Northern Lights Healthcare System, Quantum Strategy Group, Metro Construction, Coastline Restaurant Group, Summit Financial Advisors, Velocity Courier Network, and one additional client, totaling 7 RED-status accounts. RED indicates accounts with overdue invoices or under legal review.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Northern Lights", "Quantum Strategy", "Metro Construction"],
+      "difficulty": "easy",
+      "notes": "RED accounts are the most at-risk in the CRM; should retrieve multiple crm chunks"
+    },
+    {
+      "id": "crm_002",
+      "query": "How many clients have RED account health?",
+      "ground_truth": "There are 7 clients with RED account health status in TechVault MSP's CRM system.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["7"],
+      "difficulty": "easy",
+      "notes": "Simple count of RED-status CRM profiles"
+    },
+    {
+      "id": "crm_003",
+      "query": "What is the health status of Coastline Restaurant Group?",
+      "ground_truth": "Coastline Restaurant Group has a RED account health status in TechVault MSP's CRM system, indicating significant overdue invoices or account issues requiring attention.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Coastline Restaurant", "RED"],
+      "difficulty": "easy",
+      "notes": "Direct health status lookup for a specific client"
+    },
+    {
+      "id": "crm_004",
+      "query": "Who is the AR contact at Northern Lights Healthcare System?",
+      "ground_truth": "The AR (Accounts Receivable) contact at Northern Lights Healthcare System is Christopher Ashley, reachable at billing@northernlights.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Christopher Ashley", "billing@northernlights"],
+      "difficulty": "medium",
+      "notes": "contacts.ar_contact field in CRM profile"
+    },
+    {
+      "id": "crm_005",
+      "query": "Who is the CFO at Lakewood Medical Group?",
+      "ground_truth": "The CFO at Lakewood Medical Group is Noah Rhodes.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Noah Rhodes"],
+      "difficulty": "medium",
+      "notes": "contacts.cfo field in CRM profile for Lakewood Medical"
+    },
+    {
+      "id": "crm_006",
+      "query": "What health note is associated with RED-status accounts?",
+      "ground_truth": "RED-status accounts in TechVault MSP's CRM carry health notes indicating issues such as accounts under legal review due to overdue invoices, or accounts with unresolved billing disputes. These notes flag accounts requiring immediate intervention.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["legal review", "overdue invoices"],
+      "difficulty": "medium",
+      "notes": "health_note field text associated with RED status profiles"
+    },
+    {
+      "id": "crm_007",
+      "query": "Which clients are flagged as YELLOW health status?",
+      "ground_truth": "Clients flagged as YELLOW health status include Lakewood Medical Group, Crestwood, and Apex, among others. YELLOW indicates accounts that are at some risk but not yet in critical status.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Lakewood Medical", "Crestwood", "Apex"],
+      "difficulty": "medium",
+      "notes": "YELLOW accounts are mid-risk; requires scanning multiple CRM chunks"
+    },
+    {
+      "id": "crm_008",
+      "query": "What is Summit Financial Advisors' account health status?",
+      "ground_truth": "Summit Financial Advisors has a RED account health status in TechVault MSP's CRM system, indicating overdue payment issues.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Summit Financial", "RED"],
+      "difficulty": "easy",
+      "notes": "Direct CRM health lookup for Summit Financial"
+    },
+    {
+      "id": "crm_009",
+      "query": "Who is the IT manager at Lakewood Medical Group?",
+      "ground_truth": "The IT manager at Lakewood Medical Group is Angie Henderson.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Angie Henderson"],
+      "difficulty": "hard",
+      "notes": "contacts.it_manager field; Lakewood Medical is YELLOW status so fewer alert triggers"
+    },
+    {
+      "id": "crm_010",
+      "query": "What does a GREEN health status indicate in TechVault's CRM?",
+      "ground_truth": "A GREEN health status in TechVault MSP's CRM indicates an excellent payment record, reliable and timely invoice settlement, and a strong client relationship with no outstanding issues.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["excellent payment", "reliable", "GREEN"],
+      "difficulty": "medium",
+      "notes": "GREEN status description from health_note or status definition in CRM chunks"
+    },
+    {
+      "id": "crm_011",
+      "query": "Which client has the AR contact named Christopher Ashley?",
+      "ground_truth": "Christopher Ashley is the AR contact at Northern Lights Healthcare System.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Northern Lights"],
+      "difficulty": "hard",
+      "notes": "Reverse lookup from contact name to client; Northern Lights is high-value retrieval target"
+    },
+    {
+      "id": "crm_012",
+      "query": "What is Velocity Courier Network's CRM health status?",
+      "ground_truth": "Velocity Courier Network has a RED account health status in TechVault MSP's CRM system.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Velocity Courier", "RED"],
+      "difficulty": "medium",
+      "notes": "Direct CRM health lookup for Velocity Courier Network"
+    }
+  ]
+}

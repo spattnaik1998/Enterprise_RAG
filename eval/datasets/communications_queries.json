@@ -1,0 +1,97 @@
+{
+  "version": "1.0.0",
+  "category": "communications",
+  "description": "Queries targeting the Exchange Online synthetic communications data (invoice reminder emails, reminder sequences, client responses)",
+  "queries": [
+    {
+      "id": "comms_001",
+      "query": "How many invoice reminder emails has Northern Lights received?",
+      "ground_truth": "Northern Lights Healthcare System has received 18 invoice reminder emails from TechVault MSP, making it the client with the most reminder communications in the system.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Northern Lights", "18"],
+      "difficulty": "easy",
+      "notes": "Aggregate count of reminder emails for Northern Lights; highest in the dataset"
+    },
+    {
+      "id": "comms_002",
+      "query": "Which client has received the most invoice reminder emails?",
+      "ground_truth": "Northern Lights Healthcare System has received the most invoice reminder emails with 18 total reminders, reflecting their extensive overdue invoice history.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Northern Lights", "18"],
+      "difficulty": "easy",
+      "notes": "Same fact as comms_001 but phrased differently"
+    },
+    {
+      "id": "comms_003",
+      "query": "What are the different reminder sequence levels used?",
+      "ground_truth": "TechVault MSP uses multiple reminder sequence levels: Sequence 1 (initial friendly reminder), Sequence 2 (follow-up), and escalating sequences leading to a final notice or collections review at the highest level.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["sequence 1", "sequence 2", "final notice"],
+      "difficulty": "medium",
+      "notes": "Reminder sequences are tracked in the communications data; escalation pattern"
+    },
+    {
+      "id": "comms_004",
+      "query": "What response did Northern Lights give to the first reminder for INV-2025-1031?",
+      "ground_truth": "In response to the first reminder for invoice INV-2025-1031, Northern Lights Healthcare System indicated a partial payment or promised to make a payment, but the invoice remained outstanding.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["partial payment", "promised"],
+      "difficulty": "medium",
+      "notes": "Specific invoice-level response tracking in communications records"
+    },
+    {
+      "id": "comms_005",
+      "query": "How many reminders has Crossroads Manufacturing received?",
+      "ground_truth": "Crossroads Manufacturing has received 16 invoice reminder emails from TechVault MSP's billing team.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Crossroads Manufacturing", "16"],
+      "difficulty": "medium",
+      "notes": "Second-highest reminder count in the dataset after Northern Lights"
+    },
+    {
+      "id": "comms_006",
+      "query": "What happens at reminder sequence 4?",
+      "ground_truth": "At reminder sequence 4, TechVault MSP escalates to a collections review, sending an URGENT notice indicating the account may be referred to collections if payment is not received promptly.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["collections review", "URGENT", "referred"],
+      "difficulty": "medium",
+      "notes": "Escalation logic at sequence 4; final warning before collections"
+    },
+    {
+      "id": "comms_007",
+      "query": "Which clients have NO_RESPONSE to reminder emails?",
+      "ground_truth": "Northern Lights Healthcare System and Crossroads Manufacturing have instances of NO_RESPONSE to invoice reminder emails, indicating they have not acknowledged or responded to certain billing reminders.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Northern Lights", "Crossroads"],
+      "difficulty": "medium",
+      "notes": "client_response field value of NO_RESPONSE in communications records"
+    },
+    {
+      "id": "comms_008",
+      "query": "What email address does TechVault MSP send billing reminders from?",
+      "ground_truth": "TechVault MSP sends billing reminder emails from the address billing@techvaultmsp.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["billing@techvaultmsp", "TechVault"],
+      "difficulty": "medium",
+      "notes": "Sender email address stored in communications records"
+    },
+    {
+      "id": "comms_009",
+      "query": "How many reminder emails has Velocity Courier Network received?",
+      "ground_truth": "Velocity Courier Network has received 10 invoice reminder emails from TechVault MSP's billing team.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Velocity Courier", "10"],
+      "difficulty": "hard",
+      "notes": "Mid-range reminder count; requires specific retrieval of Velocity Courier communications"
+    },
+    {
+      "id": "comms_010",
+      "query": "What is the subject line format for final reminder notices?",
+      "ground_truth": "Final reminder notices from TechVault MSP use subject lines containing URGENT or referring to final notice and potential collections referral, such as 'URGENT: Final Notice - Invoice Past Due - Collections Review'.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["URGENT", "collections", "final notice"],
+      "difficulty": "hard",
+      "notes": "Email subject line pattern for highest-sequence reminders"
+    }
+  ]
+}
