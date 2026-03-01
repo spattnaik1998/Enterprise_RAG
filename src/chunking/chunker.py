@@ -152,12 +152,17 @@ class AdaptiveChunker:
         return token_count <= self.keep_whole_threshold
 
     def _keep_whole(self, doc) -> Iterator[Chunk]:
+        # Prepend the document title so client/invoice/contract names appear at
+        # the very start of every enterprise chunk.  This helps both BM25 (title
+        # tokens get the highest positional weight) and dense retrieval (transformer
+        # encoders weight early tokens more heavily).
+        text = f"[{doc.title}]\n\n{doc.content}"
         yield Chunk(
             doc_id=doc.id,
             chunk_index=0,
             chunk_strategy="keep_whole",
-            text=doc.content,
-            token_count=count_tokens(doc.content),
+            text=text,
+            token_count=count_tokens(text),
             source=doc.source,
             source_type=doc.source_type.value,
             title=doc.title,

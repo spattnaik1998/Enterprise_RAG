@@ -166,7 +166,8 @@ class CollectionPipeline:
         logger.info(f"Saving {len(self.documents)} raw documents -> {self.raw_dir}/")
 
         for doc in self.documents:
-            path = self.raw_dir / f"{doc.source_type.value}_{doc.id[:8]}.json"
+            safe_id = doc.id.replace("/", "_").replace(":", "_").replace(" ", "_")
+            path = self.raw_dir / f"{doc.source_type.value}_{safe_id}.json"
             save_json(doc.model_dump(mode="json"), path)
 
         manifest = {

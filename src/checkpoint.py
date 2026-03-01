@@ -65,6 +65,7 @@ class PhaseICheckpoint:
     @staticmethod
     def _persist(docs: list, directory: Path) -> None:
         for doc in docs:
-            path = directory / f"{doc.source_type.value}_{doc.id[:8]}.json"
+            safe_id = doc.id.replace("/", "_").replace(":", "_").replace(" ", "_")
+            path = directory / f"{doc.source_type.value}_{safe_id}.json"
             save_json(doc.model_dump(mode="json"), path)
         logger.debug(f"Saved {len(docs)} documents -> {directory}/")

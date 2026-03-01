@@ -12,14 +12,14 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 152776.71,
-      "total_paid_ytd": 152776.71,
+      "total_billed_ytd": 161594.81,
+      "total_paid_ytd": 161594.81,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [],
-      "last_qbr_date": "2025-11-28",
-      "nps_score": 9,
+      "last_qbr_date": "2025-12-21",
+      "nps_score": 5,
       "contacts": {
         "cfo": {
           "name": "Noah Rhodes",
@@ -58,8 +58,8 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 45188.13,
-      "total_paid_ytd": 45188.13,
+      "total_billed_ytd": 47649.07,
+      "total_paid_ytd": 47649.07,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -67,8 +67,8 @@
         "Cloud Infrastructure Migration",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-11-20",
-      "nps_score": 8,
+      "last_qbr_date": "2025-09-17",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Timothy Watts",
@@ -107,14 +107,14 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 179482.68,
-      "total_paid_ytd": 141485.28,
-      "open_balance": 37997.4,
-      "overdue_invoice_count": 3,
-      "overdue_balance": 37997.4,
+      "total_billed_ytd": 171884.15,
+      "total_paid_ytd": 111699.68,
+      "open_balance": 60184.47,
+      "overdue_invoice_count": 5,
+      "overdue_balance": 60184.47,
       "upsell_opportunities": [],
-      "last_qbr_date": "2026-01-12",
-      "nps_score": 8,
+      "last_qbr_date": "2025-09-17",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Ashley Garrett",
@@ -153,8 +153,8 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 37848.07,
-      "total_paid_ytd": 37848.07,
+      "total_billed_ytd": 41856.44,
+      "total_paid_ytd": 41856.44,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -163,7 +163,7 @@
         "Business Continuity Planning",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-10-29",
+      "last_qbr_date": "2025-10-02",
       "nps_score": 8,
       "contacts": {
         "cfo": {
@@ -203,8 +203,8 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 79422.85,
-      "total_paid_ytd": 79422.85,
+      "total_billed_ytd": 83297.41,
+      "total_paid_ytd": 83297.41,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -212,8 +212,8 @@
         "SOC/SIEM Security Upgrade",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-09-07",
-      "nps_score": 8,
+      "last_qbr_date": "2025-09-29",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "Kimberly Adkins",
@@ -252,9 +252,9 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 36714.47,
-      "total_paid_ytd": 33890.28,
-      "open_balance": 2824.19,
+      "total_billed_ytd": 36739.34,
+      "total_paid_ytd": 36739.34,
+      "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
@@ -262,7 +262,7 @@
         "Business Continuity Planning",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-11-24",
+      "last_qbr_date": "2025-12-28",
       "nps_score": 7,
       "contacts": {
         "cfo": {
@@ -302,17 +302,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 45414.85,
-      "total_paid_ytd": 41921.4,
-      "open_balance": 3493.45,
+      "total_billed_ytd": 47464.12,
+      "total_paid_ytd": 44165.26,
+      "open_balance": 3298.86,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-09-30",
-      "nps_score": 4,
+      "last_qbr_date": "2025-11-14",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Rita Keith",
@@ -351,8 +351,8 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 118560.57,
-      "total_paid_ytd": 118560.57,
+      "total_billed_ytd": 120213.61,
+      "total_paid_ytd": 120213.61,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -360,7 +360,7 @@
         "Business Continuity Planning",
         "Compliance Consulting Package"
       ],
-      "last_qbr_date": "2025-12-30",
+      "last_qbr_date": "2025-09-18",
       "nps_score": 8,
       "contacts": {
         "cfo": {
@@ -400,8 +400,8 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 64317.63,
-      "total_paid_ytd": 64317.63,
+      "total_billed_ytd": 70422.89,
+      "total_paid_ytd": 70422.89,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -410,7 +410,7 @@
         "Cloud Infrastructure Migration",
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2025-09-04",
+      "last_qbr_date": "2025-09-06",
       "nps_score": 9,
       "contacts": {
         "cfo": {
@@ -450,17 +450,17 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 123868.38,
-      "total_paid_ytd": 113565.83,
-      "open_balance": 10302.55,
-      "overdue_invoice_count": 2,
-      "overdue_balance": 10302.55,
+      "total_billed_ytd": 102866.92,
+      "total_paid_ytd": 102866.92,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration",
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2025-11-24",
-      "nps_score": 9,
+      "last_qbr_date": "2026-01-10",
+      "nps_score": 5,
       "contacts": {
         "cfo": {
           "name": "Rebecca Ramsey",
@@ -499,15 +499,15 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 38188.15,
-      "total_paid_ytd": 38188.15,
+      "total_billed_ytd": 37529.52,
+      "total_paid_ytd": 37529.52,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2026-01-15",
+      "last_qbr_date": "2025-09-20",
       "nps_score": 9,
       "contacts": {
         "cfo": {
@@ -547,16 +547,16 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 42014.05,
-      "total_paid_ytd": 38782.2,
-      "open_balance": 3231.85,
-      "overdue_invoice_count": 0,
-      "overdue_balance": 0,
+      "total_billed_ytd": 42278.55,
+      "total_paid_ytd": 40187.51,
+      "open_balance": 2091.04,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 2091.04,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-10-03",
-      "nps_score": 5,
+      "last_qbr_date": "2025-10-13",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "Maria Henry",
@@ -595,8 +595,8 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 65182.0,
-      "total_paid_ytd": 65182.0,
+      "total_billed_ytd": 73280.06,
+      "total_paid_ytd": 73280.06,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -604,8 +604,8 @@
         "Cloud Infrastructure Migration",
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2025-12-26",
-      "nps_score": 8,
+      "last_qbr_date": "2025-10-03",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Scott Wilson",
@@ -644,16 +644,16 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 36487.75,
-      "total_paid_ytd": 30874.25,
-      "open_balance": 5613.5,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 2806.75,
+      "total_billed_ytd": 33290.6,
+      "total_paid_ytd": 29240.2,
+      "open_balance": 4050.4,
+      "overdue_invoice_count": 2,
+      "overdue_balance": 4050.4,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2026-01-16",
-      "nps_score": 10,
+      "last_qbr_date": "2025-09-06",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Linda Holloway",
@@ -692,16 +692,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 42354.13,
-      "total_paid_ytd": 42354.13,
+      "total_billed_ytd": 42019.77,
+      "total_paid_ytd": 42019.77,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-10-14",
-      "nps_score": 7,
+      "last_qbr_date": "2025-10-31",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "Michael Martinez",
@@ -740,16 +740,16 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 124554.82,
-      "total_paid_ytd": 98090.02,
-      "open_balance": 26464.8,
-      "overdue_invoice_count": 2,
-      "overdue_balance": 18922.0,
+      "total_billed_ytd": 105264.79,
+      "total_paid_ytd": 105264.79,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2025-10-30",
-      "nps_score": 9,
+      "last_qbr_date": "2026-01-09",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Thomas Smith",
@@ -788,17 +788,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 64912.77,
-      "total_paid_ytd": 59919.48,
-      "open_balance": 4993.29,
-      "overdue_invoice_count": 0,
-      "overdue_balance": 0,
+      "total_billed_ytd": 65036.87,
+      "total_paid_ytd": 61487.57,
+      "open_balance": 3549.3,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 3549.3,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-11-16",
-      "nps_score": 8,
+      "last_qbr_date": "2026-01-25",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Julie Roberts",
@@ -837,8 +837,8 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 65408.72,
-      "total_paid_ytd": 65408.72,
+      "total_billed_ytd": 73480.29,
+      "total_paid_ytd": 73480.29,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -846,8 +846,8 @@
         "Cloud Infrastructure Migration",
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2026-01-10",
-      "nps_score": 8,
+      "last_qbr_date": "2025-10-03",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Courtney Rhodes",
@@ -886,8 +886,8 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 155995.03,
-      "total_paid_ytd": 155995.03,
+      "total_billed_ytd": 161758.03,
+      "total_paid_ytd": 161758.03,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -934,8 +934,8 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 82526.08,
-      "total_paid_ytd": 82526.08,
+      "total_billed_ytd": 86526.91,
+      "total_paid_ytd": 86526.91,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -943,8 +943,8 @@
         "Cloud Infrastructure Migration",
         "Business Continuity Planning"
       ],
-      "last_qbr_date": "2025-12-18",
-      "nps_score": 8,
+      "last_qbr_date": "2026-01-18",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Katherine Browning",
@@ -983,16 +983,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 45868.29,
-      "total_paid_ytd": 45868.29,
+      "total_billed_ytd": 45932.78,
+      "total_paid_ytd": 45932.78,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-11-10",
-      "nps_score": 6,
+      "last_qbr_date": "2025-11-14",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "Donald Perez",
@@ -1031,16 +1031,16 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 136274.02,
-      "total_paid_ytd": 96358.22,
-      "open_balance": 39915.8,
+      "total_billed_ytd": 137735.94,
+      "total_paid_ytd": 97850.2,
+      "open_balance": 39885.74,
       "overdue_invoice_count": 4,
-      "overdue_balance": 39915.8,
+      "overdue_balance": 31270.49,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-11-13",
-      "nps_score": 10,
+      "last_qbr_date": "2025-10-05",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Pamela Roberts",
@@ -1079,17 +1079,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 67179.97,
-      "total_paid_ytd": 62012.28,
-      "open_balance": 5167.69,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5167.69,
+      "total_billed_ytd": 70680.71,
+      "total_paid_ytd": 70680.71,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-10-29",
-      "nps_score": 9,
+      "last_qbr_date": "2025-10-06",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Trevor Burton",
@@ -1128,16 +1128,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 103711.62,
-      "total_paid_ytd": 97096.41,
-      "open_balance": 6615.21,
+      "total_billed_ytd": 104873.2,
+      "total_paid_ytd": 98451.91,
+      "open_balance": 6421.29,
       "overdue_invoice_count": 1,
-      "overdue_balance": 6615.21,
+      "overdue_balance": 6421.29,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-09-03",
-      "nps_score": 8,
+      "last_qbr_date": "2025-11-23",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "Amy Mccoy",
@@ -1176,14 +1176,14 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 155287.65,
-      "total_paid_ytd": 143620.29,
-      "open_balance": 11667.36,
+      "total_billed_ytd": 181157.19,
+      "total_paid_ytd": 181157.19,
+      "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [],
-      "last_qbr_date": "2025-12-24",
-      "nps_score": 9,
+      "last_qbr_date": "2025-12-13",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "David Sheppard",
@@ -1222,17 +1222,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 66386.45,
-      "total_paid_ytd": 56173.15,
-      "open_balance": 10213.3,
-      "overdue_invoice_count": 2,
-      "overdue_balance": 10213.3,
+      "total_billed_ytd": 68148.37,
+      "total_paid_ytd": 62785.54,
+      "open_balance": 5362.83,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 5362.83,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-09-19",
-      "nps_score": 10,
+      "last_qbr_date": "2026-01-09",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Kimberly Acosta",
@@ -1271,16 +1271,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 38754.95,
-      "total_paid_ytd": 38754.95,
+      "total_billed_ytd": 46293.14,
+      "total_paid_ytd": 46293.14,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-09-27",
-      "nps_score": 8,
+      "last_qbr_date": "2025-11-24",
+      "nps_score": 5,
       "contacts": {
         "cfo": {
           "name": "James Ochoa",
@@ -1319,16 +1319,16 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 134085.57,
-      "total_paid_ytd": 113107.32,
-      "open_balance": 20978.25,
+      "total_billed_ytd": 101776.28,
+      "total_paid_ytd": 79930.78,
+      "open_balance": 21845.5,
       "overdue_invoice_count": 2,
-      "overdue_balance": 12470.8,
+      "overdue_balance": 16285.14,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-12-19",
-      "nps_score": 9,
+      "last_qbr_date": "2026-01-02",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "Jacqueline Hines",
@@ -1367,17 +1367,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 59584.85,
-      "total_paid_ytd": 59584.85,
-      "open_balance": 0.0,
-      "overdue_invoice_count": 0,
-      "overdue_balance": 0,
+      "total_billed_ytd": 61436.76,
+      "total_paid_ytd": 55916.25,
+      "open_balance": 5520.51,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 5520.51,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-12-21",
-      "nps_score": 8,
+      "last_qbr_date": "2026-01-25",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Patricia Morrow",
@@ -1416,8 +1416,8 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 58791.33,
-      "total_paid_ytd": 58791.33,
+      "total_billed_ytd": 60491.06,
+      "total_paid_ytd": 60491.06,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
@@ -1425,8 +1425,8 @@
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-12-12",
-      "nps_score": 6,
+      "last_qbr_date": "2025-12-31",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Jesse Barker",
@@ -1465,16 +1465,16 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 91816.78,
-      "total_paid_ytd": 80622.48,
-      "open_balance": 11194.3,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5597.15,
+      "total_billed_ytd": 92948.41,
+      "total_paid_ytd": 92948.41,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-09-08",
-      "nps_score": 7,
+      "last_qbr_date": "2025-09-29",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "James Hudson",
@@ -1513,14 +1513,14 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 55532.23,
-      "total_paid_ytd": 55532.23,
+      "total_billed_ytd": 64235.24,
+      "total_paid_ytd": 64235.24,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [],
-      "last_qbr_date": "2025-09-17",
-      "nps_score": 6,
+      "last_qbr_date": "2025-10-18",
+      "nps_score": 5,
       "contacts": {
         "cfo": {
           "name": "Mr. Nathan Hampton",
@@ -1559,17 +1559,17 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 81097.29,
-      "total_paid_ytd": 75495.78,
-      "open_balance": 5601.51,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5601.51,
+      "total_billed_ytd": 90011.25,
+      "total_paid_ytd": 71850.99,
+      "open_balance": 18160.26,
+      "overdue_invoice_count": 3,
+      "overdue_balance": 18160.26,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-09-10",
-      "nps_score": 7,
+      "last_qbr_date": "2025-09-27",
+      "nps_score": 10,
       "contacts": {
         "cfo": {
           "name": "Cindy Clayton",
@@ -1608,16 +1608,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 72422.87,
-      "total_paid_ytd": 66851.88,
-      "open_balance": 5570.99,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5570.99,
+      "total_billed_ytd": 75909.24,
+      "total_paid_ytd": 75909.24,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-12-31",
-      "nps_score": 8,
+      "last_qbr_date": "2025-10-29",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Michelle Smith",
@@ -1656,16 +1656,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 145140.47,
-      "total_paid_ytd": 135641.12,
-      "open_balance": 9499.35,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 9499.35,
+      "total_billed_ytd": 146400.92,
+      "total_paid_ytd": 136261.64,
+      "open_balance": 10139.28,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2026-01-10",
-      "nps_score": 9,
+      "last_qbr_date": "2025-10-20",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Joshua Martin",
@@ -1704,17 +1704,17 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 59244.77,
-      "total_paid_ytd": 22786.45,
-      "open_balance": 36458.32,
-      "overdue_invoice_count": 8,
-      "overdue_balance": 36458.32,
+      "total_billed_ytd": 55908.86,
+      "total_paid_ytd": 48480.41,
+      "open_balance": 7428.45,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 4283.32,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-12-27",
-      "nps_score": 5,
+      "last_qbr_date": "2026-01-07",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Gregory Hill",
@@ -1753,16 +1753,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 37848.07,
-      "total_paid_ytd": 37848.07,
-      "open_balance": 0.0,
-      "overdue_invoice_count": 0,
-      "overdue_balance": 0,
+      "total_billed_ytd": 38515.83,
+      "total_paid_ytd": 34668.14,
+      "open_balance": 3847.69,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 3847.69,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-09-29",
-      "nps_score": 10,
+      "last_qbr_date": "2026-01-26",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Kara Atkinson",
@@ -1801,16 +1801,16 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 99346.89,
-      "total_paid_ytd": 93723.58,
-      "open_balance": 5623.31,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5623.31,
+      "total_billed_ytd": 83965.74,
+      "total_paid_ytd": 83965.74,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-10-29",
-      "nps_score": 9,
+      "last_qbr_date": "2026-01-25",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Erica Harris",
@@ -1849,15 +1849,15 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 139857.14,
-      "total_paid_ytd": 139857.14,
+      "total_billed_ytd": 158342.24,
+      "total_paid_ytd": 158342.24,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-10-08",
+      "last_qbr_date": "2025-12-12",
       "nps_score": 5,
       "contacts": {
         "cfo": {
@@ -1897,16 +1897,16 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 138652.36,
-      "total_paid_ytd": 138652.36,
+      "total_billed_ytd": 133311.36,
+      "total_paid_ytd": 133311.36,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-09-18",
-      "nps_score": 6,
+      "last_qbr_date": "2025-12-07",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "Kathryn Mccann",
@@ -1945,16 +1945,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 73896.55,
-      "total_paid_ytd": 68212.2,
-      "open_balance": 5684.35,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5684.35,
+      "total_billed_ytd": 74924.31,
+      "total_paid_ytd": 74924.31,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-11-03",
-      "nps_score": 9,
+      "last_qbr_date": "2025-12-23",
+      "nps_score": 7,
       "contacts": {
         "cfo": {
           "name": "Vanessa Armstrong",
@@ -1993,16 +1993,16 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 38981.67,
-      "total_paid_ytd": 32984.49,
-      "open_balance": 5997.18,
-      "overdue_invoice_count": 2,
-      "overdue_balance": 5997.18,
+      "total_billed_ytd": 38708.13,
+      "total_paid_ytd": 31670.71,
+      "open_balance": 7037.42,
+      "overdue_invoice_count": 1,
+      "overdue_balance": 4533.95,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-11-13",
-      "nps_score": 9,
+      "last_qbr_date": "2025-10-10",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Rebecca Ortiz",
@@ -2041,16 +2041,16 @@
       "account_health": "GREEN",
       "health_note": "Account in excellent standing. On-time payments, proactive engagement.",
       "payment_reliability": "EXCELLENT",
-      "total_billed_ytd": 105767.95,
-      "total_paid_ytd": 105767.95,
+      "total_billed_ytd": 116271.09,
+      "total_paid_ytd": 116271.09,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-12-30",
-      "nps_score": 10,
+      "last_qbr_date": "2025-09-14",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Eric Patrick",
@@ -2089,16 +2089,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 71289.27,
-      "total_paid_ytd": 67899.02,
-      "open_balance": 3390.25,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 3390.25,
+      "total_billed_ytd": 85578.93,
+      "total_paid_ytd": 85578.93,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-12-24",
-      "nps_score": 7,
+      "last_qbr_date": "2025-11-13",
+      "nps_score": 6,
       "contacts": {
         "cfo": {
           "name": "Charles Price",
@@ -2137,16 +2137,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 46321.73,
-      "total_paid_ytd": 46321.73,
+      "total_billed_ytd": 50057.66,
+      "total_paid_ytd": 50057.66,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-11-12",
-      "nps_score": 9,
+      "last_qbr_date": "2025-12-23",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "Zachary Cole",
@@ -2185,16 +2185,16 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 37848.07,
-      "total_paid_ytd": 37848.07,
+      "total_billed_ytd": 38890.2,
+      "total_paid_ytd": 38890.2,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2025-12-27",
-      "nps_score": 4,
+      "last_qbr_date": "2026-01-24",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Walter Summers",
@@ -2233,15 +2233,15 @@
       "account_health": "YELLOW",
       "health_note": "Account requires monitoring. Payment delays recurring. Escalation risk.",
       "payment_reliability": "FAIR",
-      "total_billed_ytd": 96987.57,
-      "total_paid_ytd": 96987.57,
-      "open_balance": 0.0,
-      "overdue_invoice_count": 0,
-      "overdue_balance": 0,
+      "total_billed_ytd": 107307.1,
+      "total_paid_ytd": 88204.95,
+      "open_balance": 19102.15,
+      "overdue_invoice_count": 3,
+      "overdue_balance": 19102.15,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-10-13",
+      "last_qbr_date": "2025-12-21",
       "nps_score": 7,
       "contacts": {
         "cfo": {
@@ -2281,17 +2281,17 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 66726.53,
-      "total_paid_ytd": 61593.72,
-      "open_balance": 5132.81,
-      "overdue_invoice_count": 1,
-      "overdue_balance": 5132.81,
+      "total_billed_ytd": 69615.32,
+      "total_paid_ytd": 69615.32,
+      "open_balance": 0.0,
+      "overdue_invoice_count": 0,
+      "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade",
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2026-01-01",
-      "nps_score": 9,
+      "last_qbr_date": "2025-10-08",
+      "nps_score": 4,
       "contacts": {
         "cfo": {
           "name": "Andrew Brown",
@@ -2330,16 +2330,16 @@
       "account_health": "GREEN",
       "health_note": "Healthy account. Occasional late payments but responsive to reminders.",
       "payment_reliability": "GOOD",
-      "total_billed_ytd": 133207.05,
-      "total_paid_ytd": 133207.05,
+      "total_billed_ytd": 151783.87,
+      "total_paid_ytd": 151783.87,
       "open_balance": 0.0,
       "overdue_invoice_count": 0,
       "overdue_balance": 0,
       "upsell_opportunities": [
         "SOC/SIEM Security Upgrade"
       ],
-      "last_qbr_date": "2025-09-28",
-      "nps_score": 6,
+      "last_qbr_date": "2025-10-01",
+      "nps_score": 9,
       "contacts": {
         "cfo": {
           "name": "Scott Jackson",
@@ -2378,16 +2378,16 @@
       "account_health": "RED",
       "health_note": "High-risk account. Multiple overdue invoices. Legal review may be required.",
       "payment_reliability": "POOR",
-      "total_billed_ytd": 38754.95,
-      "total_paid_ytd": 23849.2,
-      "open_balance": 14905.75,
-      "overdue_invoice_count": 5,
-      "overdue_balance": 14905.75,
+      "total_billed_ytd": 34244.01,
+      "total_paid_ytd": 27555.42,
+      "open_balance": 6688.59,
+      "overdue_invoice_count": 3,
+      "overdue_balance": 6688.59,
       "upsell_opportunities": [
         "Cloud Infrastructure Migration"
       ],
-      "last_qbr_date": "2026-01-19",
-      "nps_score": 9,
+      "last_qbr_date": "2025-10-06",
+      "nps_score": 8,
       "contacts": {
         "cfo": {
           "name": "Ryan Wiley",

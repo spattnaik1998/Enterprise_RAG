@@ -129,5 +129,5 @@ retrieval:
   # Hybrid search weights (dense + sparse Reciprocal Rank Fusion)
   dense_weight: 0.7            # FAISS semantic similarity weight
   sparse_weight: 0.3           # BM25 keyword match weight
-  top_k: 10                    # Retrieved chunks per query
-  rerank_top_k: 5              # Chunks kept after reranking
+  top_k: 20                    # Retrieved chunks per query
+  rerank_top_k: 10             # Chunks kept after reranking

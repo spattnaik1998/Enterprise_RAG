@@ -77,6 +77,62 @@ SERVICES = {
     "PROJ_DR":     {"name": "Disaster Recovery Planning & Tabletop Exercise",           "type": "project",      "unit": "flat",  "price": 5_200.00},
 }
 
+# ── Revenue Profiles ────────────────────────────────────────────────────────
+# (monthly_compound_growth_rate, gaussian_noise_std_dev)
+# Growth rate: +0.018 means ~24% annual growth; -0.012 means ~14% annual decline.
+# Noise: 0.04 = mild monthly jitter; 0.11 = high volatility.
+
+REVENUE_PROFILES: dict[str, tuple[float, float]] = {
+    "steady_growth": ( 0.018, 0.04),
+    "slow_growth":   ( 0.007, 0.05),
+    "flat":          ( 0.000, 0.03),
+    "slow_decline":  (-0.012, 0.05),
+    "volatile":      ( 0.002, 0.11),
+    "hockey_stick":  ( 0.025, 0.06),
+    "churning":      (-0.018, 0.10),
+}
+
+# ── Industry Seasonality ─────────────────────────────────────────────────────
+# 12 monthly multipliers (index 0 = January).  Mean across 12 months ~1.0.
+
+INDUSTRY_SEASONALITY: dict[str, list[float]] = {
+    "Healthcare":            [0.97, 0.96, 0.98, 0.99, 1.01, 1.00, 1.00, 1.01, 1.03, 1.02, 1.01, 1.02],
+    "Legal":                 [0.95, 1.00, 1.02, 1.05, 1.03, 0.98, 0.92, 0.95, 1.03, 1.05, 1.02, 1.00],
+    "Professional Services": [0.96, 0.98, 1.02, 1.04, 1.03, 0.99, 0.94, 0.96, 1.04, 1.04, 1.02, 0.98],
+    "Finance":               [1.05, 1.02, 1.00, 0.99, 0.98, 0.97, 0.97, 0.98, 1.00, 1.01, 1.01, 1.02],
+    "Insurance":             [1.04, 1.01, 0.99, 0.98, 0.98, 0.99, 1.00, 1.00, 1.01, 1.02, 1.01, 0.97],
+    "Manufacturing":         [0.96, 0.96, 0.99, 1.01, 1.02, 1.01, 0.95, 0.97, 1.02, 1.06, 1.04, 1.01],
+    "Construction":          [0.85, 0.88, 0.98, 1.06, 1.12, 1.13, 1.11, 1.10, 1.06, 1.01, 0.92, 0.88],
+    "Real Estate":           [0.88, 0.90, 0.98, 1.06, 1.11, 1.12, 1.10, 1.08, 1.05, 1.01, 0.94, 0.87],
+    "Hospitality":           [0.84, 0.86, 0.95, 1.00, 1.10, 1.19, 1.23, 1.20, 1.07, 0.97, 0.90, 1.09],
+    "Retail":                [0.89, 0.87, 0.93, 0.95, 0.98, 0.97, 0.98, 1.00, 1.03, 1.05, 1.11, 1.26],
+    "Education":             [0.80, 0.82, 0.90, 0.94, 0.94, 0.80, 0.74, 1.16, 1.27, 1.21, 1.18, 0.92],
+    "Energy":                [1.12, 1.08, 1.02, 0.97, 0.96, 0.95, 0.96, 0.97, 0.99, 1.01, 1.05, 1.10],
+    "Logistics":             [0.98, 0.95, 0.98, 0.99, 1.00, 0.99, 1.00, 1.00, 1.02, 1.05, 1.07, 1.07],
+}
+
+# ── Per-client revenue profile assignment ────────────────────────────────────
+
+CLIENT_REVENUE_PROFILES: dict[str, str] = {
+    "CLT-001": "volatile",      "CLT-002": "slow_growth",    "CLT-003": "churning",
+    "CLT-004": "steady_growth", "CLT-005": "slow_growth",    "CLT-006": "flat",
+    "CLT-007": "volatile",      "CLT-008": "slow_growth",    "CLT-009": "steady_growth",
+    "CLT-010": "slow_growth",   "CLT-011": "flat",           "CLT-012": "volatile",
+    "CLT-013": "steady_growth", "CLT-014": "churning",       "CLT-015": "flat",
+    "CLT-016": "slow_decline",  "CLT-017": "volatile",       "CLT-018": "steady_growth",
+    "CLT-019": "slow_growth",   "CLT-020": "slow_growth",    "CLT-021": "flat",
+    "CLT-022": "slow_decline",  "CLT-023": "volatile",       "CLT-024": "slow_growth",
+    "CLT-025": "steady_growth", "CLT-026": "volatile",       "CLT-027": "hockey_stick",
+    "CLT-028": "churning",      "CLT-029": "volatile",       "CLT-030": "slow_growth",
+    "CLT-031": "volatile",      "CLT-032": "hockey_stick",   "CLT-033": "volatile",
+    "CLT-034": "slow_growth",   "CLT-035": "steady_growth",  "CLT-036": "slow_decline",
+    "CLT-037": "slow_growth",   "CLT-038": "volatile",       "CLT-039": "flat",
+    "CLT-040": "slow_growth",   "CLT-041": "slow_growth",    "CLT-042": "volatile",
+    "CLT-043": "steady_growth", "CLT-044": "hockey_stick",   "CLT-045": "slow_growth",
+    "CLT-046": "flat",          "CLT-047": "volatile",       "CLT-048": "slow_growth",
+    "CLT-049": "steady_growth", "CLT-050": "churning",
+}
+
 # ── 50 Client Templates ───────────────────────────────────────────────────────
 # reliability: EXCELLENT / GOOD / FAIR / POOR  -- drives invoice payment behaviour
 # terms:       NET30 / NET45 / NET60
@@ -199,6 +255,28 @@ def _overdue_label(status: str, days: int) -> str:
     }
     return labels.get(status, status)
 
+def _revenue_multiplier(client_id: str, industry: str, billing_month: date, month_idx: int) -> float:
+    """
+    Return a composite monthly revenue multiplier combining:
+      - industry seasonality  (predictable peaks/troughs by industry)
+      - client growth trend   (compound monthly rate, positive or negative)
+      - Gaussian noise        (month-to-month variability)
+
+    month_idx=0 is the first billing month (Jan 2025).
+    """
+    profile_name = CLIENT_REVENUE_PROFILES.get(client_id, "flat")
+    trend_rate, volatility = REVENUE_PROFILES[profile_name]
+
+    seasonal_factors = INDUSTRY_SEASONALITY.get(industry, None)
+    seasonal = seasonal_factors[billing_month.month - 1] if seasonal_factors else 1.0
+
+    trend = (1.0 + trend_rate) ** month_idx
+
+    noise = 1.0 + random.gauss(0.0, volatility)
+    noise = max(0.60, min(1.60, noise))   # clamp: never below 60% or above 160% of base
+
+    return max(0.40, seasonal * trend * noise)
+
 # ── 1. Client enrichment ──────────────────────────────────────────────────────
 
 def enrich_clients(templates: list) -> list:
@@ -236,10 +314,14 @@ def generate_invoices(clients: list) -> list:
     for client in clients:
         # --- Monthly recurring invoices ---
         cur = BILLING_START
+        month_idx = 0
         while cur <= BILLING_END:
             inv_seq += 1
             inv_date = cur.replace(day=random.randint(1, 5))
             due_date = inv_date + timedelta(days=_terms_days(client["terms"]))
+
+            # Non-linear revenue multiplier: seasonality x trend x noise
+            multiplier = _revenue_multiplier(client["id"], client["industry"], cur, month_idx)
 
             line_items = []
             subtotal   = 0.0
@@ -249,12 +331,14 @@ def generate_invoices(clients: list) -> list:
                     continue
                 qty = client["users"] if svc["type"] == "per_user" else 1
                 desc = f"{svc['name']} -- {cur.strftime('%B %Y')}"
-                if svc_id == "EMER":       # emergency support: variable hours
+                if svc_id == "EMER":       # emergency support: variable hours, no trend applied
                     qty = random.choice([0, 0, 1, 2, 3])
                     if qty == 0:
                         continue
                     desc = f"{svc['name']} -- {qty} hr(s) @ ${svc['price']:.2f}/hr"
-                amount = round(qty * svc["price"], 2)
+                    amount = round(qty * svc["price"], 2)
+                else:
+                    amount = round(qty * svc["price"] * multiplier, 2)
                 line_items.append({
                     "service_code": svc_id, "description": desc,
                     "quantity": qty, "unit_price": svc["price"], "amount": amount,
@@ -301,6 +385,7 @@ def generate_invoices(clients: list) -> list:
                 "source_system":    "QuickBooks Enterprise 2025",
                 "source_system_type": "Billing",
             })
+            month_idx += 1
             cur = _add_month(cur)
 
         # --- Project invoices (for clients flagged has_projects) ---

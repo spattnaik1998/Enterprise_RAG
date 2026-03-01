@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 import faiss
@@ -26,6 +27,18 @@ from loguru import logger
 from rank_bm25 import BM25Okapi
 
 from src.chunking.schemas import Chunk
+
+
+def _bm25_tokens(text: str) -> list[str]:
+    """Normalise text for BM25: lowercase, strip punctuation, split on whitespace.
+
+    Using plain .split() on raw text causes mismatches for possessives (trust's),
+    trailing commas/colons, and ampersands.  This helper strips all non-alphanumeric
+    characters first so 'Heritage Bank & Trust' and "trust's" both tokenise to
+    ['heritage', 'bank', 'trust'] and match correctly.
+    """
+    normalised = re.sub(r"[^a-z0-9\s]", " ", text.lower())
+    return [t for t in normalised.split() if len(t) > 1]
 
 INDEX_DIR = Path("data/index")
 FAISS_PATH = INDEX_DIR / "faiss.index"
@@ -70,9 +83,10 @@ class FAISSIndex:
         self.faiss_index.add(embeddings_f32)
         self.chunks = list(chunks)
 
-        # BM25 keyword index -- tokenise on whitespace for simplicity
+        # BM25 keyword index -- include title so client/invoice names are always
+        # searchable, and strip punctuation for clean token matching.
         self._bm25_corpus_tokens = [
-            chunk.text.lower().split() for chunk in chunks
+            _bm25_tokens(f"{chunk.title} {chunk.text}") for chunk in chunks
         ]
         self.bm25 = BM25Okapi(self._bm25_corpus_tokens)
 
@@ -109,7 +123,7 @@ class FAISSIndex:
         """
         if self.bm25 is None:
             raise RuntimeError("BM25 index not built. Call build_from_chunks() first.")
-        tokens = query_text.lower().split()
+        tokens = _bm25_tokens(query_text)
         bm25_scores = self.bm25.get_scores(tokens)
         top_indices = np.argsort(bm25_scores)[::-1][:top_k]
         return [
@@ -142,7 +156,7 @@ class FAISSIndex:
         Returns:
             List of (Chunk, fused_score) sorted descending.
         """
-        k = max(top_k * 3, 30)  # Retrieve 3x candidates before fusion
+        k = max(top_k * 5, 60)  # Retrieve 5x candidates before fusion
 
         dense_results = self.search_dense(query_vec, top_k=k)
         sparse_results = self.search_sparse(query_text, top_k=k)

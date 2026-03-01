@@ -41,7 +41,7 @@ python -m src.collection.mcp.server
 3. Run `python scripts/generate_enterprise_data.py` (creates `data/enterprise/*.json`)
 4. Run phases in order: `phase1` → review `data/validated/` → `phase2`
 
-**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py` and `src/embedding/pipeline.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
+**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, and `app/server.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
 
 ## Architecture
 
@@ -69,8 +69,11 @@ python -m src.collection.mcp.server
 - `app/server.py` — FastAPI app, loads `RAGPipeline` once at startup via `lifespan`
 - `GET /api/health` — pipeline status, vector count, available models by provider
 - `POST /api/chat` — accepts `{message, provider, model}`, swaps generator per request
+- `GET /api/clients` — list all clients from invoice data (for forecasting UI)
+- `GET /api/forecast/{client_id}` — TimeFM revenue forecast for a specific client
 - `GET /` — serves `app/static/index.html` (Obsidian Terminal chat UI)
-- Blocking `pipeline.query()` runs in `loop.run_in_executor` to avoid stalling the async event loop
+- `GET /forecast` — serves `app/static/forecast.html` (revenue forecasting visualization)
+- Blocking `pipeline.query()` and forecast inference run in `loop.run_in_executor` to avoid stalling the async event loop
 
 ### Key Source Modules
 
@@ -105,9 +108,17 @@ All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_f
 - RRF formula: `weight / (rank + 60)` — robust to score-scale mismatch across indexes
 - Configured in `config/config.yaml` under `retrieval:`
 
+### Forecasting (`src/forecasting/`)
+
+`InvoiceForecaster` uses **TimeFM 2.5 200M** (Google, via HuggingFace) to predict monthly revenue per client:
+- Aggregates 13 months of invoice totals from `data/enterprise/invoices.json`
+- Lazy-loads the ~800 MB PyTorch model on first call
+- Returns historical actuals + 3-month point forecast + 10th/90th percentile bounds
+- Called by `GET /api/forecast/{client_id}`; inference runs in thread-pool executor
+
 ### Observability
 
-LangSmith tracing via `@traceable` on `Embedder.embed_texts()`. Requires `LANGSMITH_API_KEY` and `LANGSMITH_TRACING=true` in `.env`.
+LangSmith tracing via `@traceable` on the full Phase III chain: `RAGPipeline.query()` (top-level), `HybridRetriever.retrieve()`, `LLMReranker.rerank()`, `RAGGenerator.generate()`, and `Embedder.embed_texts()` (Phase II). Requires `LANGSMITH_API_KEY` and `LANGSMITH_TRACING=true` in `.env`.
 
 ## Configuration
 
@@ -146,6 +157,7 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `PromptGuard` | `src/retrieval/guardrails.py` | Injection detection |
 | `PIIFilter` | `src/retrieval/guardrails.py` | Output redaction |
 | `QueryResult` | `src/serving/pipeline.py` | Full result dataclass (answer, citations, timings, cost) |
+| `InvoiceForecaster` | `src/forecasting/invoice_forecaster.py` | TimeFM 2.5 monthly revenue forecasting |
 
 ### Observability
 
