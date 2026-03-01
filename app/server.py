@@ -4,9 +4,12 @@ TechVault Enterprise RAG - Web API Server
 FastAPI server that wraps the Phase III RAGPipeline and serves the chat UI.
 
 Endpoints:
-  GET  /              -> serve app/static/index.html
-  GET  /api/health    -> pipeline status, vector count, available models
-  POST /api/chat      -> run full RAG query with user-selected LLM
+  GET  /                          -> serve app/static/index.html
+  GET  /forecast                  -> serve app/static/forecast.html
+  GET  /api/health                -> pipeline status, vector count, available models
+  POST /api/chat                  -> run full RAG query with user-selected LLM
+  GET  /api/clients               -> list all clients from invoice data
+  GET  /api/forecast/{client_id}  -> TimeFM revenue forecast for a client
 
 Run from the project root (Enterprise_RAG/):
     uvicorn app.server:app --reload --port 8000
@@ -51,10 +54,11 @@ _ANTHROPIC_MODELS = {"claude-haiku-4-5-20251001", "claude-sonnet-4-6"}
 _ALL_MODELS       = _OPENAI_MODELS | _ANTHROPIC_MODELS
 
 # ---------------------------------------------------------------------------
-# Pipeline singleton
+# Pipeline singleton + forecaster singleton
 # ---------------------------------------------------------------------------
 
 _pipeline = None
+_forecaster: Optional["InvoiceForecaster"] = None
 
 
 @asynccontextmanager
@@ -197,6 +201,14 @@ async def serve_ui():
     return FileResponse(str(index_path), media_type="text/html")
 
 
+@app.get("/forecast", include_in_schema=False)
+async def serve_forecast_ui():
+    forecast_path = STATIC_DIR / "forecast.html"
+    if not forecast_path.exists():
+        raise HTTPException(status_code=404, detail="Forecast UI not found at app/static/forecast.html")
+    return FileResponse(str(forecast_path), media_type="text/html")
+
+
 @app.get("/api/health")
 async def health():
     """Return pipeline status, index metadata, and available models."""
@@ -214,6 +226,66 @@ async def health():
             "anthropic": sorted(_ANTHROPIC_MODELS),
         },
     }
+
+
+@app.get("/api/clients")
+async def list_clients():
+    """Return all client IDs and names from invoice data."""
+    global _forecaster
+    try:
+        if _forecaster is None:
+            from src.forecasting.invoice_forecaster import InvoiceForecaster
+            _forecaster = InvoiceForecaster()
+        return {"clients": _forecaster.get_clients()}
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        logger.error(f"[API] /api/clients error: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/forecast/{client_id}")
+async def forecast_invoices(client_id: str, horizon: int = 6):
+    """
+    Run TimeFM revenue forecast for a client.
+
+    The TimeFM model (~800 MB) is downloaded from HuggingFace on the first
+    call. Subsequent calls use the cached singleton. The blocking inference
+    runs in a thread-pool executor to avoid stalling the async event loop.
+
+    horizon is clamped server-side to [1, 12].
+    """
+    global _forecaster
+    horizon = max(1, min(12, horizon))
+
+    try:
+        if _forecaster is None:
+            from src.forecasting.invoice_forecaster import InvoiceForecaster
+            _forecaster = InvoiceForecaster()
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+
+    logger.info(f"[API] Forecast | client_id={client_id} horizon={horizon}")
+    loop = asyncio.get_event_loop()
+    try:
+        result = await loop.run_in_executor(
+            None, partial(_forecaster.forecast, client_id, horizon)
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except ImportError:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "TimeFM is not installed. "
+                "Run: pip install -e \"C:/Users/91838/Downloads/TimeFM/timesfm[torch]\""
+            ),
+        )
+    except Exception as exc:
+        logger.error(f"[API] Forecast error: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return result
 
 
 @app.post("/api/chat", response_model=ChatResponse)

@@ -20,8 +20,15 @@ python -m src.main phase1 --skip-health      # skip source health checks
 # Phase II — chunk, embed (OpenAI), build FAISS + BM25 index
 python -m src.main phase2
 
+# Phase III — CLI query interface (interactive or single-shot)
+python -m src.main phase3
+python -m src.main phase3 --query "Which clients have overdue invoices?"
+
 # Check phase checkpoint state
 python -m src.main status
+
+# Phase III — Web UI + REST API (run from project root)
+uvicorn app.server:app --reload --port 8000
 
 # Run MCP server standalone (for Claude Desktop or custom MCP clients)
 python -m src.collection.mcp.server
@@ -52,7 +59,18 @@ python -m src.collection.mcp.server
 - `FAISSIndex` stores `IndexFlatIP` (inner product = cosine on normalised vecs) + `BM25Okapi` corpus
 - Output: `data/index/faiss.index`, `data/index/chunks.json`, `data/index/bm25_corpus.json`
 
-**Phase III** (planned): load `FAISSIndex.load("data/index")` → `search_hybrid()` → rerank → generate with OpenAI/Anthropic → return answer + citations
+**Phase III** (`src/retrieval/` + `src/generation/` + `src/serving/`):
+- `RAGPipeline` in `src/serving/pipeline.py` orchestrates the full query lifecycle
+- Two generator implementations with identical `generate(query, reranked_chunks)` interface: `RAGGenerator` (OpenAI) and `AnthropicGenerator`
+- `pipeline.query(user_query, generator=None)` — optional `generator` arg lets callers swap the LLM at request time (used by the web API)
+- CLI output: `data/index/` must exist (run Phase II first)
+
+**Phase III Web UI** (`app/`):
+- `app/server.py` — FastAPI app, loads `RAGPipeline` once at startup via `lifespan`
+- `GET /api/health` — pipeline status, vector count, available models by provider
+- `POST /api/chat` — accepts `{message, provider, model}`, swaps generator per request
+- `GET /` — serves `app/static/index.html` (Obsidian Terminal chat UI)
+- Blocking `pipeline.query()` runs in `loop.run_in_executor` to avoid stalling the async event loop
 
 ### Key Source Modules
 
@@ -113,7 +131,7 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 1. **PromptGuard** (`src/retrieval/guardrails.py`): 13 regex patterns covering jailbreaks, role overrides, instruction-ignoring. Returns `GuardrailResult(passed=False)` on hit.
 2. **HybridRetriever** (`src/retrieval/retriever.py`): calls `Embedder.embed_query()` then `FAISSIndex.search_hybrid()` — RRF fusion of FAISS dense + BM25 sparse, returns top_k=10 candidates.
 3. **LLMReranker** (`src/retrieval/reranker.py`): single OpenAI call with all candidates in one prompt; scores 0-10 per chunk; sorts and truncates to rerank_top_k=5.
-4. **RAGGenerator** (`src/generation/generator.py`): builds numbered `[1]..[N]` context from reranked chunks + `SYSTEM_PROMPT` from `src/generation/prompts.py`; calls `gpt-4o-mini`; returns `RAGResponse` with answer + citations + token counts.
+4. **RAGGenerator / AnthropicGenerator** (`src/generation/generator.py`): both build numbered `[1]..[N]` context from reranked chunks + `SYSTEM_PROMPT` from `src/generation/prompts.py`; return `RAGResponse` with answer + citations + token counts. Anthropic uses `system=` parameter (not inside messages list). Supported models: `gpt-4o-mini`, `gpt-4o`, `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`.
 5. **PIIFilter** (`src/retrieval/guardrails.py`): regex-subs email/phone/SSN/CC/IP from generated answer with `[REDACTED_<TYPE>]`.
 
 ### Key Classes
@@ -123,7 +141,8 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `RAGPipeline` | `src/serving/pipeline.py` | Orchestrator — loads index, wires all components |
 | `HybridRetriever` | `src/retrieval/retriever.py` | Query embed + hybrid FAISS+BM25 search |
 | `LLMReranker` | `src/retrieval/reranker.py` | Batch LLM relevance scoring |
-| `RAGGenerator` | `src/generation/generator.py` | Grounded answer synthesis |
+| `RAGGenerator` | `src/generation/generator.py` | OpenAI grounded answer synthesis |
+| `AnthropicGenerator` | `src/generation/generator.py` | Anthropic grounded answer synthesis (same interface) |
 | `PromptGuard` | `src/retrieval/guardrails.py` | Injection detection |
 | `PIIFilter` | `src/retrieval/guardrails.py` | Output redaction |
 | `QueryResult` | `src/serving/pipeline.py` | Full result dataclass (answer, citations, timings, cost) |
@@ -139,7 +158,7 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `--query TEXT` | None | Single-shot mode (omit for interactive loop) |
 | `--top-k INT` | 10 | Candidates retrieved before reranking |
 | `--rerank-top-k INT` | 5 | Chunks kept after LLM reranking |
-| `--model TEXT` | gpt-4o-mini | OpenAI model for reranking + generation |
+| `--model TEXT` | gpt-4o-mini | OpenAI model for reranking + generation (CLI only; web UI selects per request) |
 | `--no-rerank` | False | Skip LLM reranking (faster, cheaper) |
 | `--no-pii` | False | Disable PII redaction |
 | `--json` | False | JSON output (single-shot only) |

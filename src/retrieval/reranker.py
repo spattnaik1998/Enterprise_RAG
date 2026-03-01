@@ -65,7 +65,7 @@ class LLMReranker:
         self.rerank_top_k = rerank_top_k
         self._client = OpenAI()
 
-    @traceable(name="rerank", run_type="reranker")
+    @traceable(name="rerank", run_type="chain")
     def rerank(
         self,
         query: str,

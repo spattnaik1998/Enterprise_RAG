@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechVault — Revenue Forecast</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─── Design Tokens (identical to index.html) ───────────────────────────── */
+    :root {
+      --bg-void:      #060c14;
+      --bg-deep:      #0b1524;
+      --bg-surface:   #0f1d30;
+      --bg-card:      #132438;
+      --bg-elevated:  #192d45;
+
+      --accent:       #00c8ff;
+      --accent-dim:   rgba(0, 200, 255, 0.12);
+      --accent-glow:  rgba(0, 200, 255, 0.35);
+      --accent-amber: #f5a623;
+
+      --text-bright:  #deeaf8;
+      --text-body:    #8ca8c8;
+      --text-muted:   #3d5f7a;
+      --text-accent:  #00c8ff;
+
+      --border-faint: rgba(0, 200, 255, 0.06);
+      --border-subtle:rgba(0, 200, 255, 0.12);
+      --border-mid:   rgba(0, 200, 255, 0.22);
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 14px;
+
+      --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+      --font-serif:   'Lora', Georgia, serif;
+      --font-sans:    'DM Sans', system-ui, sans-serif;
+      --font-brand:   'Syne Mono', monospace;
+
+      --sidebar-w: 240px;
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-void);
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(0,200,255,0.04) 0%, transparent 50%),
+        radial-gradient(circle at 80% 90%, rgba(100,60,255,0.04) 0%, transparent 50%),
+        radial-gradient(rgba(0, 200, 255, 0.05) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 26px 26px;
+      color: var(--text-body);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Noise grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 180px 180px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────────────────────── */
+    .app-header {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      background: rgba(6, 12, 20, 0.9);
+      border-bottom: 1px solid var(--border-faint);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: relative;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .status-indicator {
+      position: relative;
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+    }
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f5a623;
+      box-shadow: 0 0 8px rgba(245, 166, 35, 0.7);
+    }
+    .pulse-ring {
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1px solid rgba(245, 166, 35, 0.4);
+      animation: pulse-expand 2.2s ease-out infinite;
+    }
+    @keyframes pulse-expand {
+      0%   { transform: scale(0.7); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    .brand-primary {
+      font-family: var(--font-brand);
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      color: var(--text-bright);
+    }
+    .brand-sep {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .brand-secondary {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .nav-link:hover {
+      color: var(--text-body);
+      border-color: var(--border-faint);
+    }
+    .nav-link.active {
+      color: var(--accent-amber);
+      border-color: rgba(245, 166, 35, 0.3);
+      background: rgba(245, 166, 35, 0.08);
+    }
+
+    /* ─── Page Body ──────────────────────────────────────────────────────────── */
+    .page-body {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border-faint);
+      background: var(--bg-deep);
+      overflow: hidden;
+    }
+
+    .sidebar-search {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-faint);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-faint);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-body);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--border-subtle); }
+
+    .client-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .client-list::-webkit-scrollbar { width: 3px; }
+    .client-list::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.1); }
+
+    .client-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: background 0.12s;
+      border-left: 2px solid transparent;
+    }
+    .client-item:hover {
+      background: rgba(0, 200, 255, 0.04);
+    }
+    .client-item.active {
+      background: rgba(245, 166, 35, 0.07);
+      border-left-color: var(--accent-amber);
+    }
+
+    .client-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .client-item.active .client-dot {
+      background: var(--accent-amber);
+    }
+
+    .client-info {
+      flex: 1;
+      overflow: hidden;
+    }
+    .client-id {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .client-name {
+      font-size: 12px;
+      color: var(--text-body);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+    }
+    .client-item.active .client-name { color: var(--text-bright); }
+
+    /* ─── Main Panel ─────────────────────────────────────────────────────────── */
+    .main-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ─── Client Header bar ──────────────────────────────────────────────────── */
+    .client-header {
+      flex-shrink: 0;
+      padding: 18px 28px 14px;
+      border-bottom: 1px solid var(--border-faint);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .client-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .client-title-id {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      color: var(--accent-amber);
+      text-transform: uppercase;
+    }
+    .client-title-name {
+      font-family: var(--font-brand);
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: var(--text-bright);
+    }
+
+    /* Horizon selector */
+    .horizon-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .horizon-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+    .horizon-pills {
+      display: flex;
+      gap: 4px;
+    }
+    .horizon-pill {
+      padding: 5px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-faint);
+      background: transparent;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+    }
+    .horizon-pill:hover { border-color: var(--border-subtle); color: var(--text-body); }
+    .horizon-pill.active {
+      border-color: rgba(245, 166, 35, 0.45);
+      background: rgba(245, 166, 35, 0.1);
+      color: var(--accent-amber);
+    }
+
+    /* ─── Chart Area ─────────────────────────────────────────────────────────── */
+    .chart-area {
+      flex: 1;
+      padding: 20px 28px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      min-height: 0;
+    }
+    .chart-area::-webkit-scrollbar { width: 4px; }
+    .chart-area::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.1); }
+
+    .chart-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-faint);
+      border-radius: var(--radius-lg);
+      padding: 20px 20px 16px;
+      position: relative;
+      flex: 1;
+      min-height: 280px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+    }
+
+    /* ─── Summary Stats Row ──────────────────────────────────────────────────── */
+    .summary-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .summary-card {
+      flex: 1;
+      min-width: 160px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-faint);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+    }
+    .summary-card-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .summary-card-value {
+      font-family: var(--font-brand);
+      font-size: 20px;
+      color: var(--text-bright);
+    }
+    .summary-card-value.amber { color: var(--accent-amber); }
+    .summary-card-sub {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ─── Empty / Loading / Error states ────────────────────────────────────── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      min-height: 300px;
+      text-align: center;
+      padding: 40px;
+    }
+    .empty-glyph {
+      font-family: var(--font-brand);
+      font-size: 42px;
+      color: var(--accent-amber);
+      opacity: 0.3;
+    }
+    .empty-title {
+      font-family: var(--font-brand);
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      color: var(--text-body);
+    }
+    .empty-sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 400px;
+      line-height: 1.7;
+    }
+    .empty-sub code {
+      color: var(--accent);
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+    }
+
+    /* Spinner */
+    .spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border-faint);
+      border-top-color: var(--accent-amber);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .error-box {
+      background: rgba(245, 166, 35, 0.06);
+      border: 1px solid rgba(245, 166, 35, 0.2);
+      border-left: 3px solid var(--accent-amber);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-amber);
+      max-width: 600px;
+      line-height: 1.7;
+    }
+    .error-box code {
+      background: var(--bg-card);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    /* ─── Utility ─────────────────────────────────────────────────────────────── */
+    .hidden { display: none !important; }
+
+    @media (max-width: 700px) {
+      .sidebar { width: 180px; }
+      .brand-secondary { display: none; }
+    }
+    @media (max-width: 520px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ─── Header ─────────────────────────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="status-indicator">
+        <div class="pulse-ring"></div>
+        <div class="pulse-dot"></div>
+      </div>
+      <div class="brand">
+        <span class="brand-primary">TECHVAULT</span>
+        <span class="brand-sep">/</span>
+        <span class="brand-secondary">RAG INTELLIGENCE</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <nav class="header-nav">
+        <a href="/" class="nav-link">Chat</a>
+        <a href="/forecast" class="nav-link active">Forecast</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ─── Page Body ──────────────────────────────────────────────────────────── -->
+  <div class="page-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-search">
+        <input
+          type="text"
+          class="search-input"
+          id="clientSearch"
+          placeholder="Search clients..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="client-list" id="clientList">
+        <!-- populated by JS -->
+      </div>
+    </aside>
+
+    <!-- Main panel -->
+    <div class="main-panel" id="mainPanel">
+
+      <!-- Empty state (no client selected) -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-glyph">◈</div>
+        <div class="empty-title">Revenue Forecasting</div>
+        <p class="empty-sub">
+          Select a client from the sidebar to project their monthly invoice revenue
+          using Google TimeFM 2.5. The model weights (~800 MB) are downloaded
+          automatically on the first request.
+        </p>
+      </div>
+
+      <!-- Loading state -->
+      <div class="empty-state hidden" id="loadingState">
+        <div class="spinner-wrap">
+          <div class="spinner"></div>
+          <div class="spinner-label" id="loadingLabel">Loading forecast...</div>
+        </div>
+      </div>
+
+      <!-- Error state -->
+      <div class="empty-state hidden" id="errorState">
+        <div class="error-box" id="errorBox"></div>
+      </div>
+
+      <!-- Forecast content -->
+      <div class="hidden" id="forecastContent" style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- Client header bar -->
+        <div class="client-header">
+          <div class="client-title-group">
+            <div class="client-title-id" id="titleClientId"></div>
+            <div class="client-title-name" id="titleClientName"></div>
+          </div>
+          <div class="horizon-group">
+            <span class="horizon-label">Horizon</span>
+            <div class="horizon-pills">
+              <button class="horizon-pill" data-h="3">3M</button>
+              <button class="horizon-pill active" data-h="6">6M</button>
+              <button class="horizon-pill" data-h="12">12M</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart + summaries -->
+        <div class="chart-area">
+          <div class="chart-container">
+            <div class="chart-wrap">
+              <canvas id="forecastChart"></canvas>
+            </div>
+          </div>
+
+          <div class="summary-row" id="summaryRow">
+            <div class="summary-card">
+              <div class="summary-card-label">Last Month Actual</div>
+              <div class="summary-card-value" id="sumLastActual">—</div>
+              <div class="summary-card-sub" id="sumLastMonth">—</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Next Month Forecast</div>
+              <div class="summary-card-value amber" id="sumNextForecast">—</div>
+              <div class="summary-card-sub" id="sumNextMonth">—</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Forecast Period Total</div>
+              <div class="summary-card-value amber" id="sumPeriodTotal">—</div>
+              <div class="summary-card-sub" id="sumPeriodLabel">—</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-card-label">Avg Monthly Forecast</div>
+              <div class="summary-card-value amber" id="sumAvgMonthly">—</div>
+              <div class="summary-card-sub">per month</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /forecastContent -->
+
+    </div><!-- /mainPanel -->
+  </div><!-- /pageBody -->
+
+  <!-- Chart.js 4.x -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+  <script>
+    // ── Config ─────────────────────────────────────────────────────────────────
+    const API = window.location.origin;
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let allClients     = [];
+    let activeClientId = null;
+    let activeHorizon  = 6;
+    let chartInstance  = null;
+    let isFetching     = false;
+
+    // ── DOM refs ───────────────────────────────────────────────────────────────
+    const clientSearch    = document.getElementById('clientSearch');
+    const clientList      = document.getElementById('clientList');
+    const emptyState      = document.getElementById('emptyState');
+    const loadingState    = document.getElementById('loadingState');
+    const loadingLabel    = document.getElementById('loadingLabel');
+    const errorState      = document.getElementById('errorState');
+    const errorBox        = document.getElementById('errorBox');
+    const forecastContent = document.getElementById('forecastContent');
+    const titleClientId   = document.getElementById('titleClientId');
+    const titleClientName = document.getElementById('titleClientName');
+    const sumLastActual   = document.getElementById('sumLastActual');
+    const sumLastMonth    = document.getElementById('sumLastMonth');
+    const sumNextForecast = document.getElementById('sumNextForecast');
+    const sumNextMonth    = document.getElementById('sumNextMonth');
+    const sumPeriodTotal  = document.getElementById('sumPeriodTotal');
+    const sumPeriodLabel  = document.getElementById('sumPeriodLabel');
+    const sumAvgMonthly   = document.getElementById('sumAvgMonthly');
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function usd(n) {
+      if (n >= 1e6)  return '$' + (n / 1e6).toFixed(2) + 'M';
+      if (n >= 1e3)  return '$' + (n / 1e3).toFixed(1) + 'k';
+      return '$' + n.toFixed(0);
+    }
+
+    function usdFull(n) {
+      return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function showState(state) {
+      emptyState.classList.add('hidden');
+      loadingState.classList.add('hidden');
+      errorState.classList.add('hidden');
+      forecastContent.classList.add('hidden');
+      forecastContent.style.display = 'none';
+      if (state === 'empty')    emptyState.classList.remove('hidden');
+      if (state === 'loading')  loadingState.classList.remove('hidden');
+      if (state === 'error')    errorState.classList.remove('hidden');
+      if (state === 'forecast') {
+        forecastContent.classList.remove('hidden');
+        forecastContent.style.display = 'flex';
+      }
+    }
+
+    // ── Build client sidebar ───────────────────────────────────────────────────
+    function renderClientList(filter) {
+      const q = (filter || '').toLowerCase();
+      const filtered = allClients.filter(c =>
+        c.client_id.toLowerCase().includes(q) ||
+        c.client_name.toLowerCase().includes(q)
+      );
+
+      clientList.innerHTML = '';
+      if (filtered.length === 0) {
+        clientList.innerHTML = `<div style="padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">No clients found</div>`;
+        return;
+      }
+
+      filtered.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'client-item' + (c.client_id === activeClientId ? ' active' : '');
+        el.dataset.id = c.client_id;
+        el.innerHTML = `
+          <div class="client-dot"></div>
+          <div class="client-info">
+            <div class="client-id">${c.client_id}</div>
+            <div class="client-name">${c.client_name}</div>
+          </div>
+        `;
+        el.addEventListener('click', () => selectClient(c.client_id));
+        clientList.appendChild(el);
+      });
+    }
+
+    clientSearch.addEventListener('input', () => renderClientList(clientSearch.value));
+
+    // ── Load clients ───────────────────────────────────────────────────────────
+    async function loadClients() {
+      try {
+        const res  = await fetch(`${API}/api/clients`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        allClients = data.clients || [];
+        renderClientList('');
+      } catch (err) {
+        clientList.innerHTML = `<div style="padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:#f87171;">Failed to load clients</div>`;
+      }
+    }
+
+    // ── Select client ──────────────────────────────────────────────────────────
+    function selectClient(clientId) {
+      if (isFetching) return;
+      activeClientId = clientId;
+      renderClientList(clientSearch.value);
+      fetchForecast(clientId, activeHorizon);
+    }
+
+    // ── Horizon buttons ────────────────────────────────────────────────────────
+    document.querySelectorAll('.horizon-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isFetching) return;
+        document.querySelectorAll('.horizon-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeHorizon = parseInt(btn.dataset.h, 10);
+        if (activeClientId) fetchForecast(activeClientId, activeHorizon);
+      });
+    });
+
+    // ── Fetch forecast & render ────────────────────────────────────────────────
+    async function fetchForecast(clientId, horizon) {
+      isFetching = true;
+      showState('loading');
+
+      // First call may need to download the model — let user know
+      loadingLabel.textContent = 'Loading forecast...';
+      const slowTimer = setTimeout(() => {
+        loadingLabel.textContent = 'Downloading TimeFM model weights (~800 MB) — first call only...';
+      }, 4000);
+
+      try {
+        const res = await fetch(`${API}/api/forecast/${encodeURIComponent(clientId)}?horizon=${horizon}`);
+        clearTimeout(slowTimer);
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          const msg = err.detail || `HTTP ${res.status}`;
+          if (msg.includes('TimeFM')) {
+            errorBox.innerHTML = `
+              <strong>TimeFM not installed</strong><br><br>
+              Run the following command, then restart the server:<br><br>
+              <code>pip install -e "C:/Users/91838/Downloads/TimeFM/timesfm[torch]"</code>
+            `;
+          } else {
+            errorBox.innerHTML = `<strong>Error:</strong> ${escHtml(msg)}`;
+          }
+          showState('error');
+          return;
+        }
+
+        const data = await res.json();
+        renderForecast(data);
+
+      } catch (err) {
+        clearTimeout(slowTimer);
+        errorBox.innerHTML = `<strong>Request failed:</strong> ${escHtml(err.message)}`;
+        showState('error');
+      } finally {
+        isFetching = false;
+      }
+    }
+
+    function escHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
+    // ── Render chart + summaries ───────────────────────────────────────────────
+    function renderForecast(data) {
+      // Update header
+      titleClientId.textContent   = data.client_id;
+      titleClientName.textContent = data.client_name;
+
+      const hist    = data.historical;
+      const fc      = data.forecast;
+      const allDates = [...hist.dates, ...fc.dates];
+
+      // Build Chart.js datasets
+      // Historical: solid cyan line, no points for future dates
+      const histData = allDates.map((_, i) => i < hist.dates.length ? hist.values[i] : null);
+
+      // Forecast: dashed amber; first point overlaps last historical value
+      const fcData = allDates.map((_, i) => {
+        const fcIdx = i - hist.dates.length;
+        if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1]; // overlap
+        if (fcIdx >= 0 && fcIdx < fc.values.length) return fc.values[fcIdx];
+        return null;
+      });
+
+      // Upper bound
+      const upperData = allDates.map((_, i) => {
+        const fcIdx = i - hist.dates.length;
+        if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1];
+        if (fcIdx >= 0 && fcIdx < fc.upper_80.length) return fc.upper_80[fcIdx];
+        return null;
+      });
+
+      // Lower bound
+      const lowerData = allDates.map((_, i) => {
+        const fcIdx = i - hist.dates.length;
+        if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1];
+        if (fcIdx >= 0 && fcIdx < fc.lower_80.length) return fc.lower_80[fcIdx];
+        return null;
+      });
+
+      // Destroy previous chart
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+
+      const ctx = document.getElementById('forecastChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: allDates,
+          datasets: [
+            {
+              label: 'Upper 80% CI',
+              data: upperData,
+              borderColor: 'transparent',
+              backgroundColor: 'rgba(245,166,35,0.12)',
+              fill: '+1',         // fill down to lower bound dataset
+              tension: 0.35,
+              pointRadius: 0,
+              order: 1,
+            },
+            {
+              label: 'Lower 80% CI',
+              data: lowerData,
+              borderColor: 'transparent',
+              backgroundColor: 'transparent',
+              fill: false,
+              tension: 0.35,
+              pointRadius: 0,
+              order: 2,
+            },
+            {
+              label: 'Forecast',
+              data: fcData,
+              borderColor: '#f5a623',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              tension: 0.35,
+              pointRadius: 3,
+              pointBackgroundColor: '#f5a623',
+              pointBorderColor: '#f5a623',
+              fill: false,
+              order: 3,
+            },
+            {
+              label: 'Historical',
+              data: histData,
+              borderColor: '#00c8ff',
+              backgroundColor: 'rgba(0,200,255,0.06)',
+              borderWidth: 2,
+              tension: 0.35,
+              pointRadius: 3,
+              pointBackgroundColor: '#00c8ff',
+              fill: 'origin',
+              order: 4,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#8ca8c8',
+                font: { family: "'JetBrains Mono', monospace", size: 11 },
+                boxWidth: 16,
+                padding: 16,
+                filter: item => item.text !== 'Upper 80% CI' && item.text !== 'Lower 80% CI',
+              },
+            },
+            tooltip: {
+              backgroundColor: '#0f1d30',
+              borderColor: 'rgba(0,200,255,0.15)',
+              borderWidth: 1,
+              titleColor: '#deeaf8',
+              bodyColor: '#8ca8c8',
+              titleFont: { family: "'JetBrains Mono', monospace", size: 11 },
+              bodyFont:  { family: "'JetBrains Mono', monospace", size: 11 },
+              callbacks: {
+                label: ctx => {
+                  if (ctx.dataset.label === 'Upper 80% CI' || ctx.dataset.label === 'Lower 80% CI') return null;
+                  const v = ctx.parsed.y;
+                  if (v === null) return null;
+                  return `  ${ctx.dataset.label}: ${usdFull(v)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#3d5f7a',
+                font: { family: "'JetBrains Mono', monospace", size: 10 },
+                maxRotation: 45,
+              },
+              grid: { color: 'rgba(0,200,255,0.04)' },
+            },
+            y: {
+              ticks: {
+                color: '#3d5f7a',
+                font: { family: "'JetBrains Mono', monospace", size: 10 },
+                callback: v => usd(v),
+              },
+              grid: { color: 'rgba(0,200,255,0.06)' },
+              beginAtZero: false,
+            },
+          },
+        },
+      });
+
+      // ── Summaries ────────────────────────────────────────────────────────────
+      const lastActual = hist.values[hist.values.length - 1];
+      const lastMonth  = hist.dates[hist.dates.length - 1];
+      const nextFc     = fc.values[0];
+      const nextMonth  = fc.dates[0];
+      const periodTotal = fc.values.reduce((a, b) => a + b, 0);
+      const avgMonthly  = periodTotal / fc.values.length;
+
+      sumLastActual.textContent   = usdFull(lastActual);
+      sumLastMonth.textContent    = lastMonth;
+      sumNextForecast.textContent = usdFull(nextFc);
+      sumNextMonth.textContent    = nextMonth;
+      sumPeriodTotal.textContent  = usd(periodTotal);
+      sumPeriodLabel.textContent  = `${fc.dates[0]} — ${fc.dates[fc.dates.length - 1]}`;
+      sumAvgMonthly.textContent   = usd(avgMonthly);
+
+      showState('forecast');
+    }
+
+    // ── Boot ───────────────────────────────────────────────────────────────────
+    showState('empty');
+    loadClients();
+  </script>
+</body>
+</html>

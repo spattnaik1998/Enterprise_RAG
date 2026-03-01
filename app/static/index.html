@@ -162,6 +162,34 @@
       gap: 20px;
     }
 
+    /* ─── Header Nav ─────────────────────────────────────────────────────────── */
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .nav-link:hover {
+      color: var(--text-body);
+      border-color: var(--border-faint);
+    }
+    .nav-link.active {
+      color: var(--accent);
+      border-color: var(--border-subtle);
+      background: var(--accent-dim);
+    }
+
     .system-stats {
       display: flex;
       align-items: center;
@@ -800,6 +828,10 @@
         <span class="stat-sep">·</span>
         <span class="sys-stat" id="statStatus">connecting</span>
       </div>
+      <nav class="header-nav">
+        <a href="/" class="nav-link active">Chat</a>
+        <a href="/forecast" class="nav-link">Forecast</a>
+      </nav>
     </div>
   </header>
 
