@@ -55,3 +55,6 @@ htmlcov/
 
 # ── Jupyter ───────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
+
+# ── Eval results (generated output, not source) ───────────────────────────────
+eval/results/*.json
