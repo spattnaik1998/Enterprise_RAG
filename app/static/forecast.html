@@ -3,515 +3,502 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechVault — Revenue Forecast</title>
+  <title>TechVault — Revenue Intelligence</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-    /* ─── Design Tokens (identical to index.html) ───────────────────────────── */
+    /* ── Design Tokens ──────────────────────────────────────────────────────── */
     :root {
-      --bg-void:      #060c14;
-      --bg-deep:      #0b1524;
-      --bg-surface:   #0f1d30;
-      --bg-card:      #132438;
-      --bg-elevated:  #192d45;
+      --bg-page:         #F3F5F9;
+      --bg-surface:      #FFFFFF;
+      --bg-header:       #0B1728;
+      --bg-sidebar:      #0D1E36;
+      --bg-sidebar-item: rgba(255,255,255,0.05);
+      --bg-sidebar-active: rgba(29, 78, 216, 0.22);
 
-      --accent:       #00c8ff;
-      --accent-dim:   rgba(0, 200, 255, 0.12);
-      --accent-glow:  rgba(0, 200, 255, 0.35);
-      --accent-amber: #f5a623;
+      --blue:            #1B4FCC;
+      --blue-mid:        #2563EB;
+      --blue-light:      #3B82F6;
+      --blue-dim:        rgba(27, 79, 204, 0.08);
+      --sky:             #0284C7;
+      --sky-dim:         rgba(2, 132, 199, 0.12);
 
-      --text-bright:  #deeaf8;
-      --text-body:    #8ca8c8;
-      --text-muted:   #3d5f7a;
-      --text-accent:  #00c8ff;
+      --success:  #059669;
+      --warning:  #D97706;
+      --danger:   #DC2626;
 
-      --border-faint: rgba(0, 200, 255, 0.06);
-      --border-subtle:rgba(0, 200, 255, 0.12);
-      --border-mid:   rgba(0, 200, 255, 0.22);
+      --text-primary:   #0F172A;
+      --text-secondary: #334155;
+      --text-muted:     #64748B;
+      --text-faint:     #94A3B8;
+      --text-on-dark:   #E2E8F0;
+      --text-on-dark-dim: #475569;
 
-      --radius-sm: 4px;
-      --radius-md: 8px;
-      --radius-lg: 14px;
+      --border:         #E2E8F0;
+      --border-mid:     #CBD5E1;
 
+      --font-display: 'Crimson Pro', Georgia, serif;
+      --font-body:    'Figtree', system-ui, sans-serif;
       --font-mono:    'JetBrains Mono', 'Courier New', monospace;
-      --font-serif:   'Lora', Georgia, serif;
-      --font-sans:    'DM Sans', system-ui, sans-serif;
-      --font-brand:   'Syne Mono', monospace;
 
-      --sidebar-w: 240px;
+      --r-sm: 4px;
+      --r-md: 8px;
+      --r-lg: 12px;
+      --r-xl: 18px;
+
+      --sidebar-w: 260px;
     }
 
-    /* ─── Reset ─────────────────────────────────────────────────────────────── */
+    /* ── Reset ──────────────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
-
     body {
-      font-family: var(--font-sans);
-      background-color: var(--bg-void);
-      background-image:
-        radial-gradient(circle at 20% 10%, rgba(0,200,255,0.04) 0%, transparent 50%),
-        radial-gradient(circle at 80% 90%, rgba(100,60,255,0.04) 0%, transparent 50%),
-        radial-gradient(rgba(0, 200, 255, 0.05) 1px, transparent 1px);
-      background-size: 100% 100%, 100% 100%, 26px 26px;
-      color: var(--text-body);
+      font-family: var(--font-body);
+      background: var(--bg-page);
+      color: var(--text-primary);
       display: flex;
       flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Noise grain overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.028;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-repeat: repeat;
-      background-size: 180px 180px;
-    }
-
-    /* ─── Header ─────────────────────────────────────────────────────────────── */
+    /* ── Header ─────────────────────────────────────────────────────────────── */
     .app-header {
       flex-shrink: 0;
+      height: 58px;
+      background: var(--bg-header);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
-      height: 56px;
-      background: rgba(6, 12, 20, 0.9);
-      border-bottom: 1px solid var(--border-faint);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      position: relative;
-      z-index: 100;
+      padding: 0 28px;
+      position: relative; z-index: 200;
+    }
+    .app-header::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--blue) 0%, var(--sky) 55%, transparent 100%);
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+    .header-left { display: flex; align-items: center; gap: 18px; }
 
-    .status-indicator {
-      position: relative;
-      width: 10px;
-      height: 10px;
-      flex-shrink: 0;
-    }
+    .status-indicator { position: relative; width: 8px; height: 8px; flex-shrink: 0; }
     .pulse-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #f5a623;
-      box-shadow: 0 0 8px rgba(245, 166, 35, 0.7);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--success);
     }
     .pulse-ring {
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 1px solid rgba(245, 166, 35, 0.4);
-      animation: pulse-expand 2.2s ease-out infinite;
+      position: absolute; inset: -4px; border-radius: 50%;
+      border: 1.5px solid rgba(5, 150, 105, 0.45);
+      animation: pulse-expand 2.8s ease-out infinite;
     }
     @keyframes pulse-expand {
-      0%   { transform: scale(0.7); opacity: 1; }
-      100% { transform: scale(2.2); opacity: 0; }
+      0%   { transform: scale(0.65); opacity: 1; }
+      100% { transform: scale(2.4); opacity: 0; }
     }
 
-    .brand {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-    }
+    .brand { display: flex; flex-direction: column; gap: 2px; }
     .brand-primary {
-      font-family: var(--font-brand);
-      font-size: 15px;
-      letter-spacing: 0.12em;
-      color: var(--text-bright);
-    }
-    .brand-sep {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.01em;
+      color: #F8FAFC; line-height: 1;
     }
     .brand-secondary {
       font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      font-size: 9px; letter-spacing: 0.20em;
+      color: #475569;
+      text-transform: uppercase; line-height: 1;
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
+    .header-right { display: flex; align-items: center; }
 
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .header-nav { display: flex; align-items: center; gap: 2px; }
     .nav-link {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 13px; font-weight: 500;
+      color: #64748B;
       text-decoration: none;
-      padding: 5px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      padding: 6px 14px;
+      border-radius: var(--r-md);
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.01em;
     }
-    .nav-link:hover {
-      color: var(--text-body);
-      border-color: var(--border-faint);
-    }
+    .nav-link:hover { color: #CBD5E1; background: rgba(255,255,255,0.07); }
     .nav-link.active {
-      color: var(--accent-amber);
-      border-color: rgba(245, 166, 35, 0.3);
-      background: rgba(245, 166, 35, 0.08);
+      color: #F0F6FF;
+      background: rgba(27, 79, 204, 0.40);
     }
 
-    /* ─── Page Body ──────────────────────────────────────────────────────────── */
-    .page-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-    }
+    /* ── Page Body ──────────────────────────────────────────────────────────── */
+    .page-body { flex: 1; display: flex; overflow: hidden; }
 
-    /* ─── Sidebar ────────────────────────────────────────────────────────────── */
+    /* ── Sidebar ─────────────────────────────────────────────────────────────── */
     .sidebar {
       width: var(--sidebar-w);
       flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid var(--border-faint);
-      background: var(--bg-deep);
+      display: flex; flex-direction: column;
+      background: var(--bg-sidebar);
       overflow: hidden;
+      border-right: 1px solid rgba(255,255,255,0.04);
     }
 
-    .sidebar-search {
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border-faint);
+    /* Sidebar brand strip */
+    .sidebar-brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       flex-shrink: 0;
     }
+    .sidebar-brand-label {
+      font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-on-dark-dim);
+      margin-bottom: 12px;
+    }
 
+    /* Search */
+    .search-wrap {
+      position: relative;
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px; top: 50%; transform: translateY(-50%);
+      color: #475569;
+      pointer-events: none;
+    }
     .search-input {
       width: 100%;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-faint);
-      border-radius: var(--radius-sm);
-      padding: 7px 10px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-body);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--r-md);
+      padding: 8px 12px 8px 34px;
+      font-family: var(--font-body);
+      font-size: 13px; font-weight: 400;
+      color: var(--text-on-dark);
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, background 0.15s;
     }
-    .search-input::placeholder { color: var(--text-muted); }
-    .search-input:focus { border-color: var(--border-subtle); }
+    .search-input::placeholder { color: #475569; }
+    .search-input:focus {
+      border-color: rgba(27, 79, 204, 0.5);
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Client count badge */
+    .sidebar-count {
+      margin-top: 10px;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      color: #334155;
+      letter-spacing: 0.06em;
+    }
+    .sidebar-count span { color: var(--blue-light); font-weight: 500; }
 
     .client-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 0;
+      flex: 1; overflow-y: auto;
+      padding: 8px 0 12px;
     }
     .client-list::-webkit-scrollbar { width: 3px; }
-    .client-list::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.1); }
+    .client-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
 
     .client-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px;
       cursor: pointer;
-      transition: background 0.12s;
-      border-left: 2px solid transparent;
+      border-left: 3px solid transparent;
+      transition: background 0.12s, border-left-color 0.15s;
     }
-    .client-item:hover {
-      background: rgba(0, 200, 255, 0.04);
-    }
+    .client-item:hover { background: var(--bg-sidebar-item); }
     .client-item.active {
-      background: rgba(245, 166, 35, 0.07);
-      border-left-color: var(--accent-amber);
+      background: var(--bg-sidebar-active);
+      border-left-color: var(--blue-mid);
     }
 
-    .client-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--text-muted);
+    .client-avatar {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      background: rgba(27, 79, 204, 0.18);
+      border: 1px solid rgba(27, 79, 204, 0.22);
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
+      font-family: var(--font-body);
+      font-size: 10px; font-weight: 700;
+      color: var(--blue-light);
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      transition: background 0.15s, border-color 0.15s;
     }
-    .client-item.active .client-dot {
-      background: var(--accent-amber);
+    .client-item.active .client-avatar {
+      background: rgba(27, 79, 204, 0.30);
+      border-color: rgba(59, 130, 246, 0.45);
     }
 
-    .client-info {
-      flex: 1;
-      overflow: hidden;
-    }
+    .client-info { flex: 1; overflow: hidden; min-width: 0; }
     .client-id {
       font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      font-size: 9px; letter-spacing: 0.1em;
+      color: #334155; text-transform: uppercase;
+      line-height: 1.3;
     }
     .client-name {
-      font-size: 12px;
-      color: var(--text-body);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 13px; font-weight: 500;
+      color: #94A3B8;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       line-height: 1.4;
+      transition: color 0.15s;
     }
-    .client-item.active .client-name { color: var(--text-bright); }
+    .client-item.active .client-name { color: #E2E8F0; }
 
-    /* ─── Main Panel ─────────────────────────────────────────────────────────── */
-    .main-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    /* ── Main Panel ──────────────────────────────────────────────────────────── */
+    .main-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-    /* ─── Client Header bar ──────────────────────────────────────────────────── */
+    /* ── Client Header Bar ───────────────────────────────────────────────────── */
     .client-header {
       flex-shrink: 0;
-      padding: 18px 28px 14px;
-      border-bottom: 1px solid var(--border-faint);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
+      padding: 20px 32px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 16px;
+      background: var(--bg-surface);
     }
 
-    .client-title-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
+    .client-title-group { display: flex; flex-direction: column; gap: 3px; }
     .client-title-id {
       font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.15em;
-      color: var(--accent-amber);
-      text-transform: uppercase;
+      font-size: 9.5px; letter-spacing: 0.22em;
+      color: var(--text-faint); text-transform: uppercase;
     }
     .client-title-name {
-      font-family: var(--font-brand);
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      color: var(--text-bright);
+      font-family: var(--font-display);
+      font-size: 26px; font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      line-height: 1.1;
     }
 
     /* Horizon selector */
-    .horizon-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .horizon-group { display: flex; align-items: center; gap: 10px; }
     .horizon-label {
       font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      color: var(--text-muted);
-      text-transform: uppercase;
+      font-size: 9.5px; letter-spacing: 0.18em;
+      color: var(--text-faint); text-transform: uppercase;
     }
-    .horizon-pills {
-      display: flex;
-      gap: 4px;
-    }
+    .horizon-pills { display: flex; gap: 4px; }
     .horizon-pill {
-      padding: 5px 14px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-faint);
+      padding: 6px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--border-mid);
       background: transparent;
-      font-family: var(--font-mono);
-      font-size: 11px;
+      font-family: var(--font-mono); font-size: 11.5px;
       color: var(--text-muted);
       cursor: pointer;
       transition: border-color 0.15s, background 0.15s, color 0.15s;
     }
-    .horizon-pill:hover { border-color: var(--border-subtle); color: var(--text-body); }
+    .horizon-pill:hover { border-color: #93C5FD; color: var(--text-secondary); }
     .horizon-pill.active {
-      border-color: rgba(245, 166, 35, 0.45);
-      background: rgba(245, 166, 35, 0.1);
-      color: var(--accent-amber);
+      border-color: var(--blue-mid);
+      background: var(--blue-dim);
+      color: var(--blue);
+      font-weight: 500;
     }
 
-    /* ─── Chart Area ─────────────────────────────────────────────────────────── */
+    /* ── KPI Cards ───────────────────────────────────────────────────────────── */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg-surface);
+    }
+    .kpi-card {
+      padding: 18px 24px;
+      position: relative;
+    }
+    .kpi-card + .kpi-card {
+      border-left: 1px solid var(--border);
+    }
+    /* Accent top line on each card */
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 24px; right: 24px; height: 2px;
+      border-radius: 0 0 2px 2px;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    .kpi-card:nth-child(1)::before { background: var(--blue); }
+    .kpi-card:nth-child(2)::before { background: var(--sky); }
+    .kpi-card:nth-child(3)::before { background: var(--success); }
+    .kpi-card:nth-child(4)::before { background: var(--warning); }
+
+    .kpi-label {
+      font-family: var(--font-mono);
+      font-size: 9px; letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-family: var(--font-display);
+      font-size: 24px; font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+    }
+    .kpi-value.accent-blue   { color: var(--blue); }
+    .kpi-value.accent-sky    { color: var(--sky); }
+    .kpi-value.accent-green  { color: var(--success); }
+    .kpi-value.accent-amber  { color: var(--warning); }
+    .kpi-sub {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--text-faint);
+      margin-top: 5px; letter-spacing: 0.04em;
+    }
+
+    /* ── Chart Area ──────────────────────────────────────────────────────────── */
     .chart-area {
       flex: 1;
-      padding: 20px 28px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      overflow-y: auto;
-      min-height: 0;
+      padding: 24px 32px;
+      overflow-y: auto; min-height: 0;
+      background: var(--bg-page);
     }
     .chart-area::-webkit-scrollbar { width: 4px; }
-    .chart-area::-webkit-scrollbar-thumb { background: rgba(0,200,255,0.1); }
+    .chart-area::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
 
-    .chart-container {
+    .chart-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-faint);
-      border-radius: var(--radius-lg);
-      padding: 20px 20px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 24px 24px 20px;
       position: relative;
-      flex: 1;
-      min-height: 280px;
+      height: 100%; min-height: 300px;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
     }
 
-    .chart-wrap {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      min-height: 260px;
+    /* Chart header */
+    .chart-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 20px;
     }
-
-    /* ─── Summary Stats Row ──────────────────────────────────────────────────── */
-    .summary-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      flex-shrink: 0;
+    .chart-title {
+      font-family: var(--font-body);
+      font-size: 14px; font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: 0.01em;
     }
-
-    .summary-card {
-      flex: 1;
-      min-width: 160px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-faint);
-      border-radius: var(--radius-md);
-      padding: 14px 18px;
-    }
-    .summary-card-label {
+    .chart-subtitle {
       font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.2em;
-      color: var(--text-muted);
+      font-size: 9.5px; letter-spacing: 0.1em;
+      color: var(--text-faint);
+      margin-top: 3px;
       text-transform: uppercase;
-      margin-bottom: 6px;
     }
-    .summary-card-value {
-      font-family: var(--font-brand);
-      font-size: 20px;
-      color: var(--text-bright);
-    }
-    .summary-card-value.amber { color: var(--accent-amber); }
-    .summary-card-sub {
+    .chart-legend {
+      display: flex; align-items: center; gap: 16px;
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 4px;
+      font-size: 10px; color: var(--text-muted);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-swatch {
+      width: 20px; height: 2px; border-radius: 1px; flex-shrink: 0;
+    }
+    .legend-swatch.dashed {
+      background: repeating-linear-gradient(90deg, var(--sky) 0px, var(--sky) 5px, transparent 5px, transparent 9px);
     }
 
-    /* ─── Empty / Loading / Error states ────────────────────────────────────── */
+    .chart-wrap { position: relative; width: 100%; height: calc(100% - 64px); min-height: 240px; }
+
+    /* ── Empty / Loading / Error States ─────────────────────────────────────── */
     .empty-state {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      min-height: 300px;
-      text-align: center;
-      padding: 40px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; min-height: 300px; text-align: center; padding: 48px;
     }
-    .empty-glyph {
-      font-family: var(--font-brand);
-      font-size: 42px;
-      color: var(--accent-amber);
-      opacity: 0.3;
+
+    .empty-icon {
+      width: 56px; height: 56px;
+      background: var(--blue-dim);
+      border-radius: var(--r-lg);
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(27, 79, 204, 0.14);
     }
+
     .empty-title {
-      font-family: var(--font-brand);
-      font-size: 16px;
-      letter-spacing: 0.06em;
-      color: var(--text-body);
+      font-family: var(--font-display);
+      font-size: 22px; font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
     }
     .empty-sub {
-      font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 14px; font-weight: 400;
       color: var(--text-muted);
-      max-width: 400px;
-      line-height: 1.7;
+      max-width: 400px; line-height: 1.7;
     }
     .empty-sub code {
-      color: var(--accent);
-      background: var(--bg-card);
-      padding: 2px 6px;
-      border-radius: 3px;
-      border: 1px solid var(--border-subtle);
-      font-size: 11px;
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      background: var(--bg-page);
+      padding: 2px 7px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border-mid);
+      color: var(--blue);
     }
 
     /* Spinner */
-    .spinner-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
+    .spinner-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
     .spinner {
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--border-faint);
-      border-top-color: var(--accent-amber);
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--blue-mid);
       border-radius: 50%;
       animation: spin 0.75s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner-label {
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 0.06em;
+      font-size: 11px; color: var(--text-muted);
+      letter-spacing: 0.08em;
     }
 
-    .error-box {
-      background: rgba(245, 166, 35, 0.06);
-      border: 1px solid rgba(245, 166, 35, 0.2);
-      border-left: 3px solid var(--accent-amber);
-      border-radius: var(--radius-md);
-      padding: 16px 20px;
+    .error-card {
+      background: #FEF2F2;
+      border: 1px solid #FECACA;
+      border-left: 3px solid var(--danger);
+      border-radius: var(--r-md);
+      padding: 18px 24px;
       font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--accent-amber);
-      max-width: 600px;
-      line-height: 1.7;
+      font-size: 12px; color: #7F1D1D;
+      max-width: 560px; line-height: 1.75;
     }
-    .error-box code {
-      background: var(--bg-card);
+    .error-card code {
+      background: #FEE2E2;
       padding: 2px 6px;
-      border-radius: 3px;
+      border-radius: var(--r-sm);
       font-size: 11px;
     }
 
-    /* ─── Utility ─────────────────────────────────────────────────────────────── */
+    /* ── Utility ─────────────────────────────────────────────────────────────── */
     .hidden { display: none !important; }
 
-    @media (max-width: 700px) {
-      .sidebar { width: 180px; }
+    @media (max-width: 800px) {
+      .sidebar { width: 200px; }
       .brand-secondary { display: none; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
     }
-    @media (max-width: 520px) {
+    @media (max-width: 560px) {
       .sidebar { display: none; }
+      .kpi-strip { grid-template-columns: 1fr; }
+      .chart-area { padding: 14px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ─── Header ─────────────────────────────────────────────────────────────── -->
+  <!-- ── Header ──────────────────────────────────────────────────────────────── -->
   <header class="app-header">
     <div class="header-left">
       <div class="status-indicator">
@@ -519,9 +506,8 @@
         <div class="pulse-dot"></div>
       </div>
       <div class="brand">
-        <span class="brand-primary">TECHVAULT</span>
-        <span class="brand-sep">/</span>
-        <span class="brand-secondary">RAG INTELLIGENCE</span>
+        <span class="brand-primary">TechVault</span>
+        <span class="brand-secondary">Revenue Intelligence</span>
       </div>
     </div>
     <div class="header-right">
@@ -532,19 +518,26 @@
     </div>
   </header>
 
-  <!-- ─── Page Body ──────────────────────────────────────────────────────────── -->
+  <!-- ── Page Body ────────────────────────────────────────────────────────────── -->
   <div class="page-body">
 
     <!-- Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-search">
-        <input
-          type="text"
-          class="search-input"
-          id="clientSearch"
-          placeholder="Search clients..."
-          autocomplete="off"
-        />
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-label">Client Portfolio</div>
+        <div class="search-wrap">
+          <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            class="search-input"
+            id="clientSearch"
+            placeholder="Search clients…"
+            autocomplete="off"
+          />
+        </div>
+        <div class="sidebar-count" id="sidebarCount"></div>
       </div>
       <div class="client-list" id="clientList">
         <!-- populated by JS -->
@@ -554,14 +547,17 @@
     <!-- Main panel -->
     <div class="main-panel" id="mainPanel">
 
-      <!-- Empty state (no client selected) -->
+      <!-- Empty state -->
       <div class="empty-state" id="emptyState">
-        <div class="empty-glyph">◈</div>
+        <div class="empty-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B4FCC" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
         <div class="empty-title">Revenue Forecasting</div>
         <p class="empty-sub">
-          Select a client from the sidebar to project their monthly invoice revenue
-          using Google TimeFM 2.5. The model weights (~800 MB) are downloaded
-          automatically on the first request.
+          Select a client from the list to project monthly invoice revenue
+          using Google TimeFM 2.5. Model weights (~800&nbsp;MB) download automatically on first request.
         </p>
       </div>
 
@@ -569,13 +565,13 @@
       <div class="empty-state hidden" id="loadingState">
         <div class="spinner-wrap">
           <div class="spinner"></div>
-          <div class="spinner-label" id="loadingLabel">Loading forecast...</div>
+          <div class="spinner-label" id="loadingLabel">Loading forecast…</div>
         </div>
       </div>
 
       <!-- Error state -->
       <div class="empty-state hidden" id="errorState">
-        <div class="error-box" id="errorBox"></div>
+        <div class="error-card" id="errorBox"></div>
       </div>
 
       <!-- Forecast content -->
@@ -597,34 +593,55 @@
           </div>
         </div>
 
-        <!-- Chart + summaries -->
+        <!-- KPI strip -->
+        <div class="kpi-strip" id="summaryRow">
+          <div class="kpi-card">
+            <div class="kpi-label">Last Month Actual</div>
+            <div class="kpi-value accent-blue" id="sumLastActual">—</div>
+            <div class="kpi-sub" id="sumLastMonth">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Next Month Forecast</div>
+            <div class="kpi-value accent-sky" id="sumNextForecast">—</div>
+            <div class="kpi-sub" id="sumNextMonth">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Period Total</div>
+            <div class="kpi-value accent-green" id="sumPeriodTotal">—</div>
+            <div class="kpi-sub" id="sumPeriodLabel">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Avg Monthly</div>
+            <div class="kpi-value accent-amber" id="sumAvgMonthly">—</div>
+            <div class="kpi-sub">per month, forecast period</div>
+          </div>
+        </div>
+
+        <!-- Chart area -->
         <div class="chart-area">
-          <div class="chart-container">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">Monthly Revenue</div>
+                <div class="chart-subtitle">Historical actuals &amp; TimeFM 2.5 forecast with 80% confidence interval</div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <div class="legend-swatch" style="background:#1B4FCC;"></div>
+                  <span>Historical</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-swatch dashed"></div>
+                  <span>Forecast</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-swatch" style="background:rgba(2,132,199,0.18);height:8px;border-radius:2px;"></div>
+                  <span>80% CI</span>
+                </div>
+              </div>
+            </div>
             <div class="chart-wrap">
               <canvas id="forecastChart"></canvas>
-            </div>
-          </div>
-
-          <div class="summary-row" id="summaryRow">
-            <div class="summary-card">
-              <div class="summary-card-label">Last Month Actual</div>
-              <div class="summary-card-value" id="sumLastActual">—</div>
-              <div class="summary-card-sub" id="sumLastMonth">—</div>
-            </div>
-            <div class="summary-card">
-              <div class="summary-card-label">Next Month Forecast</div>
-              <div class="summary-card-value amber" id="sumNextForecast">—</div>
-              <div class="summary-card-sub" id="sumNextMonth">—</div>
-            </div>
-            <div class="summary-card">
-              <div class="summary-card-label">Forecast Period Total</div>
-              <div class="summary-card-value amber" id="sumPeriodTotal">—</div>
-              <div class="summary-card-sub" id="sumPeriodLabel">—</div>
-            </div>
-            <div class="summary-card">
-              <div class="summary-card-label">Avg Monthly Forecast</div>
-              <div class="summary-card-value amber" id="sumAvgMonthly">—</div>
-              <div class="summary-card-sub">per month</div>
             </div>
           </div>
         </div>
@@ -651,6 +668,7 @@
     // ── DOM refs ───────────────────────────────────────────────────────────────
     const clientSearch    = document.getElementById('clientSearch');
     const clientList      = document.getElementById('clientList');
+    const sidebarCount    = document.getElementById('sidebarCount');
     const emptyState      = document.getElementById('emptyState');
     const loadingState    = document.getElementById('loadingState');
     const loadingLabel    = document.getElementById('loadingLabel');
@@ -678,6 +696,10 @@
       return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    function initials(name) {
+      return name.split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+
     function showState(state) {
       emptyState.classList.add('hidden');
       loadingState.classList.add('hidden');
@@ -701,9 +723,15 @@
         c.client_name.toLowerCase().includes(q)
       );
 
+      // Update count
+      sidebarCount.innerHTML = `<span>${filtered.length}</span> of ${allClients.length} clients`;
+
       clientList.innerHTML = '';
       if (filtered.length === 0) {
-        clientList.innerHTML = `<div style="padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:var(--text-muted);">No clients found</div>`;
+        clientList.innerHTML = `
+          <div style="padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#334155;letter-spacing:0.06em;">
+            No clients found
+          </div>`;
         return;
       }
 
@@ -712,7 +740,7 @@
         el.className = 'client-item' + (c.client_id === activeClientId ? ' active' : '');
         el.dataset.id = c.client_id;
         el.innerHTML = `
-          <div class="client-dot"></div>
+          <div class="client-avatar">${initials(c.client_name)}</div>
           <div class="client-info">
             <div class="client-id">${c.client_id}</div>
             <div class="client-name">${c.client_name}</div>
@@ -734,7 +762,10 @@
         allClients = data.clients || [];
         renderClientList('');
       } catch (err) {
-        clientList.innerHTML = `<div style="padding:12px 14px;font-family:var(--font-mono);font-size:11px;color:#f87171;">Failed to load clients</div>`;
+        clientList.innerHTML = `
+          <div style="padding:14px 20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#DC2626;">
+            Failed to load clients
+          </div>`;
       }
     }
 
@@ -762,10 +793,9 @@
       isFetching = true;
       showState('loading');
 
-      // First call may need to download the model — let user know
-      loadingLabel.textContent = 'Loading forecast...';
+      loadingLabel.textContent = 'Loading forecast…';
       const slowTimer = setTimeout(() => {
-        loadingLabel.textContent = 'Downloading TimeFM model weights (~800 MB) — first call only...';
+        loadingLabel.textContent = 'Downloading TimeFM model weights (~800 MB) — first call only…';
       }, 4000);
 
       try {
@@ -808,7 +838,6 @@
 
     // ── Render chart + summaries ───────────────────────────────────────────────
     function renderForecast(data) {
-      // Update header
       titleClientId.textContent   = data.client_id;
       titleClientName.textContent = data.client_name;
 
@@ -816,19 +845,15 @@
       const fc      = data.forecast;
       const allDates = [...hist.dates, ...fc.dates];
 
-      // Build Chart.js datasets
-      // Historical: solid cyan line, no points for future dates
       const histData = allDates.map((_, i) => i < hist.dates.length ? hist.values[i] : null);
 
-      // Forecast: dashed amber; first point overlaps last historical value
       const fcData = allDates.map((_, i) => {
         const fcIdx = i - hist.dates.length;
-        if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1]; // overlap
+        if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1];
         if (fcIdx >= 0 && fcIdx < fc.values.length) return fc.values[fcIdx];
         return null;
       });
 
-      // Upper bound
       const upperData = allDates.map((_, i) => {
         const fcIdx = i - hist.dates.length;
         if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1];
@@ -836,7 +861,6 @@
         return null;
       });
 
-      // Lower bound
       const lowerData = allDates.map((_, i) => {
         const fcIdx = i - hist.dates.length;
         if (i === hist.dates.length - 1) return hist.values[hist.values.length - 1];
@@ -844,11 +868,13 @@
         return null;
       });
 
-      // Destroy previous chart
       if (chartInstance) {
         chartInstance.destroy();
         chartInstance = null;
       }
+
+      // Divider index (last historical point = transition to forecast)
+      const dividerIdx = hist.dates.length - 1;
 
       const ctx = document.getElementById('forecastChart').getContext('2d');
       chartInstance = new Chart(ctx, {
@@ -860,8 +886,8 @@
               label: 'Upper 80% CI',
               data: upperData,
               borderColor: 'transparent',
-              backgroundColor: 'rgba(245,166,35,0.12)',
-              fill: '+1',         // fill down to lower bound dataset
+              backgroundColor: 'rgba(2, 132, 199, 0.10)',
+              fill: '+1',
               tension: 0.35,
               pointRadius: 0,
               order: 1,
@@ -879,26 +905,29 @@
             {
               label: 'Forecast',
               data: fcData,
-              borderColor: '#f5a623',
+              borderColor: '#0284C7',
               backgroundColor: 'transparent',
               borderWidth: 2,
               borderDash: [6, 4],
               tension: 0.35,
-              pointRadius: 3,
-              pointBackgroundColor: '#f5a623',
-              pointBorderColor: '#f5a623',
+              pointRadius: (ctx) => ctx.dataIndex === dividerIdx ? 0 : 3,
+              pointBackgroundColor: '#0284C7',
+              pointBorderColor: '#FFFFFF',
+              pointBorderWidth: 1.5,
               fill: false,
               order: 3,
             },
             {
               label: 'Historical',
               data: histData,
-              borderColor: '#00c8ff',
-              backgroundColor: 'rgba(0,200,255,0.06)',
-              borderWidth: 2,
+              borderColor: '#1B4FCC',
+              backgroundColor: 'rgba(27, 79, 204, 0.06)',
+              borderWidth: 2.5,
               tension: 0.35,
               pointRadius: 3,
-              pointBackgroundColor: '#00c8ff',
+              pointBackgroundColor: '#1B4FCC',
+              pointBorderColor: '#FFFFFF',
+              pointBorderWidth: 1.5,
               fill: 'origin',
               order: 4,
             },
@@ -909,23 +938,17 @@
           maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
-            legend: {
-              labels: {
-                color: '#8ca8c8',
-                font: { family: "'JetBrains Mono', monospace", size: 11 },
-                boxWidth: 16,
-                padding: 16,
-                filter: item => item.text !== 'Upper 80% CI' && item.text !== 'Lower 80% CI',
-              },
-            },
+            legend: { display: false },
             tooltip: {
-              backgroundColor: '#0f1d30',
-              borderColor: 'rgba(0,200,255,0.15)',
+              backgroundColor: '#0F172A',
+              borderColor: '#1E3A5F',
               borderWidth: 1,
-              titleColor: '#deeaf8',
-              bodyColor: '#8ca8c8',
-              titleFont: { family: "'JetBrains Mono', monospace", size: 11 },
+              titleColor: '#F8FAFC',
+              bodyColor: '#94A3B8',
+              titleFont: { family: "'JetBrains Mono', monospace", size: 11, weight: '500' },
               bodyFont:  { family: "'JetBrains Mono', monospace", size: 11 },
+              padding: 14,
+              cornerRadius: 8,
               callbacks: {
                 label: ctx => {
                   if (ctx.dataset.label === 'Upper 80% CI' || ctx.dataset.label === 'Lower 80% CI') return null;
@@ -935,34 +958,37 @@
                 },
               },
             },
+            annotation: {},
           },
           scales: {
             x: {
               ticks: {
-                color: '#3d5f7a',
+                color: '#64748B',
                 font: { family: "'JetBrains Mono', monospace", size: 10 },
                 maxRotation: 45,
               },
-              grid: { color: 'rgba(0,200,255,0.04)' },
+              grid: { color: 'rgba(226, 232, 240, 0.8)' },
+              border: { color: '#CBD5E1', dash: [] },
             },
             y: {
               ticks: {
-                color: '#3d5f7a',
+                color: '#64748B',
                 font: { family: "'JetBrains Mono', monospace", size: 10 },
                 callback: v => usd(v),
               },
-              grid: { color: 'rgba(0,200,255,0.06)' },
+              grid: { color: 'rgba(226, 232, 240, 0.8)' },
+              border: { color: '#CBD5E1', dash: [4, 2] },
               beginAtZero: false,
             },
           },
         },
       });
 
-      // ── Summaries ────────────────────────────────────────────────────────────
-      const lastActual = hist.values[hist.values.length - 1];
-      const lastMonth  = hist.dates[hist.dates.length - 1];
-      const nextFc     = fc.values[0];
-      const nextMonth  = fc.dates[0];
+      // ── KPI values ────────────────────────────────────────────────────────────
+      const lastActual  = hist.values[hist.values.length - 1];
+      const lastMonth   = hist.dates[hist.dates.length - 1];
+      const nextFc      = fc.values[0];
+      const nextMonth   = fc.dates[0];
       const periodTotal = fc.values.reduce((a, b) => a + b, 0);
       const avgMonthly  = periodTotal / fc.values.length;
 

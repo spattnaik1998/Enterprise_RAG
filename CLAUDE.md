@@ -34,6 +34,82 @@ uvicorn app.server:app --reload --port 8000
 python -m src.collection.mcp.server
 ```
 
+## Evaluation Framework
+
+```bash
+# Smoke test: 1 model, billing queries, 5 samples (~$0.01)
+python -m eval.run_eval --models gpt-4o-mini --category billing --sample 5
+
+# Full production eval: all 4 models, all 80 queries (~$2.82)
+python -m eval.run_eval
+
+# Multi-model, multi-category (space-separated or repeated flags both work)
+python -m eval.run_eval --models gpt-4o-mini gpt-4o --category contracts crm
+
+# Skip reranking for rapid iteration
+python -m eval.run_eval --no-rerank --models gpt-4o-mini --sample 5
+
+# CI/CD integration (exit 0 = all pass, exit 1 = any fail)
+python -m eval.run_eval --models gpt-4o-mini && echo "PASS" || echo "FAIL"
+```
+
+### Eval CLI Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `--models TEXT` | all 4 | Models to test (space-separated or repeat flag) |
+| `--category TEXT` | all 6 | Categories: `billing`, `contracts`, `crm`, `psa`, `communications`, `cross_source` |
+| `--sample INT` | 0 (all) | Queries per category to sample; 0 = use all |
+| `--no-rerank` | off | Skip LLM reranking (faster, cheaper, lower quality) |
+| `--output PATH` | auto-timestamped | JSON report path (saved to `eval/results/`) |
+| `--judge-model TEXT` | `gpt-4o-mini` | OpenAI model used as LLM judge |
+| `--top-k INT` | 20 | Candidates retrieved before reranking |
+| `--rerank-top-k INT` | 10 | Chunks kept after reranking |
+| `--seed INT` | 42 | RNG seed for reproducible sampling |
+| `--quiet` | off | Suppress progress bar |
+
+### Production Thresholds (all must pass)
+
+| Metric | Threshold | What it measures |
+|---|---|---|
+| Recall@10 | >= 80% | Any `expected_keyword` found in top-10 citation titles/sources or answer text |
+| Source Type Hit | >= 85% | Any citation `source_type` matches `expected_source_types` |
+| Faithfulness | >= 85% | LLM judge: all claims grounded in retrieved context |
+| Correctness | >= 75% | LLM judge: answer matches ground truth |
+| Composite | >= 82% | Mean of the four metrics above |
+
+### Eval Dataset
+
+80 queries across 6 categories in `eval/datasets/*.json`. Query schema:
+```json
+{
+  "id": "billing_001",
+  "query": "...",
+  "ground_truth": "...",
+  "expected_source_types": ["billing"],
+  "expected_keywords": ["ClientA", "ClientB"],
+  "difficulty": "easy|medium|hard"
+}
+```
+
+### Interpreting Failing Metrics
+
+| Failing metric | Likely cause | Fix |
+|---|---|---|
+| Recall@10 < 80% | Index quality | Review chunking strategy or re-run Phase II |
+| Source Type Hit < 85% | RRF weight imbalance | Tune `retrieval.dense_weight` in `config/config.yaml` |
+| Faithfulness < 85% | Model hallucinating | Review system prompt in `src/generation/prompts.py` |
+| Correctness < 75% | Reranking quality | Increase `rerank_top_k` |
+| Cross-source queries low | Multi-hop retrieval weakness | Increase `top_k` |
+
+### Eval Cost Estimates
+
+| Scope | Models | Queries | Cost |
+|---|---|---|---|
+| Smoke test | gpt-4o-mini | 5 (billing) | ~$0.01 |
+| Single model | gpt-4o-mini | 80 (all) | ~$0.13 |
+| Full eval | All 4 models | 80 each | ~$2.82 |
+
 ## Setup
 
 1. `pip install -r requirements.txt`
@@ -41,16 +117,19 @@ python -m src.collection.mcp.server
 3. Run `python scripts/generate_enterprise_data.py` (creates `data/enterprise/*.json`)
 4. Run phases in order: `phase1` → review `data/validated/` → `phase2`
 
-**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, and `app/server.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
+**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, `app/server.py`, and `eval/run_eval.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
+
+**TimeFM note**: The forecasting feature requires a local build of TimeFM. The server returns a 503 with install instructions if the package is missing. NLTK punkt tokenizer is auto-downloaded on the first Phase II run.
 
 ## Architecture
 
 ### Data Flow (per phase)
 
 **Phase I** (`src/collection/` → `src/validation/`):
-- `CollectionPipeline` runs 8 collectors concurrently via asyncio
+- `CollectionPipeline` (`src/collection/pipeline.py`) runs 8 collectors concurrently via asyncio
 - Each collector extends `BaseCollector` and returns `list[RawDocument]`
 - `DocumentValidator` runs 7 checks (min/max length, language, alpha ratio, boilerplate, dedup by SHA-256 checksum, quality score)
+- `PhaseICheckpoint` saves state to `data/checkpoint_phase1.json` — pipeline stops here for human review
 - Output: `data/validated/*.json`, `data/rejected/*.json`, `data/checkpoint_phase1.json`
 
 **Phase II** (`src/chunking/` → `src/embedding/`):
@@ -63,6 +142,7 @@ python -m src.collection.mcp.server
 - `RAGPipeline` in `src/serving/pipeline.py` orchestrates the full query lifecycle
 - Two generator implementations with identical `generate(query, reranked_chunks)` interface: `RAGGenerator` (OpenAI) and `AnthropicGenerator`
 - `pipeline.query(user_query, generator=None)` — optional `generator` arg lets callers swap the LLM at request time (used by the web API)
+- **`LLMReranker` always uses OpenAI (`gpt-4o-mini`) regardless of which generator model the user selects for generation**
 - CLI output: `data/index/` must exist (run Phase II first)
 
 **Phase III Web UI** (`app/`):
@@ -70,7 +150,7 @@ python -m src.collection.mcp.server
 - `GET /api/health` — pipeline status, vector count, available models by provider
 - `POST /api/chat` — accepts `{message, provider, model}`, swaps generator per request
 - `GET /api/clients` — list all clients from invoice data (for forecasting UI)
-- `GET /api/forecast/{client_id}` — TimeFM revenue forecast for a specific client
+- `GET /api/forecast/{client_id}?horizon=N` — TimeFM revenue forecast; `horizon` clamped to [1, 12], default 6
 - `GET /` — serves `app/static/index.html` (Obsidian Terminal chat UI)
 - `GET /forecast` — serves `app/static/forecast.html` (revenue forecasting visualization)
 - Blocking `pipeline.query()` and forecast inference run in `loop.run_in_executor` to avoid stalling the async event loop
@@ -99,7 +179,7 @@ Three document states flow through the pipeline:
 - `ValidatedDocument` → passed all 7 checks (adds `quality_score`, `validation_notes`)
 - `RejectedDocument` → failed one or more checks (adds `rejection_reasons`)
 
-All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_field`.
+All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_field`. The `Chunk` dataclass (`src/chunking/schemas.py`) is produced by Phase II and flows through embedding, retrieval, reranking, and generation.
 
 ### Hybrid Retrieval
 
@@ -113,7 +193,7 @@ All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_f
 `InvoiceForecaster` uses **TimeFM 2.5 200M** (Google, via HuggingFace) to predict monthly revenue per client:
 - Aggregates 13 months of invoice totals from `data/enterprise/invoices.json`
 - Lazy-loads the ~800 MB PyTorch model on first call
-- Returns historical actuals + 3-month point forecast + 10th/90th percentile bounds
+- Returns historical actuals + point forecast + 10th/90th percentile bounds
 - Called by `GET /api/forecast/{client_id}`; inference runs in thread-pool executor
 
 ### Observability
@@ -127,21 +207,17 @@ All pipeline parameters live in `config/config.yaml`:
 - `validation.*` — thresholds (min/max length, quality score, language)
 - `chunking.*` — `max_tokens=512`, `keep_whole_threshold=600`, window sizes
 - `embedding.*` — model, dimensions, batch size
-- `retrieval.*` — `dense_weight`, `sparse_weight`, `top_k`, `rerank_top_k`
+- `retrieval.*` — `dense_weight=0.7`, `sparse_weight=0.3`, `top_k=20`, `rerank_top_k=10`
 
-## Phase III Architecture
-
-**CLI**: `python -m src.main phase3` (interactive loop) or `python -m src.main phase3 --query "..."` (single-shot)
-
-### Query Lifecycle
+## Phase III Query Lifecycle
 
 ```
 user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> PIIFilter -> QueryResult
 ```
 
 1. **PromptGuard** (`src/retrieval/guardrails.py`): 13 regex patterns covering jailbreaks, role overrides, instruction-ignoring. Returns `GuardrailResult(passed=False)` on hit.
-2. **HybridRetriever** (`src/retrieval/retriever.py`): calls `Embedder.embed_query()` then `FAISSIndex.search_hybrid()` — RRF fusion of FAISS dense + BM25 sparse, returns top_k=10 candidates.
-3. **LLMReranker** (`src/retrieval/reranker.py`): single OpenAI call with all candidates in one prompt; scores 0-10 per chunk; sorts and truncates to rerank_top_k=5.
+2. **HybridRetriever** (`src/retrieval/retriever.py`): calls `Embedder.embed_query()` then `FAISSIndex.search_hybrid()` — RRF fusion of FAISS dense + BM25 sparse, returns top_k candidates.
+3. **LLMReranker** (`src/retrieval/reranker.py`): single OpenAI call with all candidates in one prompt; scores 0-10 per chunk; sorts and truncates to rerank_top_k.
 4. **RAGGenerator / AnthropicGenerator** (`src/generation/generator.py`): both build numbered `[1]..[N]` context from reranked chunks + `SYSTEM_PROMPT` from `src/generation/prompts.py`; return `RAGResponse` with answer + citations + token counts. Anthropic uses `system=` parameter (not inside messages list). Supported models: `gpt-4o-mini`, `gpt-4o`, `claude-haiku-4-5-20251001`, `claude-sonnet-4-6`.
 5. **PIIFilter** (`src/retrieval/guardrails.py`): regex-subs email/phone/SSN/CC/IP from generated answer with `[REDACTED_<TYPE>]`.
 
@@ -150,18 +226,18 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | Class | File | Role |
 |---|---|---|
 | `RAGPipeline` | `src/serving/pipeline.py` | Orchestrator — loads index, wires all components |
+| `CollectionPipeline` | `src/collection/pipeline.py` | Runs all 8 collectors concurrently via asyncio |
+| `AdaptiveChunker` | `src/chunking/chunker.py` | Selects chunking strategy per document type |
+| `FAISSIndex` | `src/embedding/faiss_index.py` | Dual FAISS+BM25 index with RRF hybrid search |
 | `HybridRetriever` | `src/retrieval/retriever.py` | Query embed + hybrid FAISS+BM25 search |
-| `LLMReranker` | `src/retrieval/reranker.py` | Batch LLM relevance scoring |
+| `LLMReranker` | `src/retrieval/reranker.py` | Batch LLM relevance scoring (always OpenAI) |
 | `RAGGenerator` | `src/generation/generator.py` | OpenAI grounded answer synthesis |
 | `AnthropicGenerator` | `src/generation/generator.py` | Anthropic grounded answer synthesis (same interface) |
 | `PromptGuard` | `src/retrieval/guardrails.py` | Injection detection |
 | `PIIFilter` | `src/retrieval/guardrails.py` | Output redaction |
+| `PhaseICheckpoint` | `src/checkpoint.py` | Saves/loads Phase I state to disk |
 | `QueryResult` | `src/serving/pipeline.py` | Full result dataclass (answer, citations, timings, cost) |
 | `InvoiceForecaster` | `src/forecasting/invoice_forecaster.py` | TimeFM 2.5 monthly revenue forecasting |
-
-### Observability
-
-`RAGPipeline.query()` is `@traceable(name="rag_query", run_type="chain")`. The child spans — `retrieve`, `rerank`, `generate` — are also `@traceable`, so LangSmith shows the full chain tree with latency and token cost per step.
 
 ### Phase III CLI Flags
 
@@ -175,10 +251,20 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `--no-pii` | False | Disable PII redaction |
 | `--json` | False | JSON output (single-shot only) |
 
+## Adding a New LLM Model
+
+Two files must be updated together:
+1. `src/generation/generator.py` — add entry to `_MODEL_PRICING` dict (input $/M, output $/M)
+2. `app/server.py` — add model ID to `_OPENAI_MODELS` or `_ANTHROPIC_MODELS` set
+
+The `ChatRequest` validator in `app/server.py` cross-checks provider/model pairs at request time, so both sets must be consistent.
+
 ## Enterprise Data Field Names
 
-These differ from intuitive assumptions — consult the enterprise data files directly:
+These differ from intuitive assumptions — consult the enterprise data files directly (`data/enterprise/`):
 - **invoices.json**: `invoice_date`, `line_items[].amount` (not `line_total`)
 - **psa_tickets.json**: `type` (not `ticket_type`), `title`, `technician`, `hours_billed`, `resolved_date`, `resolution_note` (string)
 - **crm_profiles.json**: `account_health` = `RED`/`YELLOW`/`GREEN`, contacts = `{cfo, it_manager, ar_contact}`
 - **contracts.json**: `effective_date`/`expiry_date`, `monthly_value`/`annual_value`, `sla_response_time` = dict
+- **communications.json**: invoice reminder email history (file is `communications.json`, not `comms.json`)
+- **clients.json**: master client list used by the forecasting UI (`/api/clients`)
