@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechVault — RAG Monitoring Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&family=Figtree:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* ── Design Tokens ──────────────────────────────────────────────────────── */
+    :root {
+      --bg-page:         #F3F5F9;
+      --bg-surface:      #FFFFFF;
+      --bg-header:       #0B1728;
+      --bg-hover:        #F8FAFC;
+
+      --blue:            #1B4FCC;
+      --blue-mid:        #2563EB;
+      --blue-light:      #3B82F6;
+      --blue-dim:        rgba(27, 79, 204, 0.08);
+      --sky:             #0284C7;
+
+      --success:  #059669;
+      --warning:  #D97706;
+      --danger:   #DC2626;
+      --purple:   #7C3AED;
+      --teal:     #0D9488;
+
+      --text-primary:   #0F172A;
+      --text-secondary: #334155;
+      --text-muted:     #64748B;
+      --text-faint:     #94A3B8;
+
+      --border:         #E2E8F0;
+      --border-mid:     #CBD5E1;
+
+      --font-display: 'Crimson Pro', Georgia, serif;
+      --font-body:    'Figtree', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+      --r-sm:  4px;
+      --r-md:  8px;
+      --r-lg:  12px;
+      --r-xl:  18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      background: var(--bg-header);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+    .header-sep {
+      width: 1px;
+      height: 20px;
+      background: rgba(255,255,255,0.15);
+    }
+    .header-subtitle {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.5);
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .header-nav {
+      display: flex;
+      gap: 4px;
+    }
+    .nav-link {
+      font-size: 0.8125rem;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: var(--r-sm);
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .nav-link.active { color: #fff; background: rgba(27,79,204,0.5); }
+
+    /* ── Main layout ─────────────────────────────────────────────────────────── */
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    .page-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .page-title span {
+      font-style: italic;
+      color: var(--blue);
+    }
+    .title-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #last-updated {
+      font-size: 0.75rem;
+      color: var(--text-faint);
+      font-family: var(--font-mono);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--r-md);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--blue-mid); }
+    .btn-ghost {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--bg-hover); }
+
+    /* ── Cards ───────────────────────────────────────────────────────────────── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .stat-card .label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stat-card .value {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .stat-card .sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .stat-card.accent-blue  { border-left: 3px solid var(--blue); }
+    .stat-card.accent-green { border-left: 3px solid var(--success); }
+    .stat-card.accent-amber { border-left: 3px solid var(--warning); }
+    .stat-card.accent-red   { border-left: 3px solid var(--danger); }
+    .stat-card.accent-purple{ border-left: 3px solid var(--purple); }
+    .stat-card.accent-teal  { border-left: 3px solid var(--teal); }
+
+    /* ── Chart panels ────────────────────────────────────────────────────────── */
+    .chart-row {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .chart-row.two   { grid-template-columns: 2fr 1fr; }
+    .chart-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .chart-row.one   { grid-template-columns: 1fr; }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 24px;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .panel-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .panel-badge {
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      color: var(--text-faint);
+      background: var(--bg-page);
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+    }
+    .chart-wrap {
+      position: relative;
+    }
+    .chart-wrap.h220 { height: 220px; }
+    .chart-wrap.h260 { height: 260px; }
+    .chart-wrap.h300 { height: 300px; }
+
+    /* ── Latency breakdown bar ───────────────────────────────────────────────── */
+    .latency-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-top: 4px;
+    }
+    .latency-segment {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .latency-segment-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+    .latency-segment-label { color: var(--text-secondary); font-weight: 500; }
+    .latency-segment-value { color: var(--text-muted); font-family: var(--font-mono); }
+    .bar-track {
+      height: 8px;
+      background: var(--bg-page);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+
+    /* ── Table ───────────────────────────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+    thead th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--bg-hover); }
+    tbody td {
+      padding: 10px 12px;
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+    .td-query {
+      max-width: 320px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .td-mono {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+    }
+    .badge-blue   { background: var(--blue-dim); color: var(--blue); }
+    .badge-green  { background: rgba(5,150,105,0.1); color: var(--success); }
+    .badge-red    { background: rgba(220,38,38,0.1); color: var(--danger); }
+    .badge-amber  { background: rgba(217,119,6,0.1); color: var(--warning); }
+    .badge-purple { background: rgba(124,58,237,0.1); color: var(--purple); }
+    .badge-grey   { background: var(--bg-page); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .source-tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: var(--r-sm);
+      font-size: 0.6rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: var(--blue-dim);
+      color: var(--blue);
+      margin: 1px;
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────────────── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      color: var(--text-faint);
+      gap: 8px;
+    }
+    .empty-state .icon { font-size: 2.5rem; opacity: 0.4; }
+    .empty-state .msg  { font-size: 0.9rem; }
+
+    /* ── Spinner ─────────────────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-mid);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error banner ────────────────────────────────────────────────────────── */
+    #error-banner {
+      display: none;
+      background: rgba(220,38,38,0.08);
+      border: 1px solid rgba(220,38,38,0.25);
+      color: var(--danger);
+      border-radius: var(--r-md);
+      padding: 12px 16px;
+      font-size: 0.8125rem;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .chart-row.two   { grid-template-columns: 1fr; }
+      .chart-row.three { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+      .chart-row.three { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-left">
+    <span class="header-logo">TechVault</span>
+    <div class="header-sep"></div>
+    <span class="header-subtitle">Enterprise Intelligence Hub</span>
+  </div>
+  <nav class="header-nav">
+    <a href="/"        class="nav-link">Chat</a>
+    <a href="/forecast" class="nav-link">Forecast</a>
+    <a href="/logs"    class="nav-link active">Monitoring</a>
+  </nav>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────────────────────── -->
+<main>
+  <div class="page-title-row">
+    <h1 class="page-title">RAG <span>Monitoring</span> Dashboard</h1>
+    <div class="title-actions">
+      <span id="last-updated"></span>
+      <button class="btn btn-ghost" onclick="loadStats()">
+        <span id="refresh-icon">&#8635;</span> Refresh
+      </button>
+      <button class="btn btn-primary" onclick="exportLogs()">Export JSON</button>
+    </div>
+  </div>
+
+  <div id="error-banner"></div>
+
+  <!-- ── KPI cards ─────────────────────────────────────────────────────────── -->
+  <div class="stat-grid">
+    <div class="stat-card accent-blue">
+      <div class="label">Total Queries</div>
+      <div class="value" id="kpi-total">—</div>
+      <div class="sub" id="kpi-success-sub"></div>
+    </div>
+    <div class="stat-card accent-amber">
+      <div class="label">Avg Latency</div>
+      <div class="value" id="kpi-latency">—</div>
+      <div class="sub">milliseconds end-to-end</div>
+    </div>
+    <div class="stat-card accent-green">
+      <div class="label">Total Cost</div>
+      <div class="value" id="kpi-cost">—</div>
+      <div class="sub" id="kpi-avg-cost-sub"></div>
+    </div>
+    <div class="stat-card accent-red">
+      <div class="label">Blocked Queries</div>
+      <div class="value" id="kpi-blocked">—</div>
+      <div class="sub" id="kpi-blocked-sub"></div>
+    </div>
+    <div class="stat-card accent-purple">
+      <div class="label">Total Tokens</div>
+      <div class="value" id="kpi-tokens">—</div>
+      <div class="sub" id="kpi-citations-sub"></div>
+    </div>
+    <div class="stat-card accent-teal">
+      <div class="label">PII Redacted</div>
+      <div class="value" id="kpi-pii">—</div>
+      <div class="sub">instances across all queries</div>
+    </div>
+  </div>
+
+  <!-- ── Row 1: Timeline + Model distribution ──────────────────────────────── -->
+  <div class="chart-row two">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Queries Over Time</span>
+        <span class="panel-badge" id="timeline-badge">by day</span>
+      </div>
+      <div class="chart-wrap h220">
+        <canvas id="chart-timeline"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Model Usage</span>
+        <span class="panel-badge" id="model-badge">distribution</span>
+      </div>
+      <div class="chart-wrap h220">
+        <canvas id="chart-models"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Row 2: Source types + Latency breakdown + Provider ────────────────── -->
+  <div class="chart-row three">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Source Types Retrieved</span>
+        <span class="panel-badge">across successful queries</span>
+      </div>
+      <div class="chart-wrap h260">
+        <canvas id="chart-sources"></canvas>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Avg Latency Breakdown</span>
+        <span class="panel-badge">ms per stage</span>
+      </div>
+      <div class="latency-bar-wrap" id="latency-breakdown">
+        <div class="empty-state"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Provider Split</span>
+        <span class="panel-badge">OpenAI vs Anthropic</span>
+      </div>
+      <div class="chart-wrap h260">
+        <canvas id="chart-providers"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Recent query history table ─────────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Recent Query History</span>
+      <span class="panel-badge" id="table-badge">last 50 interactions</span>
+    </div>
+    <div class="table-wrap" id="table-wrap">
+      <div class="empty-state"><div class="spinner"></div><div class="msg">Loading...</div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+/* ── Chart.js defaults ───────────────────────────────────────────────────── */
+Chart.defaults.font.family = "'Figtree', system-ui, sans-serif";
+Chart.defaults.font.size   = 12;
+Chart.defaults.color       = '#64748B';
+
+const PALETTE = ['#1B4FCC','#059669','#D97706','#DC2626','#7C3AED','#0D9488','#0284C7','#DB2777'];
+const BORDER  = '#E2E8F0';
+
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
+function fmt(n, decimals = 0) {
+  if (n === null || n === undefined || n === '—') return '—';
+  return Number(n).toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+function fmtMs(ms) { return ms >= 1000 ? (ms/1000).toFixed(1)+'s' : Math.round(ms)+'ms'; }
+function fmtUsd(v) { return '$' + Number(v).toFixed(v < 0.01 ? 6 : 4); }
+function modelBadge(model) {
+  const cls = model.startsWith('claude') ? 'badge-purple' : 'badge-blue';
+  return `<span class="badge ${cls}">${model}</span>`;
+}
+function providerBadge(p) {
+  return `<span class="badge ${p === 'anthropic' ? 'badge-purple' : 'badge-blue'}">${p}</span>`;
+}
+function blockedBadge(blocked) {
+  return blocked
+    ? '<span class="badge badge-red">Blocked</span>'
+    : '<span class="badge badge-green">OK</span>';
+}
+function sourceTag(st) { return `<span class="source-tag">${st}</span>`; }
+function shortTs(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {month:'short', day:'numeric'})
+       + ' ' + d.toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ── Fetch & render ──────────────────────────────────────────────────────── */
+async function loadStats() {
+  const icon = document.getElementById('refresh-icon');
+  icon.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;"></span>';
+
+  const banner = document.getElementById('error-banner');
+  banner.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/logs/stats');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const d = await res.json();
+
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString();
+
+    if (!d.total_queries) {
+      renderEmpty();
+      return;
+    }
+
+    renderKPIs(d);
+    renderTimeline(d.queries_by_day || {});
+    renderModels(d.model_distribution || {});
+    renderSources(d.source_type_distribution || {});
+    renderLatencyBreakdown(d);
+    renderProviders(d.provider_distribution || {});
+    renderTable(d.recent || []);
+  } catch (err) {
+    banner.textContent = 'Failed to load stats: ' + err.message;
+    banner.style.display = 'block';
+  } finally {
+    icon.innerHTML = '&#8635;';
+  }
+}
+
+function renderEmpty() {
+  ['kpi-total','kpi-latency','kpi-cost','kpi-blocked','kpi-tokens','kpi-pii']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = '0'; });
+  document.getElementById('table-wrap').innerHTML =
+    '<div class="empty-state"><div class="icon">&#128203;</div>' +
+    '<div class="msg">No chat interactions logged yet. Start chatting to see data here.</div></div>';
+  document.getElementById('latency-breakdown').innerHTML =
+    '<div class="empty-state" style="padding:20px"><div class="msg">No data yet</div></div>';
+}
+
+/* ── KPI cards ───────────────────────────────────────────────────────────── */
+function renderKPIs(d) {
+  document.getElementById('kpi-total').textContent    = fmt(d.total_queries);
+  document.getElementById('kpi-success-sub').textContent =
+    fmt(d.successful_queries) + ' successful, ' + fmt(d.blocked_queries) + ' blocked';
+
+  document.getElementById('kpi-latency').textContent  = fmtMs(d.avg_latency_ms);
+  document.getElementById('kpi-cost').textContent      = fmtUsd(d.total_cost_usd);
+  document.getElementById('kpi-avg-cost-sub').textContent =
+    fmtUsd(d.avg_cost_usd) + ' avg per query';
+
+  document.getElementById('kpi-blocked').textContent  = fmt(d.blocked_queries);
+  document.getElementById('kpi-blocked-sub').textContent =
+    fmt(d.blocked_pct, 1) + '% of all queries';
+
+  document.getElementById('kpi-tokens').textContent   = fmt(d.total_tokens);
+  document.getElementById('kpi-citations-sub').textContent =
+    fmt(d.avg_citations, 1) + ' avg citations per answer';
+
+  document.getElementById('kpi-pii').textContent      = fmt(d.total_pii_redacted);
+}
+
+/* ── Timeline ────────────────────────────────────────────────────────────── */
+function renderTimeline(byDay) {
+  destroyChart('timeline');
+  const labels = Object.keys(byDay);
+  const values = Object.values(byDay);
+  if (!labels.length) return;
+
+  // Display last 30 days max
+  const last30 = labels.slice(-30);
+  const vals30  = values.slice(-30);
+
+  document.getElementById('timeline-badge').textContent =
+    last30.length + ' days';
+
+  const ctx = document.getElementById('chart-timeline').getContext('2d');
+  charts['timeline'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: last30.map(d => {
+        const dt = new Date(d + 'T00:00:00');
+        return dt.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+      }),
+      datasets: [{
+        label: 'Queries',
+        data: vals30,
+        borderColor: '#1B4FCC',
+        backgroundColor: 'rgba(27,79,204,0.08)',
+        borderWidth: 2,
+        pointRadius: vals30.length < 15 ? 4 : 2,
+        pointBackgroundColor: '#1B4FCC',
+        tension: 0.35,
+        fill: true,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: BORDER }, ticks: { maxTicksLimit: 8 } },
+        y: { grid: { color: BORDER }, ticks: { stepSize: 1 }, beginAtZero: true },
+      },
+    },
+  });
+}
+
+/* ── Models doughnut ─────────────────────────────────────────────────────── */
+function renderModels(modelDist) {
+  destroyChart('models');
+  const labels = Object.keys(modelDist);
+  const values = Object.values(modelDist);
+  if (!labels.length) return;
+
+  document.getElementById('model-badge').textContent = labels.length + ' models';
+
+  const ctx = document.getElementById('chart-models').getContext('2d');
+  charts['models'] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: values, backgroundColor: PALETTE, borderWidth: 2, borderColor: '#fff' }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '60%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 10, padding: 12, font: { size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+/* ── Source types bar ────────────────────────────────────────────────────── */
+function renderSources(sourceDist) {
+  destroyChart('sources');
+  const sorted = Object.entries(sourceDist).sort((a,b) => b[1]-a[1]);
+  if (!sorted.length) return;
+
+  const labels = sorted.map(e => e[0]);
+  const values = sorted.map(e => e[1]);
+
+  const ctx = document.getElementById('chart-sources').getContext('2d');
+  charts['sources'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Citation hits',
+        data: values,
+        backgroundColor: labels.map((_,i) => PALETTE[i % PALETTE.length] + 'CC'),
+        borderColor:      labels.map((_,i) => PALETTE[i % PALETTE.length]),
+        borderWidth: 1,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: BORDER }, beginAtZero: true, ticks: { stepSize: 1 } },
+        y: { grid: { display: false } },
+      },
+    },
+  });
+}
+
+/* ── Latency breakdown ───────────────────────────────────────────────────── */
+function renderLatencyBreakdown(d) {
+  const wrap = document.getElementById('latency-breakdown');
+  const total = d.avg_latency_ms || 1;
+  const segments = [
+    { label: 'Retrieval',  value: d.avg_retrieval_ms,  color: '#1B4FCC' },
+    { label: 'Reranking',  value: d.avg_rerank_ms,     color: '#7C3AED' },
+    { label: 'Generation', value: d.avg_generation_ms, color: '#059669' },
+  ];
+
+  wrap.innerHTML = segments.map(s => {
+    const pct = Math.round((s.value / total) * 100);
+    return `
+      <div class="latency-segment">
+        <div class="latency-segment-header">
+          <span class="latency-segment-label">${s.label}</span>
+          <span class="latency-segment-value">${fmtMs(s.value)} (${pct}%)</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${s.color}"></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Add total row
+  wrap.innerHTML += `
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;display:flex;justify-content:space-between;font-size:0.75rem;">
+      <span style="color:var(--text-secondary);font-weight:600;">Total (avg)</span>
+      <span style="font-family:var(--font-mono);color:var(--text-muted)">${fmtMs(d.avg_latency_ms)}</span>
+    </div>`;
+}
+
+/* ── Provider doughnut ───────────────────────────────────────────────────── */
+function renderProviders(provDist) {
+  destroyChart('providers');
+  const labels = Object.keys(provDist);
+  const values = Object.values(provDist);
+  if (!labels.length) return;
+
+  const ctx = document.getElementById('chart-providers').getContext('2d');
+  charts['providers'] = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: ['#1B4FCC','#7C3AED'],
+        borderWidth: 2,
+        borderColor: '#fff',
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 10, padding: 14, font: { size: 11 } },
+        },
+      },
+    },
+  });
+}
+
+/* ── Recent queries table ────────────────────────────────────────────────── */
+function renderTable(records) {
+  const wrap = document.getElementById('table-wrap');
+  document.getElementById('table-badge').textContent =
+    'last ' + records.length + ' interactions';
+
+  if (!records.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="msg">No interactions yet.</div></div>';
+    return;
+  }
+
+  const rows = records.map(r => {
+    const types = (r.source_types || []).map(sourceTag).join('');
+    const ts = r.timestamp ? shortTs(r.timestamp) : '—';
+    return `
+      <tr>
+        <td class="td-mono" style="white-space:nowrap;color:var(--text-faint)">${ts}</td>
+        <td class="td-query" title="${r.query.replace(/"/g,'&quot;')}">${r.query}</td>
+        <td>${modelBadge(r.model || '—')}</td>
+        <td>${blockedBadge(r.blocked)}</td>
+        <td class="td-mono">${fmtMs(r.latency_ms?.total ?? 0)}</td>
+        <td class="td-mono">${r.tokens?.total ? fmt(r.tokens.total) : '—'}</td>
+        <td class="td-mono">${fmtUsd(r.estimated_cost_usd || 0)}</td>
+        <td>${r.citation_count ?? 0}</td>
+        <td style="max-width:160px">${types || '<span style="color:var(--text-faint);font-size:0.7rem">—</span>'}</td>
+        <td class="td-mono">${r.pii_redacted_count > 0
+          ? '<span class="badge badge-amber">'+r.pii_redacted_count+'</span>'
+          : '<span style="color:var(--text-faint)">0</span>'}</td>
+      </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Query</th>
+          <th>Model</th>
+          <th>Status</th>
+          <th>Latency</th>
+          <th>Tokens</th>
+          <th>Cost</th>
+          <th>Citations</th>
+          <th>Source Types</th>
+          <th>PII</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+/* ── Export ──────────────────────────────────────────────────────────────── */
+async function exportLogs() {
+  try {
+    const res = await fetch('/api/logs?limit=500');
+    const d = await res.json();
+    const blob = new Blob([JSON.stringify(d.records, null, 2)], {type: 'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'chat_logs_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    alert('Export failed: ' + err.message);
+  }
+}
+
+/* ── Boot ────────────────────────────────────────────────────────────────── */
+loadStats();
+// Auto-refresh every 60 seconds
+setInterval(loadStats, 60_000);
+</script>
+</body>
+</html>

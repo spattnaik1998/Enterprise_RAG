@@ -57,6 +57,9 @@ nltk>=3.8.0
 # LangSmith observability + cost tracking
 langsmith>=0.1.0
 
+# ── Supabase (database + vector store + chat logs) ───────────────────────────
+supabase>=2.3.0
+
 # ── Web Application (Phase III serving layer) ─────────────────────────────────
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0

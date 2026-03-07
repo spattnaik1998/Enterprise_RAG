@@ -32,12 +32,14 @@ if sys.platform == "win32":
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from pydantic import BaseModel, field_validator, model_validator
+
+from app.chat_logger import compute_stats, load_logs, log_interaction
 
 load_dotenv()
 
@@ -66,22 +68,24 @@ async def lifespan(app: FastAPI):
     """Load the RAG pipeline once at startup; clean up on shutdown."""
     global _pipeline
     try:
+        from src.embedding.supabase_index import SupabaseIndex
         from src.serving.pipeline import RAGPipeline
         from src.utils.logger import setup_logger
 
         setup_logger()
-        logger.info("[Server] Loading RAG pipeline...")
-        _pipeline = RAGPipeline(index_dir=INDEX_DIR)
+        logger.info("[Server] Connecting to Supabase index...")
+        supabase_index = SupabaseIndex()
+        vector_count = supabase_index.ntotal
+        logger.info(f"[Server] Supabase index ready | {vector_count:,} vectors")
+
+        _pipeline = RAGPipeline(index=supabase_index)
         logger.info(
             f"[Server] Pipeline ready | "
-            f"{_pipeline.index.faiss_index.ntotal:,} vectors | "
+            f"{vector_count:,} vectors | "
             f"default model={_pipeline.generator.model}"
         )
-    except FileNotFoundError as exc:
-        logger.error(
-            f"[Server] Index not found: {exc}\n"
-            "Run Phase II first: python -m src.main phase2"
-        )
+    except Exception as exc:
+        logger.error(f"[Server] Startup failed: {exc}")
         raise
     yield
     _pipeline = None
@@ -216,7 +220,7 @@ async def health():
         raise HTTPException(status_code=503, detail="Pipeline not ready")
     return {
         "status": "ok",
-        "vectors": _pipeline.index.faiss_index.ntotal,
+        "vectors": _pipeline.index.ntotal,
         "default_model": _pipeline.generator.model,
         "reranking_enabled": _pipeline.enable_reranking,
         "rerank_top_k": _pipeline.rerank_top_k,
@@ -332,7 +336,7 @@ async def chat(request: ChatRequest):
         for cit in result.citations
     ]
 
-    return ChatResponse(
+    response = ChatResponse(
         answer=result.answer,
         citations=citations,
         blocked=result.blocked,
@@ -353,3 +357,57 @@ async def chat(request: ChatRequest):
         model=result.model,
         provider=request.provider,
     )
+
+    # Persist interaction to JSONL log (non-blocking; errors must not affect the response)
+    try:
+        log_interaction(
+            session_id=request.session_id,
+            query=message,
+            answer=result.answer,
+            provider=request.provider,
+            model=result.model,
+            blocked=result.blocked,
+            blocked_reason=result.blocked_reason,
+            citations=result.citations,
+            retrieval_ms=result.retrieval_ms,
+            rerank_ms=result.rerank_ms,
+            generation_ms=result.generation_ms,
+            total_ms=result.total_ms,
+            prompt_tokens=result.prompt_tokens,
+            completion_tokens=result.completion_tokens,
+            total_tokens=result.prompt_tokens + result.completion_tokens,
+            estimated_cost_usd=result.estimated_cost_usd,
+            pii_redacted=result.pii_redacted,
+        )
+    except Exception as exc:
+        logger.warning(f"[API] Chat log write failed (non-fatal): {exc}")
+
+    return response
+
+
+# ---------------------------------------------------------------------------
+# Logs & monitoring routes
+# ---------------------------------------------------------------------------
+
+@app.get("/logs", include_in_schema=False)
+async def serve_logs_ui():
+    logs_path = STATIC_DIR / "logs.html"
+    if not logs_path.exists():
+        raise HTTPException(status_code=404, detail="Logs UI not found at app/static/logs.html")
+    return FileResponse(str(logs_path), media_type="text/html")
+
+
+@app.get("/api/logs")
+async def get_logs(
+    limit:  int = Query(default=50,  ge=1, le=500),
+    offset: int = Query(default=0,   ge=0),
+):
+    """Return paginated chat log records (newest first)."""
+    records = load_logs(limit=limit, offset=offset)
+    return {"records": records, "count": len(records), "limit": limit, "offset": offset}
+
+
+@app.get("/api/logs/stats")
+async def get_logs_stats():
+    """Return aggregated statistics over the full chat history."""
+    return compute_stats()

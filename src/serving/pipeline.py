@@ -38,7 +38,7 @@ from langsmith import traceable
 from loguru import logger
 
 from src.embedding.embedder import Embedder
-from src.embedding.faiss_index import FAISSIndex
+from src.embedding.faiss_index import FAISSIndex  # used for local / CLI mode
 from src.generation.generator import (
     RAGGenerator,
     RAGResponse,
@@ -145,6 +145,8 @@ class RAGPipeline:
     def __init__(
         self,
         index_dir: str = "data/index",
+        index=None,                    # Pre-built index (SupabaseIndex or FAISSIndex).
+                                       # When provided, index_dir is ignored.
         top_k: int = 10,
         rerank_top_k: int = 5,
         dense_weight: float = 0.7,
@@ -154,8 +156,12 @@ class RAGPipeline:
         enable_reranking: bool = True,
         enable_pii_filter: bool = True,
     ) -> None:
-        logger.info(f"[RAGPipeline] Loading index from {index_dir}...")
-        self.index = FAISSIndex.load(Path(index_dir))
+        if index is not None:
+            logger.info("[RAGPipeline] Using pre-built index (Supabase mode).")
+            self.index = index
+        else:
+            logger.info(f"[RAGPipeline] Loading index from {index_dir}...")
+            self.index = FAISSIndex.load(Path(index_dir))
 
         self.embedder = Embedder()
         self.retriever = HybridRetriever(
@@ -179,7 +185,7 @@ class RAGPipeline:
         self.pii_filter = PIIFilter() if enable_pii_filter else None
 
         logger.info(
-            f"[RAGPipeline] Ready | {self.index.faiss_index.ntotal} vectors | "
+            f"[RAGPipeline] Ready | {self.index.ntotal} vectors | "
             f"model={generator_model} | rerank={enable_reranking}"
         )
 

@@ -65,6 +65,7 @@ python -m eval.run_eval --models gpt-4o-mini && echo "PASS" || echo "FAIL"
 | `--judge-model TEXT` | `gpt-4o-mini` | OpenAI model used as LLM judge |
 | `--top-k INT` | 20 | Candidates retrieved before reranking |
 | `--rerank-top-k INT` | 10 | Chunks kept after reranking |
+| `--index-dir PATH` | `data/index` | FAISS index directory |
 | `--seed INT` | 42 | RNG seed for reproducible sampling |
 | `--quiet` | off | Suppress progress bar |
 
@@ -120,6 +121,8 @@ python -m eval.run_eval --models gpt-4o-mini && echo "PASS" || echo "FAIL"
 **Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, `app/server.py`, and `eval/run_eval.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
 
 **TimeFM note**: The forecasting feature requires a local build of TimeFM. The server returns a 503 with install instructions if the package is missing. NLTK punkt tokenizer is auto-downloaded on the first Phase II run.
+
+**Testing note**: `pytest` and `pytest-asyncio` are in `requirements.txt` but no test suite exists yet in the project. There is no `tests/` directory to run.
 
 ## Architecture
 
