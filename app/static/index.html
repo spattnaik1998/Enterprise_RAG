@@ -745,6 +745,43 @@
 
   <!-- ── Application Logic ──────────────────────────────────────────────────────── -->
   <script>
+    // ── Auth guard + global fetch interceptor ──────────────────────────────────
+    // Throws on failure so JS execution halts before initApp / event listeners.
+    (function installPortalAuth() {
+      function readAuth() {
+        try { return JSON.parse(localStorage.getItem('portal_auth') || 'null'); }
+        catch(e) { return null; }
+      }
+      const auth = readAuth();
+      if (!auth || auth.role !== 'msp') {
+        document.documentElement.style.visibility = 'hidden';
+        window.location.replace('/');
+        throw new Error('portal: unauthenticated');   // halts this script block
+      }
+      // Intercept every fetch — read token fresh each time so stale closures
+      // never cause a mismatch after token refresh or re-login.
+      const _origFetch = window.fetch.bind(window);
+      window.fetch = function(resource, init) {
+        const url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
+        if (url.includes('/api/')) {
+          const current = readAuth();
+          const token   = current ? current.token : '';
+          const merged  = Object.assign({}, init || {});
+          const hdrs    = Object.assign({ 'Authorization': 'Bearer ' + token },
+                                        merged.headers || {});
+          merged.headers = hdrs;
+          init = merged;
+        }
+        return _origFetch(resource, init).then(function(res) {
+          if ((res.status === 401 || res.status === 403) && url.includes('/api/')) {
+            localStorage.removeItem('portal_auth');
+            window.location.replace('/');
+          }
+          return res;
+        });
+      };
+    })();
+
     // ── Config ─────────────────────────────────────────────────────────────────
     const API = window.location.origin;
     marked.setOptions({ breaks: true, gfm: true });

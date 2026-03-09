@@ -1,21 +1,38 @@
 """
 TechVault Enterprise RAG - Web API Server
 ------------------------------------------
-FastAPI server that wraps the Phase III RAGPipeline and serves the chat UI.
+FastAPI server that wraps the Phase III RAGPipeline and serves the chat UI
+plus the Client Portal with JWT-based authentication.
 
-Endpoints:
-  GET  /                          -> serve app/static/index.html
+Public routes (no auth required):
+  GET  /                          -> serve app/static/landing.html (dual login)
+  GET  /rag                       -> serve app/static/index.html   (RAG chat -- MSP)
   GET  /forecast                  -> serve app/static/forecast.html
-  GET  /api/health                -> pipeline status, vector count, available models
-  POST /api/chat                  -> run full RAG query with user-selected LLM
-  GET  /api/clients               -> list all clients from invoice data
-  GET  /api/forecast/{client_id}  -> TimeFM revenue forecast for a client
+  GET  /logs                      -> serve app/static/logs.html
+  GET  /msp                       -> serve app/static/msp_portal.html
+  GET  /client                    -> serve app/static/client_portal.html
+
+Auth endpoints (no token needed):
+  POST /api/auth/login            -> {token, role, client_id, client_name, username}
+
+MSP-only endpoints (Bearer token, role=msp):
+  GET  /api/health                -> pipeline status + model info
+  POST /api/chat                  -> full RAG query
+  GET  /api/clients               -> client list (forecasting)
+  GET  /api/forecast/{client_id}  -> TimeFM revenue forecast
+  GET  /api/logs                  -> paginated chat history
+  GET  /api/logs/stats            -> chat statistics
+  GET  /api/msp/tickets           -> all service tickets (filterable)
+  GET  /api/msp/tickets/{id}      -> single ticket detail
+  PATCH /api/msp/tickets/{id}     -> update ticket (status, assignee, notes)
+  GET  /api/msp/ticket-stats      -> ticket counts by status
+
+Client-only endpoints (Bearer token, role=client):
+  GET  /api/portal/tickets        -> client's own tickets
+  POST /api/portal/tickets        -> create a new service ticket
 
 Run from the project root (Enterprise_RAG/):
     uvicorn app.server:app --reload --port 8000
-
-The pipeline loads data/index/ relative to CWD, so the working directory
-MUST be Enterprise_RAG/ when starting the server.
 """
 from __future__ import annotations
 
@@ -31,17 +48,36 @@ if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+# Load .env BEFORE any local imports so JWT_SECRET, SUPABASE_* etc. are
+# in os.environ when app.auth / app.portal_db read them at module level.
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+load_dotenv()
+
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from pydantic import BaseModel, field_validator, model_validator
 
+from app.auth import (
+    create_token,
+    get_current_user,
+    require_client,
+    require_msp,
+    verify_password,
+)
 from app.chat_logger import compute_stats, load_logs, log_interaction
-
-load_dotenv()
+from app.portal_db import (
+    create_ticket,
+    get_all_tickets,
+    get_ticket_by_id,
+    get_ticket_stats,
+    get_tickets_for_client,
+    get_user_by_username,
+    update_last_login,
+    update_ticket,
+)
 
 # ---------------------------------------------------------------------------
 # Paths & constants
@@ -181,6 +217,66 @@ class ChatResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Portal auth models
+# ---------------------------------------------------------------------------
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class LoginResponse(BaseModel):
+    token: str
+    role: str
+    username: str
+    client_id: str | None = None
+    client_name: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Portal ticket models
+# ---------------------------------------------------------------------------
+
+VALID_PRIORITIES = {"low", "medium", "high", "critical"}
+VALID_CATEGORIES = {"network", "hardware", "software", "security", "email", "cloud", "backup", "other"}
+VALID_STATUSES   = {"open", "in_progress", "waiting_client", "resolved", "closed"}
+
+
+class CreateTicketRequest(BaseModel):
+    title: str
+    description: str
+    priority: str = "medium"
+    category: str = "other"
+
+    @field_validator("priority")
+    @classmethod
+    def validate_priority(cls, v: str) -> str:
+        if v not in VALID_PRIORITIES:
+            raise ValueError(f"priority must be one of {sorted(VALID_PRIORITIES)}")
+        return v
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, v: str) -> str:
+        if v not in VALID_CATEGORIES:
+            raise ValueError(f"category must be one of {sorted(VALID_CATEGORIES)}")
+        return v
+
+
+class UpdateTicketRequest(BaseModel):
+    status: str | None = None
+    assigned_to: str | None = None
+    engineer_notes: str | None = None
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_STATUSES:
+            raise ValueError(f"status must be one of {sorted(VALID_STATUSES)}")
+        return v
+
+
+# ---------------------------------------------------------------------------
 # Generator factory
 # ---------------------------------------------------------------------------
 
@@ -198,11 +294,39 @@ def _make_generator(provider: str, model: str):
 # ---------------------------------------------------------------------------
 
 @app.get("/", include_in_schema=False)
-async def serve_ui():
-    index_path = STATIC_DIR / "index.html"
-    if not index_path.exists():
-        raise HTTPException(status_code=404, detail="UI not found at app/static/index.html")
-    return FileResponse(str(index_path), media_type="text/html")
+async def serve_landing():
+    """Serve the dual-login landing page."""
+    path = STATIC_DIR / "landing.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="landing.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
+@app.get("/rag", include_in_schema=False)
+async def serve_rag_ui():
+    """Serve the RAG chat UI (MSP only -- guarded client-side)."""
+    path = STATIC_DIR / "index.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="index.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
+@app.get("/msp", include_in_schema=False)
+async def serve_msp_portal():
+    """Serve the MSP portal hub."""
+    path = STATIC_DIR / "msp_portal.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="msp_portal.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
+@app.get("/client", include_in_schema=False)
+async def serve_client_portal():
+    """Serve the client portal (ticket creation + status)."""
+    path = STATIC_DIR / "client_portal.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="client_portal.html not found")
+    return FileResponse(str(path), media_type="text/html")
 
 
 @app.get("/forecast", include_in_schema=False)
@@ -213,8 +337,128 @@ async def serve_forecast_ui():
     return FileResponse(str(forecast_path), media_type="text/html")
 
 
+# ---------------------------------------------------------------------------
+# Auth routes
+# ---------------------------------------------------------------------------
+
+@app.post("/api/auth/login", response_model=LoginResponse)
+async def login(request: LoginRequest):
+    """
+    Authenticate a portal user (MSP admin or client).
+    Returns a signed JWT on success.
+    """
+    user = get_user_by_username(request.username.strip().lower())
+    if user is None or not verify_password(request.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid username or password.")
+
+    token = create_token(
+        username=user["username"],
+        role=user["role"],
+        client_id=user.get("client_id"),
+        client_name=user.get("client_name"),
+    )
+    update_last_login(user["username"])
+    logger.info(f"[Auth] Login: username={user['username']} role={user['role']}")
+    return LoginResponse(
+        token=token,
+        role=user["role"],
+        username=user["username"],
+        client_id=user.get("client_id"),
+        client_name=user.get("client_name"),
+    )
+
+
+# ---------------------------------------------------------------------------
+# Client portal ticket routes
+# ---------------------------------------------------------------------------
+
+@app.get("/api/portal/tickets")
+async def portal_list_tickets(user: dict = Depends(require_client)):
+    """Return all tickets belonging to the authenticated client."""
+    client_id = user["client_id"]
+    tickets = get_tickets_for_client(client_id)
+    return {"tickets": tickets, "count": len(tickets)}
+
+
+@app.post("/api/portal/tickets", status_code=201)
+async def portal_create_ticket(
+    request: CreateTicketRequest,
+    user: dict = Depends(require_client),
+):
+    """Create a new service ticket for the authenticated client."""
+    try:
+        ticket = create_ticket(
+            client_id=user["client_id"],
+            client_name=user["client_name"],
+            title=request.title.strip(),
+            description=request.description.strip(),
+            priority=request.priority,
+            category=request.category,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+    logger.info(
+        f"[Portal] Ticket created | client={user['client_id']} | "
+        f"ticket={ticket.get('ticket_number')}"
+    )
+    return ticket
+
+
+# ---------------------------------------------------------------------------
+# MSP ticket management routes
+# ---------------------------------------------------------------------------
+
+@app.get("/api/msp/tickets")
+async def msp_list_tickets(
+    status:    str | None = Query(default=None),
+    client_id: str | None = Query(default=None),
+    limit:     int        = Query(default=100, ge=1, le=500),
+    offset:    int        = Query(default=0, ge=0),
+    _user: dict = Depends(require_msp),
+):
+    """Return all service tickets with optional filters (MSP only)."""
+    tickets = get_all_tickets(
+        status_filter=status,
+        client_id_filter=client_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {"tickets": tickets, "count": len(tickets), "limit": limit, "offset": offset}
+
+
+@app.get("/api/msp/tickets/{ticket_id}")
+async def msp_get_ticket(ticket_id: str, _user: dict = Depends(require_msp)):
+    """Return a single service ticket by ID (MSP only)."""
+    ticket = get_ticket_by_id(ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=404, detail=f"Ticket {ticket_id} not found.")
+    return ticket
+
+
+@app.patch("/api/msp/tickets/{ticket_id}")
+async def msp_update_ticket(
+    ticket_id: str,
+    request: UpdateTicketRequest,
+    _user: dict = Depends(require_msp),
+):
+    """Update ticket status, assignee, or engineer notes (MSP only)."""
+    updates = request.model_dump(exclude_none=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update.")
+    updated = update_ticket(ticket_id, updates)
+    if updated is None:
+        raise HTTPException(status_code=404, detail=f"Ticket {ticket_id} not found or update failed.")
+    return updated
+
+
+@app.get("/api/msp/ticket-stats")
+async def msp_ticket_stats(_user: dict = Depends(require_msp)):
+    """Return ticket counts grouped by status (MSP dashboard)."""
+    return get_ticket_stats()
+
+
 @app.get("/api/health")
-async def health():
+async def health(_user: dict = Depends(require_msp)):
     """Return pipeline status, index metadata, and available models."""
     if _pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not ready")
@@ -233,7 +477,7 @@ async def health():
 
 
 @app.get("/api/clients")
-async def list_clients():
+async def list_clients(_user: dict = Depends(require_msp)):
     """Return all client IDs and names from invoice data."""
     global _forecaster
     try:
@@ -249,7 +493,7 @@ async def list_clients():
 
 
 @app.get("/api/forecast/{client_id}")
-async def forecast_invoices(client_id: str, horizon: int = 6):
+async def forecast_invoices(client_id: str, horizon: int = 6, _user: dict = Depends(require_msp)):
     """
     Run TimeFM revenue forecast for a client.
 
@@ -293,7 +537,7 @@ async def forecast_invoices(client_id: str, horizon: int = 6):
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
     """
     Run the full RAG pipeline for a user question.
 
@@ -401,6 +645,7 @@ async def serve_logs_ui():
 async def get_logs(
     limit:  int = Query(default=50,  ge=1, le=500),
     offset: int = Query(default=0,   ge=0),
+    _user: dict = Depends(require_msp),
 ):
     """Return paginated chat log records (newest first)."""
     records = load_logs(limit=limit, offset=offset)
@@ -408,6 +653,6 @@ async def get_logs(
 
 
 @app.get("/api/logs/stats")
-async def get_logs_stats():
+async def get_logs_stats(_user: dict = Depends(require_msp)):
     """Return aggregated statistics over the full chat history."""
     return compute_stats()
