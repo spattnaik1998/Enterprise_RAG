@@ -38,6 +38,8 @@ from langsmith import traceable
 from loguru import logger
 
 from src.context.manager import ContextManager
+from src.observability.collector import TraceCollector, get_active_collector
+from src.observability.schemas import TraceEvent
 from src.embedding.embedder import Embedder
 from src.embedding.faiss_index import FAISSIndex  # used for local / CLI mode
 from src.generation.generator import (
@@ -93,6 +95,9 @@ class QueryResult:
 
     # Context management (Feature 3)
     context_bundle: object = None   # ContextBundle | None
+
+    # Observability (Feature 4)
+    trace_id: str = ""
 
     @property
     def total_ms(self) -> float:
@@ -198,99 +203,157 @@ class RAGPipeline:
     def query(self, user_query: str, generator=None, fast_path: bool = False) -> QueryResult:
         """
         Run the full RAG pipeline for a single user query.
-
-        Steps:
-            1. Prompt injection guardrail check
-            2. Hybrid retrieval (FAISS + BM25 + RRF)
-            3. LLM reranking (top_k -> rerank_top_k)
-            4. Answer generation with grounded context
-            5. PII redaction on the generated answer
-
-        Args:
-            user_query: The raw question from the user.
-            generator:  Optional generator instance (RAGGenerator or
-                        AnthropicGenerator).  Falls back to self.generator
-                        (gpt-4o-mini) when not provided.
-
-        Returns:
-            QueryResult with answer, citations, timing, and token stats.
         """
+        import hashlib
         logger.info(f"[RAGPipeline] Query: {user_query[:100]!r}")
 
-        # -- 1. Guardrail -------------------------------------------------------
-        guard_result = self.guard.check(user_query)
-        if not guard_result.passed:
-            return QueryResult(
+        # Determine model for trace metadata
+        active_gen = generator if generator is not None else self.generator
+        model_name = getattr(active_gen, "model", "unknown")
+
+        session_id = hashlib.sha256(user_query.encode()).hexdigest()[:12]
+
+        with TraceCollector(
+            session_id=session_id,
+            query=user_query,
+            model=model_name,
+            user_role="msp",  # pipeline-level default; gateway sets accurate role
+        ) as tc:
+            # -- query_start event --
+            tc.add_event(TraceEvent(
+                event_type="query_start",
+                payload={"query_redacted": user_query[:200], "fast_path": fast_path},
+            ))
+
+            # -- 1. Guardrail --------------------------------------------------
+            guard_result = self.guard.check(user_query)
+            if not guard_result.passed:
+                tc.add_event(TraceEvent(
+                    event_type="guardrail_block",
+                    payload={"reason": guard_result.blocked_reason},
+                ))
+                tc.set_verdict("guardrail_block")
+                return QueryResult(
+                    query=user_query,
+                    answer=guard_result.blocked_reason,
+                    citations=[],
+                    pii_redacted=[],
+                    blocked=True,
+                    blocked_reason=guard_result.blocked_reason,
+                )
+
+            # -- 2. Retrieve ---------------------------------------------------
+            t0 = time.perf_counter()
+            candidates = self.retriever.retrieve(user_query)
+            retrieval_ms = (time.perf_counter() - t0) * 1000
+            tc.add_event(TraceEvent(
+                event_type="retrieval",
+                payload={
+                    "n_candidates": len(candidates),
+                    "chunk_ids": [getattr(c, "id", str(i)) for i, c in enumerate(candidates[:5])],
+                },
+                duration_ms=retrieval_ms,
+            ))
+
+            # -- 3. Rerank -----------------------------------------------------
+            t1 = time.perf_counter()
+            if self.enable_reranking and self.reranker is not None:
+                reranked = self.reranker.rerank(user_query, candidates)
+            else:
+                reranked = candidates[: self.rerank_top_k]
+            rerank_ms = (time.perf_counter() - t1) * 1000
+            tc.add_event(TraceEvent(
+                event_type="rerank",
+                payload={
+                    "n_reranked": len(reranked),
+                    "skipped": not (self.enable_reranking and self.reranker is not None),
+                },
+                duration_ms=rerank_ms,
+            ))
+
+            # -- 4. Context management -----------------------------------------
+            context_bundle = self.context_manager.get_context(
                 query=user_query,
-                answer=guard_result.blocked_reason,
-                citations=[],
-                pii_redacted=[],
-                blocked=True,
-                blocked_reason=guard_result.blocked_reason,
+                chunks=reranked,
+                fast_path=fast_path,
+            )
+            tc.add_event(TraceEvent(
+                event_type="context_pack",
+                payload={
+                    "total_tokens": context_bundle.total_tokens,
+                    "budget_tokens": context_bundle.budget_tokens,
+                    "truncated": context_bundle.truncated,
+                    "n_pieces": len(context_bundle.pieces),
+                },
+            ))
+            chunks_for_gen = [
+                type("_ChunkProxy", (), {
+                    "text":         p.text,
+                    "source_type":  p.source_type,
+                    "source":       p.source,
+                    "id":           p.id,
+                    "score":        p.relevance_score,
+                    "metadata":     {},
+                })()
+                for p in context_bundle.pieces
+            ] if context_bundle.pieces else reranked
+
+            # -- 5. Generate ---------------------------------------------------
+            t2 = time.perf_counter()
+            rag_response: RAGResponse = active_gen.generate(user_query, chunks_for_gen)
+            generation_ms = (time.perf_counter() - t2) * 1000
+            tc.add_event(TraceEvent(
+                event_type="generate",
+                payload={
+                    "model": rag_response.model,
+                    "answer_len": len(rag_response.answer or ""),
+                    "n_citations": len(rag_response.citations),
+                    "prompt_tokens": rag_response.prompt_tokens,
+                    "completion_tokens": rag_response.completion_tokens,
+                },
+                duration_ms=generation_ms,
+                cost_usd=_cost_usd(rag_response.model, rag_response.prompt_tokens, rag_response.completion_tokens),
+            ))
+
+            # -- 6. PII Filter -------------------------------------------------
+            answer = rag_response.answer
+            pii_redacted: list[str] = []
+            if self.pii_filter:
+                answer, pii_redacted = self.pii_filter.redact(answer)
+                if pii_redacted:
+                    tc.add_event(TraceEvent(
+                        event_type="pii_redact",
+                        payload={"redacted_types": pii_redacted},
+                    ))
+                    tc.set_verdict("pii_redacted")
+
+            # -- verdict -------------------------------------------------------
+            if tc.trace.verdict == "success":
+                tc.add_event(TraceEvent(
+                    event_type="verdict",
+                    payload={"outcome": "success"},
+                ))
+            tc.set_verdict(tc.trace.verdict)
+
+            logger.info(
+                f"[RAGPipeline] Complete | "
+                f"retrieve={retrieval_ms:.0f}ms "
+                f"rerank={rerank_ms:.0f}ms "
+                f"generate={generation_ms:.0f}ms | "
+                f"tokens={rag_response.total_tokens}"
             )
 
-        # -- 2. Retrieve --------------------------------------------------------
-        t0 = time.perf_counter()
-        candidates = self.retriever.retrieve(user_query)
-        retrieval_ms = (time.perf_counter() - t0) * 1000
-
-        # -- 3. Rerank ----------------------------------------------------------
-        t1 = time.perf_counter()
-        if self.enable_reranking and self.reranker is not None:
-            reranked = self.reranker.rerank(user_query, candidates)
-        else:
-            reranked = candidates[: self.rerank_top_k]
-        rerank_ms = (time.perf_counter() - t1) * 1000
-
-        # -- 4. Context management (budget-aware packing + LiM reorder) --------
-        context_bundle = self.context_manager.get_context(
-            query=user_query,
-            chunks=reranked,
-            fast_path=fast_path,
-        )
-        # Pass the reordered, budget-constrained pieces to the generator
-        chunks_for_gen = [
-            type("_ChunkProxy", (), {
-                "text":         p.text,
-                "source_type":  p.source_type,
-                "source":       p.source,
-                "id":           p.id,
-                "score":        p.relevance_score,
-                "metadata":     {},
-            })()
-            for p in context_bundle.pieces
-        ] if context_bundle.pieces else reranked
-
-        # -- 5. Generate --------------------------------------------------------
-        t2 = time.perf_counter()
-        active_generator = generator if generator is not None else self.generator
-        rag_response: RAGResponse = active_generator.generate(user_query, chunks_for_gen)
-        generation_ms = (time.perf_counter() - t2) * 1000
-
-        # -- 6. PII Filter ------------------------------------------------------
-        answer = rag_response.answer
-        pii_redacted: list[str] = []
-        if self.pii_filter:
-            answer, pii_redacted = self.pii_filter.redact(answer)
-
-        logger.info(
-            f"[RAGPipeline] Complete | "
-            f"retrieve={retrieval_ms:.0f}ms "
-            f"rerank={rerank_ms:.0f}ms "
-            f"generate={generation_ms:.0f}ms | "
-            f"tokens={rag_response.total_tokens}"
-        )
-
-        return QueryResult(
-            query=user_query,
-            answer=answer,
-            citations=rag_response.citations,
-            pii_redacted=pii_redacted,
-            retrieval_ms=retrieval_ms,
-            rerank_ms=rerank_ms,
-            generation_ms=generation_ms,
-            model=rag_response.model,
-            prompt_tokens=rag_response.prompt_tokens,
-            completion_tokens=rag_response.completion_tokens,
-            context_bundle=context_bundle,
-        )
+            return QueryResult(
+                query=user_query,
+                answer=answer,
+                citations=rag_response.citations,
+                pii_redacted=pii_redacted,
+                retrieval_ms=retrieval_ms,
+                rerank_ms=rerank_ms,
+                generation_ms=generation_ms,
+                model=rag_response.model,
+                prompt_tokens=rag_response.prompt_tokens,
+                completion_tokens=rag_response.completion_tokens,
+                context_bundle=context_bundle,
+                trace_id=tc.trace_id,
+            )

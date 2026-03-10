@@ -3,10 +3,17 @@ name: Gold-Task CI Gate
 on:
   pull_request:
     branches: [main]
+  schedule:
+    # Run judge calibration weekly on Sundays at 02:00 UTC
+    - cron: "0 2 * * 0"
   workflow_dispatch:
     inputs:
       update_baseline:
         description: "Update ci_baseline.json after run"
+        required: false
+        default: "false"
+      run_calibration:
+        description: "Run judge calibration job (true/false)"
         required: false
         default: "false"
 
@@ -62,3 +69,19 @@ jobs:
           name: ci-eval-result
           path: eval/results/ci_baseline.json
           retention-days: 30
+
+  calibrate-judge:
+    runs-on: ubuntu-latest
+    # Run weekly on Sunday (not every PR -- costs ~$0.05)
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_calibration == 'true')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run judge calibration
+        run: python -m eval.calibrate_judge
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

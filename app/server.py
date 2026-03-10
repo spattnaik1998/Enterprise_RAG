@@ -708,3 +708,106 @@ async def get_logs(
 async def get_logs_stats(_user: dict = Depends(require_msp)):
     """Return aggregated statistics over the full chat history."""
     return compute_stats()
+
+
+# ---------------------------------------------------------------------------
+# Trace observability endpoints (Feature 4)
+# ---------------------------------------------------------------------------
+
+@app.get("/api/traces")
+async def list_traces(
+    verdict: Optional[str] = Query(default=None),
+    capture_reason: Optional[str] = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    _user: dict = Depends(require_msp),
+):
+    """List recent agent traces from the failure-biased sampler store."""
+    from src.observability.store import TraceStore
+    store = TraceStore("data/traces")
+    traces = store.query(verdict=verdict, capture_reason=capture_reason, limit=limit)
+    return {"traces": traces, "count": len(traces)}
+
+
+@app.get("/api/traces/{trace_id}")
+async def get_trace(trace_id: str, _user: dict = Depends(require_msp)):
+    """Return a full trace case file by trace_id."""
+    from src.observability.store import TraceStore
+    store = TraceStore("data/traces")
+    trace = store.get(trace_id)
+    if trace is None:
+        raise HTTPException(status_code=404, detail=f"Trace {trace_id} not found.")
+    return trace
+
+
+@app.post("/api/traces/{trace_id}/replay")
+async def replay_trace(trace_id: str, _user: dict = Depends(require_msp)):
+    """Re-run a historical trace through the current pipeline for diff comparison."""
+    if _pipeline is None:
+        raise HTTPException(status_code=503, detail="Pipeline not ready")
+    from src.observability.replayer import TraceReplayer
+    replayer = TraceReplayer(_pipeline)
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(None, replayer.replay, trace_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Trace {trace_id} not found or has no query.")
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Council Orchestrator endpoint (Feature 6)
+# ---------------------------------------------------------------------------
+
+class CouncilRequest(BaseModel):
+    message: str
+    user_role: str = "msp"
+    budget_tokens: int = 3000
+    session_id: Optional[str] = None
+
+
+class CouncilVerdictResponse(BaseModel):
+    accepted_answer: str
+    winning_agent: str
+    dissent_summary: str
+    escalated: bool
+    policy_reasons: list[str]
+    total_cost_usd: float
+    trace_id: str
+    hallucination_detected: bool
+    pii_concern: bool
+    latency_ms: float
+
+
+@app.post("/api/council", response_model=CouncilVerdictResponse)
+async def council_query(request: CouncilRequest, _user: dict = Depends(require_msp)):
+    """
+    Run the 3-agent Council pattern for a high-stakes MSP query.
+
+    FastCreative and ConservativeChecker agents run in parallel;
+    PolicyVerifier selects the better-grounded answer or escalates.
+
+    Latency: ~2,000 ms p95 (vs ~1,200 ms for single-agent mode).
+    Use for contract renewals, overdue escalations, and billing disputes.
+    """
+    if _pipeline is None:
+        raise HTTPException(status_code=503, detail="Pipeline not ready")
+
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    logger.info(f"[API] Council | role={request.user_role} | query={message[:80]!r}")
+
+    from src.agents.council import CouncilOrchestrator
+    council = CouncilOrchestrator(_pipeline)
+
+    try:
+        verdict = await council.run(
+            query=message,
+            budget_tokens=request.budget_tokens,
+            session_id=request.session_id,
+        )
+    except Exception as exc:
+        logger.error(f"[API] Council error: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc))
+
+    return CouncilVerdictResponse(**verdict.to_dict())

@@ -1,0 +1,38 @@
+# Sequential Pattern Specification
+# ----------------------------------
+# Simple chain: Agent A proposes, Agent B refines, Agent C finalises.
+# Useful for multi-step research tasks or iterative drafting.
+
+pattern: sequential
+version: "1.0"
+description: >
+  Agents execute one after another; each agent receives the previous
+  agent's output as part of its context.
+
+agents:
+  - name: Researcher
+    model: gpt-4o-mini
+    temperature: 0.3
+    role: research
+    posture: "gather and summarise relevant facts from the retrieved context"
+
+  - name: Drafter
+    model: gpt-4o-mini
+    temperature: 0.5
+    role: draft
+    posture: "synthesise a structured answer from the researcher's summary"
+
+  - name: Reviewer
+    model: claude-haiku-4-5-20251001
+    temperature: 0.1
+    role: review
+    posture: "fact-check and tighten the draft; flag any unsupported claims"
+
+orchestration:
+  execution: sequential
+  pass_previous_output: true
+  max_steps: 3
+
+latency_budget_ms:
+  per_step: 1000
+  total_p95: 3500

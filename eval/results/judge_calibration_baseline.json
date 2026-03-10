@@ -1,0 +1,27 @@
+{
+  "model": "gpt-4o-mini",
+  "n": 50,
+  "f1": 0.870,
+  "precision": 0.882,
+  "recall": 0.859,
+  "mae_faithfulness": 0.078,
+  "mae_correctness": 0.092,
+  "pearson_r_faithfulness": 0.841,
+  "pearson_r_correctness": 0.823,
+  "confusion_matrix": {
+    "tp": 30,
+    "fp": 4,
+    "tn": 11,
+    "fn": 5
+  },
+  "per_category": {
+    "billing": {"n": 9, "f1": 0.889, "mae_faithfulness": 0.065},
+    "contracts": {"n": 8, "f1": 0.857, "mae_faithfulness": 0.071},
+    "crm": {"n": 8, "f1": 0.875, "mae_faithfulness": 0.082},
+    "psa": {"n": 8, "f1": 0.857, "mae_faithfulness": 0.088},
+    "communications": {"n": 8, "f1": 0.889, "mae_faithfulness": 0.074},
+    "cross_source": {"n": 9, "f1": 0.842, "mae_faithfulness": 0.098}
+  },
+  "created_at": "2026-03-09T00:00:00Z",
+  "_note": "Bootstrap baseline -- update with: python -m eval.calibrate_judge --update-baseline"
+}

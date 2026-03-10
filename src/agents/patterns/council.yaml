@@ -1,0 +1,45 @@
+# Council Pattern Specification
+# --------------------------------
+# Three-agent voting pattern for high-stakes MSP decisions.
+# Agents share a single ContextBundle computed before dispatch.
+
+pattern: council
+version: "1.0"
+description: >
+  Two proposal agents (FastCreative, ConservativeChecker) run in parallel,
+  then a PolicyVerifier selects the better-grounded answer or escalates.
+
+agents:
+  - name: FastCreative
+    model: gpt-4o-mini
+    temperature: 0.9
+    role: proposal
+    posture: "creative synthesis -- connect patterns across sources"
+
+  - name: ConservativeChecker
+    model: gpt-4o-mini
+    temperature: 0.1
+    role: proposal
+    posture: "conservative fact-checking -- only state what context supports"
+
+  - name: PolicyVerifier
+    model: claude-haiku-4-5-20251001
+    temperature: 0.0
+    role: verifier
+    posture: "structured JSON verdict -- accept_creative | accept_conservative | reject_both | escalate"
+
+orchestration:
+  parallel_agents: [FastCreative, ConservativeChecker]
+  serial_verifier: PolicyVerifier
+  max_retries: 1
+  deadlock_action: escalate
+
+latency_budget_ms:
+  parallel_step: 1500
+  verifier_step:  500
+  total_p95:     2000
+
+quality_target:
+  cross_source_uplift: ">= 5% vs single-agent baseline"
+  escalation_rate:     "< 5% on adversarial queries"
+  verifier_precision:  ">= 90% hallucination rejection rate"

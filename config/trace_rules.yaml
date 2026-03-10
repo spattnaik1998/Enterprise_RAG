@@ -1,0 +1,40 @@
+# Failure-Biased Trace Capture Rules
+# ------------------------------------
+# Rules are evaluated in order; the first match wins.
+# Conditions are Python expressions evaluated against these variables:
+#   verdict:        str -- "success" | "guardrail_block" | "error" | "pii_redacted" | "escalated"
+#   event_types:    list[str] -- all event_type values in the trace
+#   total_cost_usd: float -- sum of event costs
+#   user_role:      str -- "msp" | "client" | "admin" | "finance" | "technician" | "anonymous"
+#   model:          str -- LLM model ID used for generation
+#
+# A 1% random baseline sample is always applied after all rules.
+
+capture_rules:
+  # -- Failure conditions (highest priority) -----------------------------------
+  - condition: "verdict == 'error'"
+    reason: "pipeline_error"
+
+  - condition: "verdict == 'guardrail_block'"
+    reason: "security_event"
+
+  - condition: "'guardrail_block' in event_types"
+    reason: "security_event"
+
+  - condition: "verdict == 'pii_redacted'"
+    reason: "pii_access"
+
+  - condition: "'pii_redact' in event_types"
+    reason: "pii_access"
+
+  # -- Council escalation ------------------------------------------------------
+  - condition: "verdict == 'escalated'"
+    reason: "council_escalation"
+
+  # -- Cost anomaly ------------------------------------------------------------
+  - condition: "total_cost_usd > 0.05"
+    reason: "high_cost"
+
+  # -- Anonymous access attempts -----------------------------------------------
+  - condition: "user_role == 'anonymous'"
+    reason: "anonymous_access"
