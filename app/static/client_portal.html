@@ -5,40 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TechVault MSP — Client Portal</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,500;6..12,600;6..12,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     :root {
-      --bg:       #0a0d14;
-      --surface:  #0f1117;
-      --raised:   #141824;
-      --card:     rgba(20,24,36,0.8);
-      --green:    #10b981;
-      --green-d:  rgba(16,185,129,0.1);
-      --green-b:  rgba(16,185,129,0.22);
-      --blue:     #3b82f6;
-      --amber:    #f59e0b;
-      --red:      #ef4444;
-      --text-1:   #f0f4ff;
-      --text-2:   #94a3b8;
-      --text-3:   #475569;
-      --border:   rgba(255,255,255,0.07);
+      --bg:       #F5F3EE;
+      --surface:  #FFFFFF;
+      --raised:   #F0EDE6;
+      --card:     #FFFFFF;
+      --green:    #059669;
+      --green-d:  rgba(5,150,105,0.09);
+      --green-b:  rgba(5,150,105,0.2);
+      --blue:     #2563EB;
+      --amber:    #D97706;
+      --red:      #DC2626;
+      --text-1:   #111827;
+      --text-2:   #374151;
+      --text-3:   #6B7280;
+      --border:   #E5E7EB;
       --r:        12px;
-      --font-d:   'Syne', system-ui, sans-serif;
-      --font-b:   'DM Sans', system-ui, sans-serif;
-      --font-m:   'DM Mono', monospace;
+      --font-d:   'Lora', Georgia, serif;
+      --font-b:   'Nunito Sans', system-ui, sans-serif;
+      --font-m:   'JetBrains Mono', monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: var(--font-b); background: var(--bg); color: var(--text-1); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
-    /* Grid bg */
+    /* Subtle dot texture */
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
-      background-size: 48px 48px;
+      background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.05) 1px, transparent 0);
+      background-size: 28px 28px;
       pointer-events: none;
       z-index: 0;
     }
@@ -49,9 +47,9 @@
       height: 60px;
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px;
-      background: rgba(10,13,20,0.9);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
+      background: #1C2B3A;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
     }
 
     .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
@@ -65,19 +63,19 @@
 
     .logo-mark svg { width: 15px; height: 15px; fill: #fff; }
 
-    .logo-text { font-family: var(--font-d); font-weight: 700; font-size: 14px; color: var(--text-1); }
-    .logo-text span { color: var(--green); }
+    .logo-text { font-family: var(--font-d); font-weight: 600; font-size: 14px; color: #F0F6FF; }
+    .logo-text span { color: #6EE7B7; }
 
     .nav-right { display: flex; align-items: center; gap: 12px; }
 
     .nav-client-badge {
       display: flex; align-items: center; gap: 7px;
-      background: var(--green-d);
-      border: 1px solid var(--green-b);
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.25);
       border-radius: 100px;
       padding: 5px 12px;
       font-size: 12px; font-weight: 600;
-      color: var(--green);
+      color: #6EE7B7;
       font-family: var(--font-m);
     }
 
@@ -85,7 +83,7 @@
       content: '';
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: var(--green);
+      background: #6EE7B7;
       animation: pulse 2s ease-in-out infinite;
     }
 
@@ -93,9 +91,9 @@
 
     .btn-nav-logout {
       background: transparent;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 8px;
-      color: var(--text-3);
+      color: #94A3B8;
       font-size: 12px;
       padding: 6px 12px;
       cursor: pointer;
@@ -103,7 +101,7 @@
       transition: color 0.15s, border-color 0.15s;
     }
 
-    .btn-nav-logout:hover { color: #f87171; border-color: rgba(239,68,68,0.3); }
+    .btn-nav-logout:hover { color: #FCA5A5; border-color: rgba(239,68,68,0.4); }
 
     /* ── Page layout ── */
     .page {

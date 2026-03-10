@@ -1,0 +1,210 @@
+# Supplemental Prompt Injection Pattern Library
+# ─────────────────────────────────────────────────────────────────────────────
+# These patterns augment the 13 hardcoded patterns in src/retrieval/guardrails.py.
+# Loaded at runtime by PromptGuard.load_supplemental_patterns().
+#
+# Format: list of {id, pattern (Python regex string), flags, category, description}
+# All patterns are compiled with re.IGNORECASE by default.
+#
+# Categories:
+#   role_override      -- attempts to change the model's persona
+#   instruction_ignore -- attempts to ignore previous instructions
+#   system_smuggling   -- embedding system-level content in user turn
+#   jailbreak          -- known jailbreak templates and techniques
+#   tool_smuggling     -- attempts to invoke tools via prompt injection
+#   unicode_confusable -- confusable Unicode characters mimicking keywords
+#   indirect_injection -- content injected via external data (RAG chunks)
+#   data_exfiltration  -- attempts to extract system prompt or context
+#   pii_probing        -- attempts to extract PII from the context
+# ─────────────────────────────────────────────────────────────────────────────
+
+patterns:
+
+  # ── Role override (extending the 3 built-in) ──────────────────────────────
+  - id: role_01
+    pattern: "\\bpretend\\s+(that\\s+)?you('re| are)\\b"
+    category: role_override
+    description: "Pretend you are / pretend you're"
+
+  - id: role_02
+    pattern: "\\bswitch\\s+(to|into)\\s+(a|an|the)?\\s+\\w+\\s+mode\\b"
+    category: role_override
+    description: "Switch to X mode"
+
+  - id: role_03
+    pattern: "\\bbecome\\s+(a|an|the)\\s+\\w+"
+    category: role_override
+    description: "Become a [role]"
+
+  - id: role_04
+    pattern: "\\byou('re| are) (now |actually |really )?(a|an|the)?\\s+\\w+(bot|AI|model|assistant|system)\\b"
+    category: role_override
+    description: "You are now an X bot/AI"
+
+  - id: role_05
+    pattern: "\\brespond\\s+(only|exclusively)\\s+as\\b"
+    category: role_override
+    description: "Respond only as X"
+
+  # ── Instruction ignoring ──────────────────────────────────────────────────
+  - id: ignore_01
+    pattern: "\\bskip\\s+(all\\s+)?(your\\s+)?(previous|prior|above)\\s+(instructions?|rules?|guidelines?|constraints?)\\b"
+    category: instruction_ignore
+    description: "Skip previous instructions"
+
+  - id: ignore_02
+    pattern: "\\bdo\\s+not\\s+(follow|obey|comply\\s+with)\\s+(your|the)\\s+(instructions?|rules?|guidelines?)\\b"
+    category: instruction_ignore
+    description: "Do not follow instructions"
+
+  - id: ignore_03
+    pattern: "\\byour\\s+(previous|prior|earlier|original)\\s+(instructions?|directives?)\\s+(are|were)\\s+(wrong|invalid|deprecated|outdated|overridden)\\b"
+    category: instruction_ignore
+    description: "Your previous instructions are wrong/invalid"
+
+  - id: ignore_04
+    pattern: "\\bthis\\s+(overrides|supersedes|replaces|cancels)\\s+(all\\s+)?(previous|prior|existing)\\s+(instructions?|rules?|guidelines?)\\b"
+    category: instruction_ignore
+    description: "This overrides all previous instructions"
+
+  - id: ignore_05
+    pattern: "\\bignore\\s+(the|your|all|every)\\s+(context|examples?|guidelines?|safety\\s+rules?)\\b"
+    category: instruction_ignore
+    description: "Ignore the context/guidelines"
+
+  # ── System prompt smuggling ───────────────────────────────────────────────
+  - id: sys_01
+    pattern: "\\[\\s*system\\s*\\]"
+    category: system_smuggling
+    description: "[system] tag injection"
+
+  - id: sys_02
+    pattern: "<\\s*system\\s+prompt\\s*>"
+    category: system_smuggling
+    description: "<system prompt> tag"
+
+  - id: sys_03
+    pattern: "<<\\s*SYS\\s*>>"
+    category: system_smuggling
+    description: "<<SYS>> template injection (Llama-style)"
+
+  - id: sys_04
+    pattern: "\\[\\s*SYSTEM\\s+INSTRUCTION\\s*\\]"
+    category: system_smuggling
+    description: "[SYSTEM INSTRUCTION] tag"
+
+  - id: sys_05
+    pattern: "\\bsystem:\\s*you\\s+(are|must|should|will)\\b"
+    category: system_smuggling
+    description: "Inline system: directive"
+
+  # ── Jailbreak templates ───────────────────────────────────────────────────
+  - id: jb_01
+    pattern: "\\bdev(eloper)?\\s+mode\\b"
+    category: jailbreak
+    description: "Developer mode activation attempt"
+
+  - id: jb_02
+    pattern: "\\bgrandma\\s+(jailbreak|exploit|mode|trick)\\b"
+    category: jailbreak
+    description: "Grandma jailbreak pattern"
+
+  - id: jb_03
+    pattern: "\\bwrite\\s+(a|the)\\s+(story|poem|roleplay)\\s+where\\b"
+    category: jailbreak
+    description: "Fictional framing to extract harmful content"
+
+  - id: jb_04
+    pattern: "\\b(token\\s+budget|context\\s+length)\\s+(is|has been)\\s+(full|exhausted|reached)\\b"
+    category: jailbreak
+    description: "Fake context exhaustion to bypass safety"
+
+  - id: jb_05
+    pattern: "\\bfor\\s+(educational|research|academic|hypothetical)\\s+purposes?\\s+only\\b"
+    category: jailbreak
+    description: "Educational purpose bypass framing"
+
+  - id: jb_06
+    pattern: "\\btemporarily\\s+disable\\s+(your\\s+)?(safety|filter|guardrail|restriction)\\b"
+    category: jailbreak
+    description: "Disable safety filters"
+
+  # ── Tool smuggling ────────────────────────────────────────────────────────
+  - id: tool_01
+    pattern: "\\{\\s*\"tool\"\\s*:\\s*\"(search|fetch|execute|run|call)\\b"
+    category: tool_smuggling
+    description: "Inline JSON tool call injection"
+
+  - id: tool_02
+    pattern: "<tool_call>|</tool_call>"
+    category: tool_smuggling
+    description: "XML tool call tag injection"
+
+  - id: tool_03
+    pattern: "\\brun\\s+(this|the\\s+following)\\s+(command|script|code|function)\\b"
+    category: tool_smuggling
+    description: "Run command/script injection"
+
+  - id: tool_04
+    pattern: "\\bcall\\s+(the\\s+)?(search|billing|crm|psa|mcp)\\s+(tool|function|api)\\b"
+    category: tool_smuggling
+    description: "Direct MCP tool invocation injection"
+
+  # ── Unicode confusable ───────────────────────────────────────────────────
+  - id: unicode_01
+    pattern: "[\u0131\u026A\u1EC9]gnore"
+    category: unicode_confusable
+    description: "Unicode confusable for 'ignore'"
+
+  - id: unicode_02
+    pattern: "[\u0455\u0405]ystem"
+    category: unicode_confusable
+    description: "Unicode confusable for 'system'"
+
+  # ── Indirect injection (RAG context poisoning) ────────────────────────────
+  - id: indirect_01
+    pattern: "\\bNOTE\\s+(TO\\s+)?(AI|LLM|ASSISTANT|MODEL)\\s*:"
+    category: indirect_injection
+    description: "Injected note targeting the AI in retrieved content"
+
+  - id: indirect_02
+    pattern: "\\bHIDDEN\\s+INSTRUCTION\\s*:"
+    category: indirect_injection
+    description: "Hidden instruction in retrieved document"
+
+  - id: indirect_03
+    pattern: "\\bATTENTION\\s+AI\\s*[:\\-]"
+    category: indirect_injection
+    description: "Attention AI: prefix in document content"
+
+  # ── Data exfiltration ────────────────────────────────────────────────────
+  - id: exfil_01
+    pattern: "\\brepeat\\s+(back|verbatim|exactly)\\s+(your\\s+)?(system\\s+prompt|instructions?|context)\\b"
+    category: data_exfiltration
+    description: "Attempt to extract system prompt"
+
+  - id: exfil_02
+    pattern: "\\bprint\\s+(all\\s+)?(your\\s+)?(system\\s+prompt|context|training\\s+data)\\b"
+    category: data_exfiltration
+    description: "Print system prompt/context"
+
+  - id: exfil_03
+    pattern: "\\bwhat\\s+(are|were|is)\\s+your\\s+(exact|full|complete|original)\\s+(instructions?|system\\s+prompt|directives?)\\b"
+    category: data_exfiltration
+    description: "Ask for full instructions"
+
+  - id: exfil_04
+    pattern: "\\btell\\s+me\\s+everything\\s+(you\\s+know|in\\s+your|from\\s+your)\\s+(context|prompt|instructions?)\\b"
+    category: data_exfiltration
+    description: "Tell me everything in your context"
+
+  # ── PII probing ───────────────────────────────────────────────────────────
+  - id: pii_01
+    pattern: "\\blist\\s+(all|every)\\s+(email\\s+addresses?|phone\\s+numbers?|SSN|credit\\s+card)\\s+(in|from|across)\\b"
+    category: pii_probing
+    description: "Bulk PII extraction attempt"
+
+  - id: pii_02
+    pattern: "\\bextract\\s+(all\\s+)?(personal|private|confidential)\\s+(information|data|details?)\\b"
+    category: pii_probing
+    description: "Extract personal information"

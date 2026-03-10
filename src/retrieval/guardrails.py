@@ -7,6 +7,8 @@ Two protection layers applied around every RAG query:
                    the query reaches the retriever or LLM.  Uses a curated
                    set of regex patterns covering common injection signatures
                    (jailbreaks, role overrides, instruction ignoring).
+                   Supplemental patterns are loaded from
+                   config/injection_patterns.yaml at startup.
 
 2. PIIFilter    -- Redacts personally identifiable information from LLM-
                    generated answers before they are returned to the caller.
@@ -17,12 +19,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from pathlib import Path
 
 from loguru import logger
 
 
 # ---------------------------------------------------------------------------
-# Prompt Injection Patterns
+# Prompt Injection Patterns (hardcoded baseline — always active)
 # ---------------------------------------------------------------------------
 
 _INJECTION_PATTERNS: list[re.Pattern[str]] = [
@@ -40,6 +43,50 @@ _INJECTION_PATTERNS: list[re.Pattern[str]] = [
     re.compile(r"new\s+instructions?\s*:", re.I),
     re.compile(r"override\s+(your\s+)?(instructions?|rules?|guidelines?)", re.I),
 ]
+
+# Supplemental patterns loaded from YAML (merged at module load)
+_SUPPLEMENTAL_PATTERNS: list[re.Pattern[str]] = []
+_SUPPLEMENTAL_LOADED = False
+
+
+def _load_supplemental_patterns() -> list[re.Pattern[str]]:
+    """Load extra injection patterns from config/injection_patterns.yaml."""
+    global _SUPPLEMENTAL_LOADED
+    if _SUPPLEMENTAL_LOADED:
+        return _SUPPLEMENTAL_PATTERNS
+
+    yaml_path = Path("config/injection_patterns.yaml")
+    if not yaml_path.exists():
+        _SUPPLEMENTAL_LOADED = True
+        return _SUPPLEMENTAL_PATTERNS
+
+    try:
+        import yaml
+        with open(yaml_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        loaded = 0
+        for entry in data.get("patterns", []):
+            pattern_str = entry.get("pattern", "")
+            if not pattern_str:
+                continue
+            try:
+                compiled = re.compile(pattern_str, re.I)
+                _SUPPLEMENTAL_PATTERNS.append(compiled)
+                loaded += 1
+            except re.error as exc:
+                logger.warning(
+                    f"[PromptGuard] Skipping bad pattern "
+                    f"id={entry.get('id')!r}: {exc}"
+                )
+        logger.info(
+            f"[PromptGuard] Loaded {loaded} supplemental injection patterns "
+            f"from {yaml_path}"
+        )
+    except Exception as exc:
+        logger.warning(f"[PromptGuard] Failed to load supplemental patterns: {exc}")
+
+    _SUPPLEMENTAL_LOADED = True
+    return _SUPPLEMENTAL_PATTERNS
 
 
 # ---------------------------------------------------------------------------
@@ -101,9 +148,13 @@ class PromptGuard:
         """
         Return GuardrailResult.passed=True if the query is safe,
         False if an injection pattern is detected.
+
+        Checks both the hardcoded baseline patterns and supplemental
+        patterns loaded from config/injection_patterns.yaml.
         """
         flags: list[str] = []
-        for pattern in _INJECTION_PATTERNS:
+        all_patterns = _INJECTION_PATTERNS + _load_supplemental_patterns()
+        for pattern in all_patterns:
             if pattern.search(query):
                 flags.append(pattern.pattern)
 

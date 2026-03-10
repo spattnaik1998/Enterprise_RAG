@@ -1,0 +1,64 @@
+name: Gold-Task CI Gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      update_baseline:
+        description: "Update ci_baseline.json after run"
+        required: false
+        default: "false"
+
+jobs:
+  eval:
+    name: RAG Quality Gate (20 gold tasks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Cache the FAISS index so Phase II does not re-run on every PR.
+      # Key is based on a hash of the validated data directory.
+      - name: Cache FAISS index
+        id: cache-index
+        uses: actions/cache@v4
+        with:
+          path: data/index
+          key: faiss-index-${{ hashFiles('data/validated/**') }}
+          restore-keys: faiss-index-
+
+      - name: Build index (Phase II) if cache miss
+        if: steps.cache-index.outputs.cache-hit != 'true'
+        run: python -m src.main phase2
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Run gold-task CI gate
+        run: |
+          if [ "${{ github.event.inputs.update_baseline }}" = "true" ]; then
+            python -m eval.run_ci --update-baseline
+          else
+            python -m eval.run_ci
+          fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload CI result artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-eval-result
+          path: eval/results/ci_baseline.json
+          retention-days: 30

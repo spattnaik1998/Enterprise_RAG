@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "description": "20 curated gold-task queries (3-4 per category) used by the CI regression gate. Weighted toward medium/hard difficulty to detect regressions early. Do not edit without updating ci_baseline.json.",
+  "queries": [
+    {
+      "id": "billing_002",
+      "query": "What is the total overdue amount owed by Northern Lights Healthcare System?",
+      "ground_truth": "Northern Lights Healthcare System has a total overdue balance of approximately $44,840, making it the client with the highest overdue exposure in the billing system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "44840"],
+      "difficulty": "medium",
+      "category": "billing"
+    },
+    {
+      "id": "billing_003",
+      "query": "Which client has the second-highest overdue balance?",
+      "ground_truth": "Crossroads Manufacturing has the second-highest overdue balance at approximately $28,688, after Northern Lights Healthcare System.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Crossroads Manufacturing", "28688"],
+      "difficulty": "medium",
+      "category": "billing"
+    },
+    {
+      "id": "billing_006",
+      "query": "How many days overdue is invoice INV-2025-1031?",
+      "ground_truth": "Invoice INV-2025-1031 is 315 days overdue, making it one of the oldest outstanding invoices in the billing system.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["315"],
+      "difficulty": "hard",
+      "category": "billing"
+    },
+    {
+      "id": "billing_001",
+      "query": "Which clients have OVERDUE_CRITICAL invoices?",
+      "ground_truth": "Clients with OVERDUE_CRITICAL invoices include Northern Lights Healthcare System, Crossroads Manufacturing, Skyline Hospitality Group, Harbor Logistics Solutions, Metro Construction, Quantum Strategy Group, Summit Financial Advisors, Coastline Restaurant Group, Velocity Courier Network, and several others totaling 12 clients with critical overdue status.",
+      "expected_source_types": ["billing"],
+      "expected_keywords": ["Northern Lights", "Crossroads", "Skyline"],
+      "difficulty": "easy",
+      "category": "billing"
+    },
+    {
+      "id": "contracts_001",
+      "query": "What are Heritage Bank & Trust's SLA response time commitments?",
+      "ground_truth": "Heritage Bank & Trust's SLA response time commitments are: CRITICAL priority - 1 hour, HIGH priority - 4 hours, MEDIUM priority - 8 hours, LOW priority - next business day.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Heritage Bank", "1 hour", "CRITICAL"],
+      "difficulty": "easy",
+      "category": "contracts"
+    },
+    {
+      "id": "contracts_004",
+      "query": "Which contracts are expiring soonest?",
+      "ground_truth": "The contract expiring soonest is Coastline Restaurant Group's contract, which expires in March 2026 (2026-03). This is imminent given the current date and should be flagged for renewal discussions.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Coastline Restaurant", "2026-03"],
+      "difficulty": "medium",
+      "category": "contracts"
+    },
+    {
+      "id": "contracts_005",
+      "query": "What services are included in Lakewood Medical Group's contract?",
+      "ground_truth": "Lakewood Medical Group's contract includes services such as Managed Service Provider (MSP) support, Microsoft 365 (M365) administration, cloud infrastructure management, and potentially security services as defined in their services_in_scope list.",
+      "expected_source_types": ["contracts"],
+      "expected_keywords": ["Lakewood Medical", "MSP", "M365"],
+      "difficulty": "medium",
+      "category": "contracts"
+    },
+    {
+      "id": "crm_001",
+      "query": "Which clients are flagged as RED health status?",
+      "ground_truth": "Clients flagged as RED health status include Northern Lights Healthcare System, Quantum Strategy Group, Metro Construction, Coastline Restaurant Group, Summit Financial Advisors, Velocity Courier Network, and one additional client, totaling 7 RED-status accounts.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Northern Lights", "Quantum Strategy", "Metro Construction"],
+      "difficulty": "easy",
+      "category": "crm"
+    },
+    {
+      "id": "crm_003",
+      "query": "What is the health status of Coastline Restaurant Group?",
+      "ground_truth": "Coastline Restaurant Group has a RED account health status in TechVault MSP's CRM system, indicating significant overdue invoices or account issues requiring attention.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Coastline Restaurant", "RED"],
+      "difficulty": "easy",
+      "category": "crm"
+    },
+    {
+      "id": "crm_004",
+      "query": "Who is the AR contact at Northern Lights Healthcare System?",
+      "ground_truth": "The AR (Accounts Receivable) contact at Northern Lights Healthcare System is Christopher Ashley, reachable at billing@northernlights.",
+      "expected_source_types": ["crm"],
+      "expected_keywords": ["Christopher Ashley", "billing@northernlights"],
+      "difficulty": "medium",
+      "category": "crm"
+    },
+    {
+      "id": "psa_001",
+      "query": "Which technician has billed the most hours?",
+      "ground_truth": "Sam Park has billed the most hours among TechVault MSP technicians, with a total of 344 hours billed across all service tickets.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Sam Park", "344"],
+      "difficulty": "easy",
+      "category": "psa"
+    },
+    {
+      "id": "psa_004",
+      "query": "How many total hours has Mia Chen billed?",
+      "ground_truth": "Mia Chen has billed a total of 322 hours across all service tickets in the TechVault MSP PSA system.",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Mia Chen", "322"],
+      "difficulty": "medium",
+      "category": "psa"
+    },
+    {
+      "id": "psa_003",
+      "query": "What are the different types of service tickets in the PSA?",
+      "ground_truth": "The TechVault MSP PSA system uses four service ticket types: Incident (unexpected failures or outages), Service Request (planned or routine work), Change Request (infrastructure configuration changes), and Problem (recurring or systemic issues).",
+      "expected_source_types": ["psa"],
+      "expected_keywords": ["Incident", "Service Request", "Change Request", "Problem"],
+      "difficulty": "easy",
+      "category": "psa"
+    },
+    {
+      "id": "comms_001",
+      "query": "How many invoice reminder emails has Northern Lights received?",
+      "ground_truth": "Northern Lights Healthcare System has received 18 invoice reminder emails from TechVault MSP, making it the client with the most reminder communications in the system.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["Northern Lights", "18"],
+      "difficulty": "easy",
+      "category": "communications"
+    },
+    {
+      "id": "comms_003",
+      "query": "What are the different reminder sequence levels used?",
+      "ground_truth": "TechVault MSP uses multiple reminder sequence levels: Sequence 1 (initial friendly reminder), Sequence 2 (follow-up), and escalating sequences leading to a final notice or collections review at the highest level.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["sequence 1", "sequence 2", "final notice"],
+      "difficulty": "medium",
+      "category": "communications"
+    },
+    {
+      "id": "comms_004",
+      "query": "What response did Northern Lights give to the first reminder for INV-2025-1031?",
+      "ground_truth": "In response to the first reminder for invoice INV-2025-1031, Northern Lights Healthcare System indicated a partial payment or promised to make a payment, but the invoice remained outstanding.",
+      "expected_source_types": ["communications"],
+      "expected_keywords": ["partial payment", "promised"],
+      "difficulty": "medium",
+      "category": "communications"
+    },
+    {
+      "id": "cross_001",
+      "query": "Summarize Northern Lights Healthcare System's current situation across billing, CRM, and communications.",
+      "ground_truth": "Northern Lights Healthcare System is in a critical situation: their CRM account health is RED, they have the highest overdue balance of approximately $44,840 in OVERDUE_CRITICAL invoices, and they have received 18 invoice reminder emails with some showing NO_RESPONSE. Their oldest invoice is 315 days overdue. Immediate intervention is warranted.",
+      "expected_source_types": ["billing", "crm", "communications"],
+      "expected_keywords": ["Northern Lights", "RED", "overdue"],
+      "difficulty": "hard",
+      "category": "cross_source"
+    },
+    {
+      "id": "cross_002",
+      "query": "Which clients appear on both the RED CRM health list and the OVERDUE_CRITICAL billing list?",
+      "ground_truth": "Northern Lights Healthcare System, Crossroads Manufacturing, and Metro Construction appear on both the RED CRM health list and the OVERDUE_CRITICAL billing list, indicating the highest-risk clients requiring immediate attention.",
+      "expected_source_types": ["billing", "crm"],
+      "expected_keywords": ["Northern Lights", "Crossroads", "Metro Construction"],
+      "difficulty": "hard",
+      "category": "cross_source"
+    },
+    {
+      "id": "cross_007",
+      "query": "Which client has the highest-value contract and the worst payment history?",
+      "ground_truth": "Northern Lights Healthcare System has the highest-value contract at approximately $11,620 per month and also has the worst payment history with $44,840 in OVERDUE_CRITICAL invoices, 18 reminder emails, and invoices up to 315 days overdue.",
+      "expected_source_types": ["contracts", "billing"],
+      "expected_keywords": ["Northern Lights", "11620", "overdue"],
+      "difficulty": "hard",
+      "category": "cross_source"
+    },
+    {
+      "id": "cross_008",
+      "query": "Compare the SLA response times in TechVault MSP contracts with the ticket types in the PSA.",
+      "ground_truth": "TechVault MSP contracts commit to 1-hour response for CRITICAL issues, which maps to Incident tickets in the PSA (e.g., ransomware, BSOD, outages). HIGH priority (4 hours) maps to urgent Service Requests. Change Requests and Problems typically fall under MEDIUM or LOW SLA tiers (8 hours to next business day).",
+      "expected_source_types": ["contracts", "psa"],
+      "expected_keywords": ["1 hour", "CRITICAL", "Incident"],
+      "difficulty": "hard",
+      "category": "cross_source"
+    }
+  ]
+}

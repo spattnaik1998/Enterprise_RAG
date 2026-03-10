@@ -203,6 +203,27 @@ class TokenModel(BaseModel):
     total: int
 
 
+class ContextPieceModel(BaseModel):
+    id: str
+    tier: str
+    source_type: str
+    relevance_score: float
+    freshness_score: float
+    tokens: int
+    included: bool
+    context_position: int
+
+
+class ContextBundleModel(BaseModel):
+    total_tokens: int
+    budget_tokens: int
+    truncated: bool
+    dropped_count: int
+    strategy_used: str
+    fast_path: bool
+    pieces: list[ContextPieceModel]
+
+
 class ChatResponse(BaseModel):
     answer: str
     citations: list[CitationModel]
@@ -214,6 +235,7 @@ class ChatResponse(BaseModel):
     pii_redacted: list[str]
     model: str
     provider: str
+    context_bundle: Optional[ContextBundleModel] = None
 
 
 # ---------------------------------------------------------------------------
@@ -580,6 +602,35 @@ async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
         for cit in result.citations
     ]
 
+    # Build context bundle model if available
+    ctx_bundle_model = None
+    if result.context_bundle is not None:
+        try:
+            bundle = result.context_bundle
+            ctx_bundle_model = ContextBundleModel(
+                total_tokens=bundle.total_tokens,
+                budget_tokens=bundle.budget_tokens,
+                truncated=bundle.truncated,
+                dropped_count=bundle.dropped_count,
+                strategy_used=bundle.strategy_used,
+                fast_path=bundle.fast_path,
+                pieces=[
+                    ContextPieceModel(
+                        id=p.id,
+                        tier=p.tier,
+                        source_type=p.source_type,
+                        relevance_score=round(p.relevance_score, 4),
+                        freshness_score=round(p.freshness_score, 4),
+                        tokens=p.tokens,
+                        included=p.included,
+                        context_position=p.context_position,
+                    )
+                    for p in bundle.all_pieces
+                ],
+            )
+        except Exception as exc:
+            logger.warning(f"[API] context bundle serialisation failed: {exc}")
+
     response = ChatResponse(
         answer=result.answer,
         citations=citations,
@@ -600,6 +651,7 @@ async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
         pii_redacted=result.pii_redacted,
         model=result.model,
         provider=request.provider,
+        context_bundle=ctx_bundle_model,
     )
 
     # Persist interaction to JSONL log (non-blocking; errors must not affect the response)

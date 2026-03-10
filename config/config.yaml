@@ -131,3 +131,16 @@ retrieval:
   sparse_weight: 0.3           # BM25 keyword match weight
   top_k: 20                    # Retrieved chunks per query
   rerank_top_k: 10             # Chunks kept after reranking
+
+# ── Phase III: Context Management (Sprint 1, Feature 3) ──────────────────────
+context:
+  budget_tokens: 3000          # Default token budget for full RAG path
+  fast_path_budget_tokens: 1024  # Token budget for latency-sensitive fast path
+  freshness_decay_days: 90     # Days until freshness score reaches 0
+
+# ── Security (Sprint 1, Feature 1) ────────────────────────────────────────────
+security:
+  policy_file: "config/policies.yaml"
+  injection_patterns_file: "config/injection_patterns.yaml"
+  audit_log: "data/audit/audit.jsonl"
+  audit_hmac_key_env: "AUDIT_HMAC_KEY"   # env var name holding the HMAC secret

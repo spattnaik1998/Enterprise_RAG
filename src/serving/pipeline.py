@@ -37,6 +37,7 @@ from dotenv import load_dotenv
 from langsmith import traceable
 from loguru import logger
 
+from src.context.manager import ContextManager
 from src.embedding.embedder import Embedder
 from src.embedding.faiss_index import FAISSIndex  # used for local / CLI mode
 from src.generation.generator import (
@@ -89,6 +90,9 @@ class QueryResult:
     model: str = ""
     prompt_tokens: int = 0
     completion_tokens: int = 0
+
+    # Context management (Feature 3)
+    context_bundle: object = None   # ContextBundle | None
 
     @property
     def total_ms(self) -> float:
@@ -183,6 +187,7 @@ class RAGPipeline:
         self.generator = RAGGenerator(model=generator_model)
         self.guard = PromptGuard()
         self.pii_filter = PIIFilter() if enable_pii_filter else None
+        self.context_manager = ContextManager()
 
         logger.info(
             f"[RAGPipeline] Ready | {self.index.ntotal} vectors | "
@@ -190,7 +195,7 @@ class RAGPipeline:
         )
 
     @traceable(name="rag_query", run_type="chain")
-    def query(self, user_query: str, generator=None) -> QueryResult:
+    def query(self, user_query: str, generator=None, fast_path: bool = False) -> QueryResult:
         """
         Run the full RAG pipeline for a single user query.
 
@@ -237,13 +242,32 @@ class RAGPipeline:
             reranked = candidates[: self.rerank_top_k]
         rerank_ms = (time.perf_counter() - t1) * 1000
 
-        # -- 4. Generate --------------------------------------------------------
+        # -- 4. Context management (budget-aware packing + LiM reorder) --------
+        context_bundle = self.context_manager.get_context(
+            query=user_query,
+            chunks=reranked,
+            fast_path=fast_path,
+        )
+        # Pass the reordered, budget-constrained pieces to the generator
+        chunks_for_gen = [
+            type("_ChunkProxy", (), {
+                "text":         p.text,
+                "source_type":  p.source_type,
+                "source":       p.source,
+                "id":           p.id,
+                "score":        p.relevance_score,
+                "metadata":     {},
+            })()
+            for p in context_bundle.pieces
+        ] if context_bundle.pieces else reranked
+
+        # -- 5. Generate --------------------------------------------------------
         t2 = time.perf_counter()
         active_generator = generator if generator is not None else self.generator
-        rag_response: RAGResponse = active_generator.generate(user_query, reranked)
+        rag_response: RAGResponse = active_generator.generate(user_query, chunks_for_gen)
         generation_ms = (time.perf_counter() - t2) * 1000
 
-        # -- 5. PII Filter ------------------------------------------------------
+        # -- 6. PII Filter ------------------------------------------------------
         answer = rag_response.answer
         pii_redacted: list[str] = []
         if self.pii_filter:
@@ -268,4 +292,5 @@ class RAGPipeline:
             model=rag_response.model,
             prompt_tokens=rag_response.prompt_tokens,
             completion_tokens=rag_response.completion_tokens,
+            context_bundle=context_bundle,
         )

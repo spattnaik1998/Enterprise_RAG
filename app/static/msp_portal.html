@@ -5,28 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TechVault MSP — Admin Portal</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,500;6..12,600;6..12,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
     :root {
-      --bg:        #0a0d14;
-      --surface:   #0f1117;
-      --raised:    #141824;
-      --card:      rgba(20,24,36,0.8);
-      --blue:      #3b82f6;
-      --blue-dim:  rgba(59,130,246,0.12);
-      --blue-b:    rgba(59,130,246,0.25);
-      --green:     #10b981;
-      --amber:     #f59e0b;
-      --red:       #ef4444;
-      --purple:    #8b5cf6;
-      --text-1:    #f0f4ff;
-      --text-2:    #94a3b8;
-      --text-3:    #475569;
-      --border:    rgba(255,255,255,0.07);
+      --bg:        #F5F3EE;
+      --surface:   #1C2B3A;
+      --raised:    #FFFFFF;
+      --card:      #FFFFFF;
+      --blue:      #2563EB;
+      --blue-dim:  rgba(37,99,235,0.10);
+      --blue-b:    rgba(37,99,235,0.22);
+      --green:     #059669;
+      --amber:     #D97706;
+      --red:       #DC2626;
+      --purple:    #7C3AED;
+      --text-1:    #111827;
+      --text-2:    #374151;
+      --text-3:    #6B7280;
+      --border:    #E5E7EB;
       --r:         12px;
-      --font-d:    'Syne', system-ui, sans-serif;
-      --font-b:    'DM Sans', system-ui, sans-serif;
-      --font-m:    'DM Mono', monospace;
+      --font-d:    'Lora', Georgia, serif;
+      --font-b:    'Nunito Sans', system-ui, sans-serif;
+      --font-m:    'JetBrains Mono', monospace;
+    }
+
+    /* ── Dark sidebar scoped overrides ─────────────────────────────────────── */
+    .sidebar {
+      --text-1: #F0F6FF;
+      --text-2: #94A3B8;
+      --text-3: #475569;
+      --border: rgba(255,255,255,0.08);
+      --raised: rgba(255,255,255,0.06);
+      --blue-dim: rgba(59,130,246,0.15);
+      --blue-b:   rgba(59,130,246,0.3);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -399,10 +410,10 @@
       text-transform: uppercase;
     }
 
-    .p-low      { background: rgba(71,85,105,0.2);  color: #64748b; }
-    .p-medium   { background: rgba(59,130,246,0.1); color: #60a5fa; }
-    .p-high     { background: rgba(245,158,11,0.1); color: #fcd34d; }
-    .p-critical { background: rgba(239,68,68,0.1);  color: #f87171; }
+    .p-low      { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+    .p-medium   { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+    .p-high     { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+    .p-critical { background: #FEF2F2; color: #B91C1C; border: 1px solid #FECACA; }
 
     .empty-state { padding: 48px 24px; text-align: center; color: var(--text-3); }
     .empty-state svg { width: 40px; height: 40px; stroke: var(--text-3); stroke-width: 1.2; fill: none; stroke-linecap: round; stroke-linejoin: round; margin: 0 auto 12px; display: block; }
@@ -422,12 +433,13 @@
     .detail-panel {
       width: 480px;
       max-width: 100%;
-      background: #0f1320;
+      background: #FFFFFF;
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       animation: slideIn 0.22s ease;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.08);
     }
 
     @keyframes slideIn {
@@ -534,23 +546,23 @@
     .update-success svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     /* ── Loading skeleton ── */
-    .skeleton { background: linear-gradient(90deg, var(--raised) 25%, rgba(255,255,255,0.04) 50%, var(--raised) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    .skeleton { background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
     @keyframes shimmer { to { background-position: -200% 0; } }
 
     /* ── Toast ── */
     .toast {
       position: fixed;
       bottom: 24px; right: 24px;
-      background: var(--raised);
-      border: 1px solid var(--border);
+      background: #FFFFFF;
+      border: 1px solid #E5E7EB;
       border-radius: 10px;
       padding: 12px 16px;
       font-size: 13px;
-      color: var(--text-1);
+      color: #111827;
       display: flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
       z-index: 999;
       transform: translateY(80px);
       opacity: 0;

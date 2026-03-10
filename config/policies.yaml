@@ -1,0 +1,141 @@
+# Agent Security Gateway — Policy DSL
+# ─────────────────────────────────────────────────────────────────────────────
+# Each policy governs one "action" string (matching the action= parameter used
+# in AgentSecurityGateway.handle() or @asg_tool).
+#
+# Rule evaluation:
+#   - ABAC context fields are available directly by name (user_role, data_classification, etc.)
+#   - Rules are evaluated in order; the first matching DENY fires immediately.
+#   - If no rules match, the action is ALLOWED.
+#   - Missing ABAC attributes default to the ABACContext defaults (see abac.py).
+#
+# Effect values:  deny  (allow is implied by the absence of a deny)
+# ─────────────────────────────────────────────────────────────────────────────
+
+policies:
+
+  # ── RAG Pipeline ─────────────────────────────────────────────────────────
+
+  - id: rag_query_role_gate
+    action: rag_query
+    description: "Block anonymous and client-role users from the RAG pipeline."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role in ['anonymous', 'client']"
+          effect: deny
+    justification_required: false
+
+  # ── Billing / AR ──────────────────────────────────────────────────────────
+
+  - id: billing_read_role_gate
+    action: read_billing
+    description: "Billing AR data is sensitive; only finance, msp, admin may read."
+    abac:
+      required_attrs: [user_role, data_classification]
+      rules:
+        - if: "user_role not in ['finance', 'msp', 'admin']"
+          effect: deny
+    justification_required: false
+
+  - id: billing_export_admin_only
+    action: export_billing
+    description: "Bulk billing export requires admin or finance with justification."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role not in ['admin', 'finance']"
+          effect: deny
+    justification_required: true
+
+  # ── Contracts ─────────────────────────────────────────────────────────────
+
+  - id: contracts_read_gate
+    action: read_contracts
+    description: "Contracts are restricted; only msp, admin, finance, technician may read."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role not in ['admin', 'msp', 'finance', 'technician']"
+          effect: deny
+    justification_required: false
+
+  - id: contracts_export_admin_only
+    action: export_contracts
+    description: "Contract export requires admin or legal justification."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role not in ['admin', 'legal']"
+          effect: deny
+    justification_required: true
+
+  # ── CRM ───────────────────────────────────────────────────────────────────
+
+  - id: crm_read_gate
+    action: read_crm
+    description: "CRM profiles are internal; clients may not read other clients' profiles."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role in ['anonymous', 'client']"
+          effect: deny
+    justification_required: false
+
+  - id: crm_sensitive_gate
+    action: read_crm_sensitive
+    description: "RED-health accounts and AR contacts are sensitive; finance or admin only."
+    abac:
+      required_attrs: [user_role, data_classification]
+      rules:
+        - if: "data_classification == 'sensitive' and user_role not in ['finance', 'admin', 'msp']"
+          effect: deny
+    justification_required: false
+
+  # ── PSA Tickets ───────────────────────────────────────────────────────────
+
+  - id: psa_read_gate
+    action: read_psa
+    description: "PSA tickets are internal; all authenticated MSP roles may read."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role in ['anonymous', 'client']"
+          effect: deny
+    justification_required: false
+
+  # ── Communications / Email History ────────────────────────────────────────
+
+  - id: comms_read_gate
+    action: read_communications
+    description: "Email reminder history is restricted; finance or admin only."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role not in ['finance', 'admin', 'msp']"
+          effect: deny
+    justification_required: false
+
+  # ── Cross-source (Client 360) ──────────────────────────────────────────────
+
+  - id: client_360_gate
+    action: read_client_360
+    description: "Full client 360 aggregation is sensitive; msp or admin only."
+    abac:
+      required_attrs: [user_role]
+      rules:
+        - if: "user_role not in ['msp', 'admin', 'finance']"
+          effect: deny
+    justification_required: false
+
+  # ── Dev/staging overrides ─────────────────────────────────────────────────
+
+  - id: dev_open_all
+    action: dev_test_action
+    description: "Unrestricted test action used only in dev/staging environments."
+    abac:
+      required_attrs: [environment]
+      rules:
+        - if: "environment == 'production'"
+          effect: deny
+    justification_required: false
