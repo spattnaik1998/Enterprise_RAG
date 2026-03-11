@@ -224,7 +224,7 @@ class DirectRAGAgent:
             )
 
             logger.info(
-                f"[DirectRAG] Completed in {latency_ms:.0f}ms | cost=${result.total_cost_usd:.4f}"
+                f"[DirectRAG] Completed in {latency_ms:.0f}ms | cost=${result.estimated_cost_usd:.4f}"
             )
             return verdict
 
