@@ -246,8 +246,15 @@ def get_all_engineers() -> list[dict]:
 
 
 def get_engineer_tickets(engineer_name: str) -> list[dict]:
-    """Return all tickets assigned to an engineer."""
+    """Return all tickets assigned to an engineer.
+
+    Handles both username (tom_okafor) and full name (Tom Okafor) formats
+    for backward compatibility with existing tickets.
+    """
     try:
+        # Fetch tickets assigned to either username or full name
+        # Username format: tom_okafor (from new dropdown)
+        # Full name format: Tom Okafor (from initial backfill or legacy assignments)
         resp = (
             _get_client()
             .table("service_tickets")
@@ -256,15 +263,36 @@ def get_engineer_tickets(engineer_name: str) -> list[dict]:
             .order("created_at", desc=True)
             .execute()
         )
-        return resp.data or []
+
+        tickets = resp.data or []
+
+        # If no tickets found with username, try with full name format
+        # Convert username back to full name (e.g., tom_okafor -> Tom Okafor)
+        if not tickets and "_" in engineer_name:
+            full_name = engineer_name.replace("_", " ").title()
+            resp2 = (
+                _get_client()
+                .table("service_tickets")
+                .select("*")
+                .eq("assigned_to", full_name)
+                .order("created_at", desc=True)
+                .execute()
+            )
+            tickets = resp2.data or []
+
+        return tickets
     except Exception as exc:
         logger.error(f"[PortalDB] get_engineer_tickets error: {exc}")
         return []
 
 
 def get_engineer_ticket_by_id(engineer_name: str, ticket_id: str) -> Optional[dict]:
-    """Return a single ticket if it belongs to the engineer."""
+    """Return a single ticket if it belongs to the engineer.
+
+    Handles both username (tom_okafor) and full name (Tom Okafor) formats.
+    """
     try:
+        # Try to find ticket with username format
         resp = (
             _get_client()
             .table("service_tickets")
@@ -275,6 +303,21 @@ def get_engineer_ticket_by_id(engineer_name: str, ticket_id: str) -> Optional[di
             .execute()
         )
         rows = resp.data
+
+        # If not found and engineer_name is a username, try with full name
+        if not rows and "_" in engineer_name:
+            full_name = engineer_name.replace("_", " ").title()
+            resp = (
+                _get_client()
+                .table("service_tickets")
+                .select("*")
+                .eq("id", ticket_id)
+                .eq("assigned_to", full_name)
+                .limit(1)
+                .execute()
+            )
+            rows = resp.data
+
         return rows[0] if rows else None
     except Exception as exc:
         logger.error(f"[PortalDB] get_engineer_ticket_by_id error: {exc}")
@@ -319,8 +362,12 @@ def update_engineer_ticket(
 
 
 def get_engineer_stats(engineer_name: str) -> dict:
-    """Return ticket counts for an engineer grouped by status."""
+    """Return ticket counts for an engineer grouped by status.
+
+    Handles both username and full name formats for backward compatibility.
+    """
     try:
+        # Try with username format first
         resp = (
             _get_client()
             .table("service_tickets")
@@ -329,6 +376,19 @@ def get_engineer_stats(engineer_name: str) -> dict:
             .execute()
         )
         rows = resp.data or []
+
+        # If no results and engineer_name is a username, try with full name
+        if not rows and "_" in engineer_name:
+            full_name = engineer_name.replace("_", " ").title()
+            resp = (
+                _get_client()
+                .table("service_tickets")
+                .select("status")
+                .eq("assigned_to", full_name)
+                .execute()
+            )
+            rows = resp.data or []
+
         counts: dict[str, int] = {}
         for row in rows:
             s = row.get("status", "unknown")
