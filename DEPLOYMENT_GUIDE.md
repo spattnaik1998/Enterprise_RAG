@@ -49,11 +49,11 @@ npx supabase db push
 
 Go to the SQL Editor and run:
 ```sql
-SELECT constraint_name, constraint_definition FROM information_schema.check_constraints
+SELECT constraint_name, check_clause FROM information_schema.check_constraints
 WHERE table_name = 'portal_users' AND constraint_name = 'portal_users_role_check';
 ```
 
-Expected output: Should show the role check constraint with `('msp', 'client', 'engineer')`.
+Expected output: Should show the role check constraint with `role IN ('msp', 'client', 'engineer')`.
 
 ---
 
