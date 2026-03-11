@@ -205,7 +205,6 @@ class DirectRAGAgent:
                 query=query,
                 top_k=10,
                 rerank_top_k=5,
-                skip_reranking=True,  # Fast-path optimization
                 abac_ctx=abac_ctx,
             )
 
@@ -218,10 +217,9 @@ class DirectRAGAgent:
                 dissent_summary="",
                 escalated=False,
                 policy_reasons=["Direct RAG path selected (simple query)"],
-                total_cost_usd=result.total_cost_usd,
+                total_cost_usd=result.estimated_cost_usd,
                 trace_id=result.trace_id,
-                hallucination_detected=result.hallucination_detected,
-                pii_concern=result.pii_detected,
+                pii_concern=bool(result.pii_redacted),
                 latency_ms=latency_ms,
             )
 

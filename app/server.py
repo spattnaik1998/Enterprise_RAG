@@ -826,6 +826,56 @@ async def list_traces(
     return {"traces": traces, "count": len(traces)}
 
 
+@app.get("/api/traces/summary")
+async def get_traces_summary(
+    hours: int = Query(default=24, ge=1, le=168),
+    _user: dict = Depends(require_msp),
+):
+    """
+    Return aggregated trace summary over past N hours.
+
+    Includes:
+      - Success rate, error rate
+      - Latency percentiles (p50, p90, p95, p99)
+      - Cost breakdown by model
+      - Hallucination rate, alert count
+    """
+    from src.observability.aggregator import TraceAggregator
+
+    aggregator = TraceAggregator(trace_store_path="data/traces")
+    report = aggregator.summary(hours=hours)
+
+    return {
+        "period_hours": report.period_hours,
+        "trace_count": report.trace_count,
+        "success_rate": report.success_rate,
+        "error_rate": report.error_rate,
+        "latency_ms": {
+            "avg": report.avg_latency_ms,
+            "p50": report.p50_latency_ms,
+            "p90": report.p90_latency_ms,
+            "p95": report.p95_latency_ms,
+            "p99": report.p99_latency_ms,
+        },
+        "cost_usd": {
+            "total": report.total_cost_usd,
+            "by_model": report.cost_by_model,
+            "top_models": report.top_models,
+        },
+        "hallucination_rate": report.hallucination_rate,
+        "alert_count": report.alert_count,
+        "alerts": [
+            {
+                "metric": a.metric,
+                "threshold": a.threshold,
+                "actual": a.actual,
+                "severity": a.severity,
+            }
+            for a in report.alerts
+        ],
+    }
+
+
 @app.get("/api/traces/{trace_id}")
 async def get_trace(trace_id: str, _user: dict = Depends(require_msp)):
     """Return a full trace case file by trace_id."""
