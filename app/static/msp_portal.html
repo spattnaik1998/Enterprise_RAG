@@ -1180,8 +1180,10 @@
       while (sel.options.length > 1) sel.remove(1);
       allEngineers.forEach(e => {
         const opt = document.createElement('option');
-        opt.value = e.name;
-        opt.textContent = e.name;
+        // Generate username from email (sam.park@... -> sam_park)
+        const username = (e.email || '').split('@')[0].replace(/\./g, '_').toLowerCase();
+        opt.value = username || e.name;  // Fallback to name if email not available
+        opt.textContent = e.name;  // Display the full name
         sel.appendChild(opt);
       });
     }
