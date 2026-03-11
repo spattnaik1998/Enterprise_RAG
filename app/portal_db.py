@@ -220,7 +220,7 @@ def get_all_client_credentials() -> list[dict]:
             .table("portal_users")
             .select("id,username,client_id,client_name,password_hash,created_at")
             .eq("role", "client")
-            .order("client_name", asc=True)
+            .order("client_name", desc=False)
             .execute()
         )
         return resp.data or []
