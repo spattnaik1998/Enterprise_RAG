@@ -25,6 +25,11 @@
       --teal-dim:     rgba(8,145,178,0.09);
       --teal-border:  rgba(8,145,178,0.2);
 
+      --purple:       #7C3AED;
+      --purple-mid:   #8B5CF6;
+      --purple-dim:   rgba(124,58,237,0.09);
+      --purple-border: rgba(124,58,237,0.2);
+
       --success:      #059669;
       --warning:      #D97706;
       --danger:       #DC2626;
@@ -220,11 +225,13 @@
     }
 
     .portal-card.blue::before  { background: linear-gradient(90deg, var(--primary), var(--primary-mid)); }
+    .portal-card.purple::before { background: linear-gradient(90deg, var(--purple), var(--purple-mid)); }
     .portal-card.teal::before  { background: linear-gradient(90deg, var(--teal), #06B6D4); }
 
     .portal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
     .portal-card:hover::before { opacity: 1; }
     .portal-card.blue:hover  { border-color: var(--primary-border); }
+    .portal-card.purple:hover { border-color: var(--purple-border); }
     .portal-card.teal:hover  { border-color: var(--teal-border); }
     .portal-card:active { transform: translateY(-1px); }
 
@@ -238,8 +245,10 @@
     .portal-card:hover .card-icon { transform: scale(1.06); }
 
     .portal-card.blue .card-icon { background: var(--primary-dim); border: 1px solid var(--primary-border); }
+    .portal-card.purple .card-icon { background: var(--purple-dim); border: 1px solid var(--purple-border); }
     .portal-card.teal .card-icon { background: var(--teal-dim);    border: 1px solid var(--teal-border); }
     .portal-card.blue .card-icon svg { stroke: var(--primary-mid); }
+    .portal-card.purple .card-icon svg { stroke: var(--purple-mid); }
     .portal-card.teal .card-icon svg { stroke: var(--teal); }
     .card-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -281,6 +290,7 @@
     }
 
     .portal-card.blue .feat-dot { background: var(--primary-mid); }
+    .portal-card.purple .feat-dot { background: var(--purple-mid); }
     .portal-card.teal .feat-dot { background: var(--teal); }
 
     .card-cta {
@@ -293,6 +303,7 @@
     }
     .portal-card:hover .card-cta { gap: 11px; }
     .portal-card.blue .card-cta { color: var(--primary); }
+    .portal-card.purple .card-cta { color: var(--purple); }
     .portal-card.teal .card-cta { color: var(--teal); }
     .card-cta svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s ease; }
     .portal-card:hover .card-cta svg { transform: translateX(3px); }
@@ -393,8 +404,10 @@
     }
     .modal-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
     .modal.blue .modal-icon { background: var(--primary-dim); border: 1px solid var(--primary-border); }
+    .modal.purple .modal-icon { background: var(--purple-dim); border: 1px solid var(--purple-border); }
     .modal.teal .modal-icon { background: var(--teal-dim);    border: 1px solid var(--teal-border); }
     .modal.blue .modal-icon svg { stroke: var(--primary); }
+    .modal.purple .modal-icon svg { stroke: var(--purple); }
     .modal.teal .modal-icon svg { stroke: var(--teal); }
 
     .modal-title {
@@ -437,6 +450,7 @@
     .form-input:focus { background: var(--bg-surface); }
 
     .modal.blue  .form-input:focus { border-color: var(--primary);     box-shadow: 0 0 0 3px var(--primary-dim); }
+    .modal.purple .form-input:focus { border-color: var(--purple);     box-shadow: 0 0 0 3px var(--purple-dim); }
     .modal.teal  .form-input:focus { border-color: var(--teal);        box-shadow: 0 0 0 3px var(--teal-dim); }
 
     .form-error {
@@ -468,6 +482,7 @@
     .btn-submit:active { transform: scale(0.98); }
     .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
     .modal.blue .btn-submit { background: var(--primary); color: #fff; }
+    .modal.purple .btn-submit { background: var(--purple); color: #fff; }
     .modal.teal .btn-submit { background: var(--teal);    color: #fff; }
 
     .spinner {
@@ -531,6 +546,24 @@
         </div>
         <div class="card-cta">
           Sign in as Admin
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <div class="portal-card purple" id="card-engineer" tabindex="0" role="button" aria-label="Engineer Portal login">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="M12 9v5M9.5 11.5h5"/></svg>
+        </div>
+        <div class="card-title">Engineer Portal</div>
+        <div class="card-desc">Dedicated workspace to manage assigned service tickets and customer issues.</div>
+        <div class="card-features">
+          <div class="card-feat"><span class="feat-dot"></span>View Assigned Tickets</div>
+          <div class="card-feat"><span class="feat-dot"></span>Update Ticket Status</div>
+          <div class="card-feat"><span class="feat-dot"></span>Add Technical Notes</div>
+          <div class="card-feat"><span class="feat-dot"></span>Real-time Dashboard</div>
+        </div>
+        <div class="card-cta">
+          Sign in as Engineer
           <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </div>
@@ -644,6 +677,38 @@
     </div>
   </div>
 
+  <!-- Engineer Login Modal -->
+  <div class="modal-overlay" id="overlay-engineer" role="dialog" aria-modal="true" aria-labelledby="engineer-title">
+    <div class="modal purple">
+      <button class="modal-close" id="close-engineer" aria-label="Close">
+        <svg viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13"/></svg>
+      </button>
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/><path d="M12 9v5M9.5 11.5h5"/></svg>
+      </div>
+      <div class="modal-title" id="engineer-title">Engineer Portal Sign In</div>
+      <div class="modal-sub">Access your assigned support tickets and tasks.</div>
+      <form id="form-engineer" autocomplete="off" novalidate>
+        <div class="form-error" id="error-engineer">
+          <span class="form-error-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></span>
+          <span id="error-engineer-text">Invalid username or password.</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="engineer-username">Username</label>
+          <input class="form-input" id="engineer-username" type="text" placeholder="sam_park" autocomplete="username" spellcheck="false" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="engineer-password">Password</label>
+          <input class="form-input" id="engineer-password" type="password" placeholder="••••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn-submit" id="btn-engineer" type="submit">
+          <div class="spinner"></div>
+          <span class="btn-text">Sign In to Engineer Portal</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script>
     const AUTH_KEY = 'portal_auth';
     function saveAuth(d) { localStorage.setItem(AUTH_KEY, JSON.stringify(d)); }
@@ -652,8 +717,9 @@
       try {
         const s = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
         if (s && s.token) {
-          if (s.role === 'msp')    window.location.href = '/msp';
-          if (s.role === 'client') window.location.href = '/client';
+          if (s.role === 'msp')      window.location.href = '/msp';
+          if (s.role === 'engineer') window.location.href = '/engineer';
+          if (s.role === 'client')   window.location.href = '/client';
         }
       } catch(e) { localStorage.removeItem(AUTH_KEY); }
     })();
@@ -680,19 +746,22 @@
     }
 
     document.getElementById('card-msp').addEventListener('click', () => openModal('msp'));
+    document.getElementById('card-engineer').addEventListener('click', () => openModal('engineer'));
     document.getElementById('card-client').addEventListener('click', () => openModal('client'));
-    ['card-msp','card-client'].forEach(id => {
+    ['card-msp','card-engineer','card-client'].forEach(id => {
       document.getElementById(id).addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById(id).click(); }
       });
     });
     document.getElementById('close-msp').addEventListener('click', () => closeModal('msp'));
+    document.getElementById('close-engineer').addEventListener('click', () => closeModal('engineer'));
     document.getElementById('close-client').addEventListener('click', () => closeModal('client'));
     document.getElementById('overlay-msp').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('msp'); });
+    document.getElementById('overlay-engineer').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('engineer'); });
     document.getElementById('overlay-client').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('client'); });
     document.addEventListener('keydown', e => {
       if (e.key !== 'Escape') return;
-      ['msp','client'].forEach(id => {
+      ['msp','engineer','client'].forEach(id => {
         if (document.getElementById('overlay-'+id).classList.contains('open')) closeModal(id);
       });
     });
@@ -725,6 +794,7 @@
     }
 
     document.getElementById('form-msp').addEventListener('submit', e => { e.preventDefault(); handleLogin('msp','msp','/msp'); });
+    document.getElementById('form-engineer').addEventListener('submit', e => { e.preventDefault(); handleLogin('engineer','engineer','/engineer'); });
     document.getElementById('form-client').addEventListener('submit', e => { e.preventDefault(); handleLogin('client','client','/client'); });
   </script>
 </body>
