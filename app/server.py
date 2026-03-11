@@ -11,6 +11,7 @@ Public routes (no auth required):
   GET  /logs                      -> serve app/static/logs.html
   GET  /msp                       -> serve app/static/msp_portal.html
   GET  /client                    -> serve app/static/client_portal.html
+  GET  /engineer                  -> serve app/static/engineer_portal.html
 
 Auth endpoints (no token needed):
   POST /api/auth/login            -> {token, role, client_id, client_name, username}
@@ -27,10 +28,17 @@ MSP-only endpoints (Bearer token, role=msp):
   PATCH /api/msp/tickets/{id}     -> update ticket (status, assignee, notes)
   GET  /api/msp/ticket-stats      -> ticket counts by status
   GET  /api/msp/engineers         -> engineer profiles list
+  GET  /api/msp/clients/credentials -> all client credentials (passwords hidden)
 
 Client-only endpoints (Bearer token, role=client):
   GET  /api/portal/tickets        -> client's own tickets
   POST /api/portal/tickets        -> create a new service ticket
+
+Engineer-only endpoints (Bearer token, role=engineer):
+  GET  /api/engineer/tickets      -> engineer's assigned tickets
+  GET  /api/engineer/tickets/{id} -> single ticket assigned to engineer
+  PATCH /api/engineer/tickets/{id}-> update ticket (status, notes -- engineer only)
+  GET  /api/engineer/stats        -> ticket counts by status for engineer
 
 Run from the project root (Enterprise_RAG/):
     uvicorn app.server:app --reload --port 8000
@@ -65,18 +73,24 @@ from app.auth import (
     create_token,
     get_current_user,
     require_client,
+    require_engineer,
     require_msp,
     verify_password,
 )
 from app.chat_logger import compute_stats, load_logs, log_interaction
 from app.portal_db import (
     create_ticket,
+    get_all_client_credentials,
     get_all_engineers,
     get_all_tickets,
+    get_engineer_stats,
+    get_engineer_ticket_by_id,
+    get_engineer_tickets,
     get_ticket_by_id,
     get_ticket_stats,
     get_tickets_for_client,
     get_user_by_username,
+    update_engineer_ticket,
     update_last_login,
     update_ticket,
 )
@@ -353,6 +367,15 @@ async def serve_client_portal():
     return FileResponse(str(path), media_type="text/html")
 
 
+@app.get("/engineer", include_in_schema=False)
+async def serve_engineer_portal():
+    """Serve the engineer portal (view and update assigned tickets)."""
+    path = STATIC_DIR / "engineer_portal.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="engineer_portal.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
 @app.get("/forecast", include_in_schema=False)
 async def serve_forecast_ui():
     forecast_path = STATIC_DIR / "forecast.html"
@@ -429,6 +452,65 @@ async def portal_create_ticket(
 
 
 # ---------------------------------------------------------------------------
+# Engineer ticket management routes
+# ---------------------------------------------------------------------------
+
+@app.get("/api/engineer/tickets")
+async def engineer_list_tickets(
+    status: str | None = Query(default=None),
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
+    user: dict = Depends(require_engineer),
+):
+    """Return all tickets assigned to this engineer (engineer only)."""
+    engineer_name = user["sub"]
+    tickets = get_engineer_tickets(engineer_name)
+
+    # Client-side filtering by status if requested
+    if status:
+        tickets = [t for t in tickets if t.get("status") == status]
+
+    # Paginate
+    paginated = tickets[offset : offset + limit]
+    return {"tickets": paginated, "count": len(tickets), "limit": limit, "offset": offset}
+
+
+@app.get("/api/engineer/tickets/{ticket_id}")
+async def engineer_get_ticket(ticket_id: str, user: dict = Depends(require_engineer)):
+    """Return a single ticket assigned to this engineer."""
+    engineer_name = user["sub"]
+    ticket = get_engineer_ticket_by_id(engineer_name, ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=404, detail=f"Ticket {ticket_id} not found or not assigned to you.")
+    return ticket
+
+
+@app.patch("/api/engineer/tickets/{ticket_id}")
+async def engineer_update_ticket(
+    ticket_id: str,
+    request: UpdateTicketRequest,
+    user: dict = Depends(require_engineer),
+):
+    """Update ticket status or notes (engineer can only update their own)."""
+    engineer_name = user["sub"]
+    updates = request.model_dump(exclude_none=True)
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update.")
+
+    updated = update_engineer_ticket(engineer_name, ticket_id, updates)
+    if updated is None:
+        raise HTTPException(status_code=404, detail=f"Ticket {ticket_id} not found or not assigned to you.")
+    return updated
+
+
+@app.get("/api/engineer/stats")
+async def engineer_stats(user: dict = Depends(require_engineer)):
+    """Return ticket stats for this engineer."""
+    engineer_name = user["sub"]
+    return get_engineer_stats(engineer_name)
+
+
+# ---------------------------------------------------------------------------
 # MSP ticket management routes
 # ---------------------------------------------------------------------------
 
@@ -486,6 +568,13 @@ async def msp_list_engineers(_user: dict = Depends(require_msp)):
     """Return all engineer profiles (MSP only)."""
     engineers = get_all_engineers()
     return {"engineers": engineers, "count": len(engineers)}
+
+
+@app.get("/api/msp/clients/credentials")
+async def msp_list_client_credentials(_user: dict = Depends(require_msp)):
+    """Return all client portal credentials (MSP only). Passwords are hidden."""
+    credentials = get_all_client_credentials()
+    return {"clients": credentials, "count": len(credentials)}
 
 
 @app.get("/api/health")

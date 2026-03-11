@@ -210,6 +210,25 @@ def update_ticket(ticket_id: str, updates: dict) -> Optional[dict]:
         return None
 
 
+def get_all_client_credentials() -> list[dict]:
+    """
+    Return all client portal users with credentials including passwords (for MSP distribution).
+    """
+    try:
+        resp = (
+            _get_client()
+            .table("portal_users")
+            .select("id,username,client_id,client_name,password_hash,created_at")
+            .eq("role", "client")
+            .order("client_name", asc=True)
+            .execute()
+        )
+        return resp.data or []
+    except Exception as exc:
+        logger.error(f"[PortalDB] get_all_client_credentials error: {exc}")
+        return []
+
+
 def get_all_engineers() -> list[dict]:
     """Return all engineer profiles ordered by total_tickets desc."""
     try:
@@ -224,6 +243,103 @@ def get_all_engineers() -> list[dict]:
     except Exception as exc:
         logger.error(f"[PortalDB] get_all_engineers error: {exc}")
         return []
+
+
+def get_engineer_tickets(engineer_name: str) -> list[dict]:
+    """Return all tickets assigned to an engineer."""
+    try:
+        resp = (
+            _get_client()
+            .table("service_tickets")
+            .select("*")
+            .eq("assigned_to", engineer_name)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return resp.data or []
+    except Exception as exc:
+        logger.error(f"[PortalDB] get_engineer_tickets error: {exc}")
+        return []
+
+
+def get_engineer_ticket_by_id(engineer_name: str, ticket_id: str) -> Optional[dict]:
+    """Return a single ticket if it belongs to the engineer."""
+    try:
+        resp = (
+            _get_client()
+            .table("service_tickets")
+            .select("*")
+            .eq("id", ticket_id)
+            .eq("assigned_to", engineer_name)
+            .limit(1)
+            .execute()
+        )
+        rows = resp.data
+        return rows[0] if rows else None
+    except Exception as exc:
+        logger.error(f"[PortalDB] get_engineer_ticket_by_id error: {exc}")
+        return None
+
+
+def update_engineer_ticket(
+    engineer_name: str,
+    ticket_id: str,
+    updates: dict,
+) -> Optional[dict]:
+    """
+    Update a ticket (engineer can only update their own assigned tickets).
+    Returns updated row or None on error/unauthorized.
+    """
+    # Verify the ticket belongs to this engineer
+    ticket = get_engineer_ticket_by_id(engineer_name, ticket_id)
+    if ticket is None:
+        logger.warning(f"[PortalDB] Engineer {engineer_name} tried to update ticket {ticket_id} they don't own")
+        return None
+
+    # Timestamp any status changes
+    if updates.get("status") in ("resolved", "closed") and "resolved_at" not in updates:
+        updates["resolved_at"] = datetime.now(timezone.utc).isoformat()
+
+    try:
+        resp = (
+            _get_client()
+            .table("service_tickets")
+            .update(updates)
+            .eq("id", ticket_id)
+            .execute()
+        )
+        rows = resp.data
+        updated = rows[0] if rows else None
+        if updated:
+            logger.info(f"[PortalDB] Engineer {engineer_name} updated ticket {ticket_id}: {updates}")
+        return updated
+    except Exception as exc:
+        logger.error(f"[PortalDB] update_engineer_ticket error: {exc}")
+        return None
+
+
+def get_engineer_stats(engineer_name: str) -> dict:
+    """Return ticket counts for an engineer grouped by status."""
+    try:
+        resp = (
+            _get_client()
+            .table("service_tickets")
+            .select("status")
+            .eq("assigned_to", engineer_name)
+            .execute()
+        )
+        rows = resp.data or []
+        counts: dict[str, int] = {}
+        for row in rows:
+            s = row.get("status", "unknown")
+            counts[s] = counts.get(s, 0) + 1
+        return {
+            "total": len(rows),
+            "by_status": counts,
+        }
+    except Exception as exc:
+        logger.error(f"[PortalDB] get_engineer_stats error: {exc}")
+        return {"total": 0, "by_status": {}}
 
 
 def get_ticket_stats() -> dict:

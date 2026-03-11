@@ -654,6 +654,94 @@
     }
 
     .eng-loading { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 13px; }
+
+    /* ── Client Credentials ── */
+    .cred-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cred-text {
+      font-family: var(--font-m);
+      font-size: 12px;
+      color: var(--text-1);
+      word-break: break-all;
+      flex: 1;
+    }
+
+    .cred-masked {
+      letter-spacing: 0.2em;
+    }
+
+    .btn-copy {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      background: var(--raised);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      color: var(--text-2);
+    }
+
+    .btn-copy:hover {
+      background: var(--bg);
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .btn-copy svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn-copy.copied {
+      background: rgba(5,150,105,0.1);
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .portal-link {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 12px;
+      transition: color 0.2s ease;
+    }
+
+    .portal-link:hover {
+      color: var(--blue);
+      text-decoration: underline;
+    }
+
+    #filter-clients {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-1);
+      background: var(--raised);
+    }
+
+    #filter-clients::placeholder {
+      color: var(--text-3);
+    }
+
+    #filter-clients:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
   </style>
 </head>
 <body>
@@ -679,6 +767,10 @@
       <button class="nav-item" data-view="engineers">
         <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Engineers
+      </button>
+      <button class="nav-item" data-view="clients">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Manage Clients
       </button>
     </div>
 
@@ -839,6 +931,40 @@
       </div>
     </div>
 
+    <!-- Manage Clients view -->
+    <div class="view" id="view-clients">
+      <div class="page-header">
+        <div class="page-title">Manage Clients</div>
+        <div class="page-sub">All client portal accounts with credentials for distribution.</div>
+      </div>
+
+      <div class="table-header">
+        <div class="table-title"></div>
+        <input type="text" class="filter-select" id="filter-clients" placeholder="Search clients by name or username…">
+        <button class="btn-refresh" id="btn-refresh-clients">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Portal Link</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody">
+            <tr><td colspan="5"><div class="empty-state"><p>Loading clients…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div><!-- /content -->
 
   <!-- ── Ticket detail panel ───────────────────────────────────────────── -->
@@ -933,9 +1059,10 @@
       dashboard: document.getElementById('view-dashboard'),
       tickets:   document.getElementById('view-tickets'),
       engineers: document.getElementById('view-engineers'),
+      clients:   document.getElementById('view-clients'),
     };
     const navItems = document.querySelectorAll('.nav-item[data-view]');
-    const titles   = { dashboard: 'Dashboard', tickets: 'Service Tickets', engineers: 'Engineers' };
+    const titles   = { dashboard: 'Dashboard', tickets: 'Service Tickets', engineers: 'Engineers', clients: 'Manage Clients' };
 
     function switchView(name) {
       Object.keys(views).forEach(k => {
@@ -945,6 +1072,7 @@
       document.getElementById('topbar-title').textContent = titles[name];
       if (name === 'tickets')   loadTickets();
       if (name === 'engineers') loadEngineers();
+      if (name === 'clients')   loadClients();
     }
 
     navItems.forEach(el => el.addEventListener('click', () => switchView(el.dataset.view)));
@@ -1060,6 +1188,95 @@
 
     // Pre-load engineers on page load so dropdown is ready before any ticket is opened
     loadEngineers();
+
+    // ── Client Credentials ──────────────────────────────────────────────────
+    let allClients = [];
+
+    async function loadClients() {
+      const tbody = document.getElementById('clients-tbody');
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Loading clients…</p></div></td></tr>';
+      try {
+        const res = await api('/api/msp/clients/credentials');
+        if (!res.ok) {
+          tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Error loading clients.</p></div></td></tr>';
+          return;
+        }
+        const data = await res.json();
+        allClients = data.clients || [];
+        renderClients();
+      } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Network error.</p></div></td></tr>';
+      }
+    }
+
+    function renderClients(filter = '') {
+      const tbody = document.getElementById('clients-tbody');
+      const filtered = allClients.filter(c => {
+        const name = (c.client_name || '').toLowerCase();
+        const user = (c.username || '').toLowerCase();
+        const q = filter.toLowerCase();
+        return name.includes(q) || user.includes(q);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>No clients found.</p></div></td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(c => {
+        const portalLink = `/portal?client_id=${encodeURIComponent(c.client_id || '')}`;
+        return `
+          <tr>
+            <td>${escHtml(c.client_name || '—')}</td>
+            <td>
+              <div class="cred-cell">
+                <span class="cred-text">${escHtml(c.username || '—')}</span>
+                <button class="btn-copy" data-text="${escHtml(c.username || '')}" title="Copy username">
+                  <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </td>
+            <td>
+              <div class="cred-cell">
+                <span class="cred-text cred-masked" data-password="${escHtml(c.password_hash || '')}">••••••••</span>
+                <button class="btn-copy" data-text="${escHtml(c.password_hash || '')}" title="Copy password">
+                  <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><a href="${portalLink}" class="portal-link" target="_blank">View Portal →</a></td>
+            <td>${formatDate(c.created_at || '')}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Attach copy button listeners
+      document.querySelectorAll('.btn-copy').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const text = btn.dataset.text;
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.classList.add('copied');
+            setTimeout(() => btn.classList.remove('copied'), 2000);
+          } catch(err) {
+            showToast('Failed to copy to clipboard');
+          }
+        });
+      });
+    }
+
+    // Search filter for clients
+    const filterInput = document.getElementById('filter-clients');
+    if (filterInput) {
+      filterInput.addEventListener('input', (e) => renderClients(e.target.value));
+    }
+
+    // Refresh button for clients
+    const btnRefreshClients = document.getElementById('btn-refresh-clients');
+    if (btnRefreshClients) {
+      btnRefreshClients.addEventListener('click', loadClients);
+    }
 
     // ── Ticket table ───────────────────────────────────────────────────────
     let allTickets = [];

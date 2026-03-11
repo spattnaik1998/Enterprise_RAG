@@ -123,3 +123,13 @@ def require_client(user: dict = Depends(get_current_user)) -> dict:
             detail="Client portal access required.",
         )
     return user
+
+
+def require_engineer(user: dict = Depends(get_current_user)) -> dict:
+    """Guard: requires role == 'engineer'. Raises 403 otherwise."""
+    if user.get("role") != "engineer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Engineer portal access required.",
+        )
+    return user
