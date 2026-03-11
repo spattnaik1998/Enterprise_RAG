@@ -167,7 +167,7 @@ class PromptGuard:
                 passed=False,
                 blocked_reason=(
                     "Your query contains patterns that look like prompt injection. "
-                    "Please rephrase your question about TechVault operations or AI/ML research."
+                    "Please rephrase your question about Red Key Sandbox operations or AI/ML research."
                 ),
                 flags=flags,
             )

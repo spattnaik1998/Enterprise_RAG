@@ -437,7 +437,7 @@ def main() -> None:
     _check_env()
 
     print("=" * 60)
-    print("TechVault MSP -- Supabase Data Migration")
+    print("Red Key Sandbox MSP -- Supabase Data Migration")
     print("=" * 60)
     print(f"  Target: {SUPABASE_URL}")
     print(f"  Batch size: {BATCH_SIZE} rows/call")

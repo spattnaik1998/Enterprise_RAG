@@ -272,9 +272,13 @@ class RAGPipeline:
             ))
 
             # -- 4. Context management -----------------------------------------
+            # ContextManager expects plain Chunk objects, not (Chunk, float) tuples.
+            reranked_chunks_only = [chunk for chunk, _ in reranked]
+            reranked_scores = {chunk.chunk_id: score for chunk, score in reranked}
+
             context_bundle = self.context_manager.get_context(
                 query=user_query,
-                chunks=reranked,
+                chunks=reranked_chunks_only,
                 fast_path=fast_path,
             )
             tc.add_event(TraceEvent(
@@ -286,17 +290,17 @@ class RAGPipeline:
                     "n_pieces": len(context_bundle.pieces),
                 },
             ))
-            chunks_for_gen = [
-                type("_ChunkProxy", (), {
-                    "text":         p.text,
-                    "source_type":  p.source_type,
-                    "source":       p.source,
-                    "id":           p.id,
-                    "score":        p.relevance_score,
-                    "metadata":     {},
-                })()
-                for p in context_bundle.pieces
-            ] if context_bundle.pieces else reranked
+            # Reconstruct (Chunk, float) tuples from context-selected pieces for generator.
+            if context_bundle.pieces:
+                chunks_for_gen = [
+                    (
+                        reranked_chunks_only[p.chunk_index],
+                        reranked_scores.get(reranked_chunks_only[p.chunk_index].chunk_id, p.relevance_score),
+                    )
+                    for p in context_bundle.pieces
+                ]
+            else:
+                chunks_for_gen = reranked
 
             # -- 5. Generate ---------------------------------------------------
             t2 = time.perf_counter()

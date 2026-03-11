@@ -27,11 +27,19 @@ python -m src.main phase3 --query "Which clients have overdue invoices?"
 # Check phase checkpoint state
 python -m src.main status
 
-# Phase III — Web UI + REST API (run from project root)
+# Phase III — Web UI + REST API (run from project root; uses Supabase index)
 uvicorn app.server:app --reload --port 8000
 
 # Run MCP server standalone (for Claude Desktop or custom MCP clients)
 python -m src.collection.mcp.server
+
+# Council Orchestrator — 3-agent voting CLI
+python -m src.agents.council_cli --query "Should we escalate Alpine Financial?"
+python -m src.agents.council_cli  # interactive mode
+
+# Migrate local FAISS + enterprise JSON data to Supabase (idempotent)
+python scripts/migrate_to_supabase.py
+python scripts/migrate_to_supabase.py --only chunks  # partial re-run
 ```
 
 ## Evaluation Framework
@@ -114,11 +122,23 @@ python -m eval.run_eval --models gpt-4o-mini && echo "PASS" || echo "FAIL"
 ## Setup
 
 1. `pip install -r requirements.txt`
-2. Copy `.env.example` → `.env` and fill in `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `LANGSMITH_API_KEY`
+2. Copy `.env.example` → `.env` and fill in all required keys (see table below)
 3. Run `python scripts/generate_enterprise_data.py` (creates `data/enterprise/*.json`)
 4. Run phases in order: `phase1` → review `data/validated/` → `phase2`
 
-**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, `app/server.py`, and `eval/run_eval.py` to handle emoji in RSS content on cp1252 terminals. Any new entry points on Windows need the same reconfigure block.
+### Environment Variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | Yes | Embeddings (Phase II), reranker, OpenAI generation |
+| `ANTHROPIC_API_KEY` | Yes | Claude generation (Haiku, Sonnet) |
+| `SUPABASE_URL` | Yes (web) | PostgreSQL + pgvector backend |
+| `SUPABASE_SERVICE_KEY` | Yes (web) | **Must be `service_role` JWT**, not `anon` key — anon key fails all inserts due to RLS |
+| `LANGSMITH_API_KEY` | Optional | LangSmith tracing |
+| `LANGSMITH_TRACING` | Optional | Set to `true` to enable traces |
+| `LANGSMITH_PROJECT` | Optional | Default: `"Enterprise RAG"` |
+
+**Windows note**: The codebase patches `sys.stdout/stderr` to UTF-8 at startup in `src/main.py`, `src/embedding/pipeline.py`, `app/server.py`, `eval/run_eval.py`, and `src/agents/council_cli.py`. Any new entry points on Windows need the same reconfigure block at the top.
 
 **TimeFM note**: The forecasting feature requires a local build of TimeFM. The server returns a 503 with install instructions if the package is missing. NLTK punkt tokenizer is auto-downloaded on the first Phase II run.
 
@@ -149,14 +169,18 @@ python -m eval.run_eval --models gpt-4o-mini && echo "PASS" || echo "FAIL"
 - CLI output: `data/index/` must exist (run Phase II first)
 
 **Phase III Web UI** (`app/`):
-- `app/server.py` — FastAPI app, loads `RAGPipeline` once at startup via `lifespan`
+- `app/server.py` — FastAPI app; startup loads `SupabaseIndex` then `RAGPipeline(index=supabase_index)` via `lifespan`
 - `GET /api/health` — pipeline status, vector count, available models by provider
-- `POST /api/chat` — accepts `{message, provider, model}`, swaps generator per request
+- `POST /api/chat` — accepts `{message, provider, model, session_id}`, swaps generator per request
 - `GET /api/clients` — list all clients from invoice data (for forecasting UI)
 - `GET /api/forecast/{client_id}?horizon=N` — TimeFM revenue forecast; `horizon` clamped to [1, 12], default 6
+- `GET /api/logs` — paginated chat history (`?limit=50&offset=0`)
+- `GET /api/logs/stats` — aggregated dashboard stats (calls `get_chat_stats()` RPC)
 - `GET /` — serves `app/static/index.html` (Obsidian Terminal chat UI)
 - `GET /forecast` — serves `app/static/forecast.html` (revenue forecasting visualization)
+- `GET /logs` — serves `app/static/logs.html` (monitoring dashboard, auto-refreshes every 60s)
 - Blocking `pipeline.query()` and forecast inference run in `loop.run_in_executor` to avoid stalling the async event loop
+- Chat interactions are logged to Supabase `chat_logs` table via `app/chat_logger.py`; logging errors are swallowed (never degrade API response)
 
 ### Key Source Modules
 
@@ -184,12 +208,20 @@ Three document states flow through the pipeline:
 
 All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_field`. The `Chunk` dataclass (`src/chunking/schemas.py`) is produced by Phase II and flows through embedding, retrieval, reranking, and generation.
 
-### Hybrid Retrieval
+### Dual Index Mode (FAISS vs Supabase)
 
-`FAISSIndex.search_hybrid()` fuses dense (FAISS) and sparse (BM25) results via Reciprocal Rank Fusion:
-- Default weights: `dense=0.7`, `sparse=0.3`
-- RRF formula: `weight / (rank + 60)` — robust to score-scale mismatch across indexes
-- Configured in `config/config.yaml` under `retrieval:`
+`FAISSIndex` (CLI/eval) and `SupabaseIndex` (web server) both implement the same `search_hybrid(query_vec, query_text, top_k, dense_weight, sparse_weight)` interface. `RAGPipeline.__init__` accepts `index=None` (loads local FAISS from disk) or `index=<SupabaseIndex>`. `HybridRetriever` type-hints `FAISSIndex` but satisfies duck-typing at runtime.
+
+- **CLI / eval**: uses `FAISSIndex` (local `data/index/`) — no Supabase needed
+- **Web server**: uses `SupabaseIndex` — connects to Supabase at startup, queries `ntotal` for health
+- **RRF formula**: `weight / (rank + 60)`, dense_weight=0.7, sparse_weight=0.3
+
+Supabase RPC functions: `match_chunks` (pgvector `<=>` cosine) and `search_chunks_fts` (PostgreSQL FTS). Both return TEXT ids (not UUID — columns were altered after initial creation).
+
+**Common Supabase gotchas**:
+- `chunk_id`/`doc_id` are TEXT not UUID — functions must declare TEXT return types or PostgREST throws error 42804
+- Recreating a function without dropping all overloads causes PGRST203 (ambiguous). Always `DROP FUNCTION IF EXISTS` with full signature first.
+- Batch size = 5 rows per insert (1536 floats × 5 ≈ 150KB, safely under PostgREST 1MB limit)
 
 ### Forecasting (`src/forecasting/`)
 
@@ -198,6 +230,42 @@ All three share `checksum` (SHA-256), `word_count`, `char_count` as `@computed_f
 - Lazy-loads the ~800 MB PyTorch model on first call
 - Returns historical actuals + point forecast + 10th/90th percentile bounds
 - Called by `GET /api/forecast/{client_id}`; inference runs in thread-pool executor
+
+### Sprint 2 Modules
+
+**Agent Security Gateway** (`src/security/`):
+- `AgentSecurityGateway` (`gateway.py`) — central enforcement: PromptGuard check → YAML policy evaluation → execute → HMAC-signed audit log
+- `PolicyEngine` (`policy_engine.py`) — evaluates ABAC rules from `config/policies.yaml`; `ABACContext` carries `user_role`, `data_classification`, `username`
+- `AuditLogger` (`audit_logger.py`) — append-only JSONL at `data/audit/audit.jsonl`; each entry HMAC-signed
+- `@asg_tool(action, classification)` decorator — wraps MCP tool functions; extracts `_abac_ctx` kwarg or falls back to `ABACContext.anonymous()`
+- Web server integrates via `gw.handle(query, abac_ctx, generator=generator, pipeline=pipeline)` instead of `pipeline.query()` directly
+
+**ContextManager SDK** (`src/context/`):
+- `ContextManager.get_context(query, chunks, budget_tokens=3000, fast_path=False)` — takes reranked chunks, scores by freshness + tier, greedily packs within token budget, reorders for "lost in the middle" mitigation
+- `FreshnessScorer` (`freshness.py`) — scores chunks 0-1 based on metadata date fields
+- `TierClassifier` (`tiers.py`) — classifies source_type into priority tiers; `reorder_for_lim()` puts highest-priority chunks at start and end
+- Combined score: `relevance * (0.7 + 0.3 * freshness)`
+- `fast_path=True` enforces 1024-token budget (latency optimisation)
+
+**TraceCollector** (`src/observability/`):
+- `TraceCollector` (`collector.py`) — context manager; records `TraceEvent` objects and writes sampled `AgentTrace` to `data/traces/`
+- `FailureBiasedSampler` (`sampler.py`) — always samples failures; probabilistically samples successes
+- `TraceStore` (`store.py`) — JSONL-per-session storage; `TraceReplayer` (`replayer.py`) for offline analysis
+- Access active collector in nested calls: `get_active_collector()` (uses `ContextVar`, safe across async/threads)
+
+**Council Orchestrator** (`src/agents/`):
+- `CouncilOrchestrator` (`council.py`) — 3-agent voting: runs shared `HybridRetriever + ContextManager` once, then dispatches `FastCreativeAgent` and `ConservativeCheckerAgent` in parallel (`asyncio.gather`), then `PolicyVerifierAgent` reviews both
+- `DeadlockDetector` (`deadlock.py`) — detects retry loops; retries once on "escalate", returns escalated `CouncilVerdict` if still unresolved
+- `CouncilVerdict` — final output: `accepted_answer`, `winning_agent`, `dissent_summary`, `escalated`, `hallucination_detected`, `pii_concern`, `total_cost_usd`, `trace_id`
+- CLI: `python -m src.agents.council_cli`
+
+### Vercel Deployment
+
+- `api/index.py` — Vercel entry point: `from app.server import app` (ASGI export)
+- `vercel.json` — routes all traffic to `api/index.py`, `maxDuration: 60` (requires Pro plan)
+- `requirements-vercel.txt` — serving layer only; excludes `faiss-cpu`, `rank-bm25`, `tiktoken`, `nltk`, `langdetect`, `faker`, `mcp`, `arxiv`, `wikipedia-api`, `feedparser`
+- No FAISS binary at startup — Supabase connection only (~1-2s cold start vs ~10s+ with FAISS)
+- Required env vars in Vercel settings: `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`
 
 ### Observability
 
@@ -231,8 +299,9 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `RAGPipeline` | `src/serving/pipeline.py` | Orchestrator — loads index, wires all components |
 | `CollectionPipeline` | `src/collection/pipeline.py` | Runs all 8 collectors concurrently via asyncio |
 | `AdaptiveChunker` | `src/chunking/chunker.py` | Selects chunking strategy per document type |
-| `FAISSIndex` | `src/embedding/faiss_index.py` | Dual FAISS+BM25 index with RRF hybrid search |
-| `HybridRetriever` | `src/retrieval/retriever.py` | Query embed + hybrid FAISS+BM25 search |
+| `FAISSIndex` | `src/embedding/faiss_index.py` | Local FAISS+BM25 index with RRF hybrid search (CLI/eval) |
+| `SupabaseIndex` | `src/embedding/supabase_index.py` | pgvector + PostgreSQL FTS index (web/Vercel) |
+| `HybridRetriever` | `src/retrieval/retriever.py` | Query embed + hybrid search (duck-types both indexes) |
 | `LLMReranker` | `src/retrieval/reranker.py` | Batch LLM relevance scoring (always OpenAI) |
 | `RAGGenerator` | `src/generation/generator.py` | OpenAI grounded answer synthesis |
 | `AnthropicGenerator` | `src/generation/generator.py` | Anthropic grounded answer synthesis (same interface) |
@@ -241,6 +310,10 @@ user query -> PromptGuard -> HybridRetriever -> LLMReranker -> RAGGenerator -> P
 | `PhaseICheckpoint` | `src/checkpoint.py` | Saves/loads Phase I state to disk |
 | `QueryResult` | `src/serving/pipeline.py` | Full result dataclass (answer, citations, timings, cost) |
 | `InvoiceForecaster` | `src/forecasting/invoice_forecaster.py` | TimeFM 2.5 monthly revenue forecasting |
+| `AgentSecurityGateway` | `src/security/gateway.py` | Central ABAC policy + audit enforcement layer |
+| `ContextManager` | `src/context/manager.py` | Budget-aware context assembly with freshness scoring |
+| `TraceCollector` | `src/observability/collector.py` | Context-manager that records and samples pipeline traces |
+| `CouncilOrchestrator` | `src/agents/council.py` | 3-agent voting (FastCreative + ConservativeChecker + PolicyVerifier) |
 
 ### Phase III CLI Flags
 

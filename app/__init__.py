@@ -1,1 +1,1 @@
-"""TechVault Enterprise RAG - Web Application."""
+"""Red Key Sandbox Enterprise RAG - Web Application."""

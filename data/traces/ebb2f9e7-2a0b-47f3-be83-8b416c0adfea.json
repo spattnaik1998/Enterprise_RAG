@@ -1,0 +1,75 @@
+{
+  "trace_id": "ebb2f9e7-2a0b-47f3-be83-8b416c0adfea",
+  "session_id": "4cabd0ef32b5",
+  "query_hash": "4cabd0ef32b5c40069650528dc16d5398ef58650f397e16d35d8ac23b0c8c67c",
+  "model": "gpt-4o-mini",
+  "user_role": "msp",
+  "verdict": "error",
+  "total_cost_usd": 0.0,
+  "capture_reason": "pipeline_error",
+  "created_at": "2026-03-11T01:06:22.919138+00:00",
+  "events": [
+    {
+      "event_type": "query_start",
+      "timestamp": "2026-03-11T01:06:22.919138+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "query_redacted": "Which clients have overdue invoices?",
+        "fast_path": false
+      }
+    },
+    {
+      "event_type": "retrieval",
+      "timestamp": "2026-03-11T01:06:24.732035+00:00",
+      "duration_ms": 1812.22,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "n_candidates": 10,
+        "chunk_ids": [
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      }
+    },
+    {
+      "event_type": "rerank",
+      "timestamp": "2026-03-11T01:06:27.568905+00:00",
+      "duration_ms": 2837.5,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "n_reranked": 5,
+        "skipped": false
+      }
+    },
+    {
+      "event_type": "context_pack",
+      "timestamp": "2026-03-11T01:06:28.450432+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "total_tokens": 0,
+        "budget_tokens": 3000,
+        "truncated": false,
+        "n_pieces": 5
+      }
+    },
+    {
+      "event_type": "verdict",
+      "timestamp": "2026-03-11T01:06:28.484620+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "error": "cannot unpack non-iterable _ChunkProxy object",
+      "payload": {
+        "outcome": "error"
+      }
+    }
+  ]
+}

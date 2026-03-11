@@ -1,5 +1,5 @@
 """
-TechVault Enterprise RAG - Web API Server
+Red Key Sandbox Enterprise RAG - Web API Server
 ------------------------------------------
 FastAPI server that wraps the Phase III RAGPipeline and serves the chat UI
 plus the Client Portal with JWT-based authentication.
@@ -26,6 +26,7 @@ MSP-only endpoints (Bearer token, role=msp):
   GET  /api/msp/tickets/{id}      -> single ticket detail
   PATCH /api/msp/tickets/{id}     -> update ticket (status, assignee, notes)
   GET  /api/msp/ticket-stats      -> ticket counts by status
+  GET  /api/msp/engineers         -> engineer profiles list
 
 Client-only endpoints (Bearer token, role=client):
   GET  /api/portal/tickets        -> client's own tickets
@@ -70,6 +71,7 @@ from app.auth import (
 from app.chat_logger import compute_stats, load_logs, log_interaction
 from app.portal_db import (
     create_ticket,
+    get_all_engineers,
     get_all_tickets,
     get_ticket_by_id,
     get_ticket_stats,
@@ -133,7 +135,7 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="TechVault Enterprise RAG API",
+    title="Red Key Sandbox Enterprise RAG API",
     description="Retrieval-Augmented Generation over MSP operations and AI research",
     version="3.1.0",
     lifespan=lifespan,
@@ -477,6 +479,13 @@ async def msp_update_ticket(
 async def msp_ticket_stats(_user: dict = Depends(require_msp)):
     """Return ticket counts grouped by status (MSP dashboard)."""
     return get_ticket_stats()
+
+
+@app.get("/api/msp/engineers")
+async def msp_list_engineers(_user: dict = Depends(require_msp)):
+    """Return all engineer profiles (MSP only)."""
+    engineers = get_all_engineers()
+    return {"engineers": engineers, "count": len(engineers)}
 
 
 @app.get("/api/health")

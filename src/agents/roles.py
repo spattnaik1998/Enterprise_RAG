@@ -130,19 +130,25 @@ class PolicyVerifierAgent:
             query=query,
         )
 
-        # Use a minimal chunk proxy so the generator receives the prompt as context
+        # Use a minimal chunk proxy so the generator receives the prompt as context.
+        # Must include all attributes accessed by _build_context in generator.py.
         class _PromptChunk:
             text = prompt
             source_type = "verifier_context"
             source = "PolicyVerifier"
+            title = "PolicyVerifier context"
             id = "verifier_0"
+            chunk_id = "verifier_0"
+            doc_id = "verifier_doc"
+            chunk_index = 0
+            url = ""
             score = 1.0
             metadata: dict = {}
 
         try:
             response = self._client.generate(
                 "Return the verdict JSON for the proposals above.",
-                [_PromptChunk()],
+                [(_PromptChunk(), 1.0)],
             )
             raw = response.answer.strip()
             # Strip markdown code fences if present

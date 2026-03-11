@@ -233,3 +233,8 @@ class FAISSIndex:
     @property
     def is_built(self) -> bool:
         return self.faiss_index.ntotal > 0
+
+    @property
+    def ntotal(self) -> int:
+        """Total number of vectors in the FAISS index (mirrors SupabaseIndex.ntotal)."""
+        return self.faiss_index.ntotal

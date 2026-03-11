@@ -1,5 +1,5 @@
 -- =============================================================================
--- TechVault Client Portal -- Supabase Table Setup
+-- Red Key Sandbox Client Portal -- Supabase Table Setup
 -- =============================================================================
 -- Run this in the Supabase SQL Editor (Dashboard > SQL Editor > New query)
 -- before running scripts/setup_portal.py

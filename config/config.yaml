@@ -1,8 +1,8 @@
 project:
-  name: "TechVault MSP - Enterprise RAG Intelligence Hub"
+  name: "Red Key Sandbox MSP - Enterprise RAG Intelligence Hub"
   version: "2.0.0"
   description: >
-    Enterprise RAG pipeline for TechVault MSP that aggregates data from five
+    Enterprise RAG pipeline for Red Key Sandbox MSP that aggregates data from five
     disparate back-office systems (QuickBooks, ConnectWise, HubSpot, Exchange,
     SharePoint) plus AI/ML research sources to power intelligent Q&A over
     billing, service delivery, client relationships, communications, and contracts.
@@ -55,7 +55,7 @@ collection:
     enabled: false
     paths: []
 
-  # ── Enterprise MSP sources (TechVault back-office systems) ───────────────
+  # ── Enterprise MSP sources (Red Key Sandbox back-office systems) ───────────────
   billing:
     enabled: true
     # QuickBooks Enterprise - Invoice AR system

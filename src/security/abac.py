@@ -5,7 +5,7 @@ Lightweight attribute container that travels with every agent call.
 Built from HTTP headers by the FastAPI dependency; used by PolicyEngine.
 
 Roles:
-    admin       -- TechVault senior staff; full access
+    admin       -- Red Key Sandbox senior staff; full access
     msp         -- MSP engineer / support staff; read most data
     finance     -- billing team; read/write billing data
     technician  -- field tech; read PSA + contracts

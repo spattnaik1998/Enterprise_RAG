@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechVault MSP — Admin Portal</title>
+  <title>Red Key Sandbox MSP — Admin Portal</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400&family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,500;6..12,600;6..12,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -571,6 +571,88 @@
 
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast svg { width: 15px; height: 15px; stroke: var(--green); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Engineers grid ── */
+    .eng-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+      margin-top: 4px;
+    }
+
+    .eng-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
+    }
+
+    .eng-card:hover { border-color: var(--blue-b); box-shadow: 0 6px 24px rgba(37,99,235,0.07); transform: translateY(-2px); }
+
+    .eng-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .eng-avatar {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: var(--blue-dim);
+      border: 1px solid var(--blue-b);
+      display: grid;
+      place-items: center;
+      font-family: var(--font-d);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--blue);
+      flex-shrink: 0;
+    }
+
+    .eng-name { font-family: var(--font-d); font-size: 15px; font-weight: 700; color: var(--text-1); }
+    .eng-email { font-size: 11.5px; color: var(--text-3); font-family: var(--font-m); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+
+    .eng-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .eng-stat { background: var(--bg); border-radius: 8px; padding: 10px 12px; }
+    .eng-stat-val { font-family: var(--font-d); font-size: 20px; font-weight: 800; color: var(--text-1); line-height: 1; }
+    .eng-stat-lbl { font-size: 10.5px; color: var(--text-3); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-top: 3px; }
+
+    .eng-specialty {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.18);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+
+    .eng-sla {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(5,150,105,0.08);
+      border: 1px solid rgba(5,150,105,0.18);
+      border-radius: 100px;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--green);
+      margin-left: 6px;
+    }
+
+    .eng-loading { padding: 48px 24px; text-align: center; color: var(--text-3); font-size: 13px; }
   </style>
 </head>
 <body>
@@ -579,7 +661,7 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="logo-mark"><svg viewBox="0 0 20 20"><path d="M10 2L3 6v8l7 4 7-4V6L10 2z"/><path d="M10 2v12M3 6l7 4 7-4" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
-      <div class="logo-text">Tech<span>Vault</span></div>
+      <div class="logo-text">Red Key<span> Sandbox</span></div>
     </div>
 
     <div class="sidebar-section">
@@ -592,6 +674,10 @@
         <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
         Service Tickets
         <span class="nav-badge-count" id="open-count">—</span>
+      </button>
+      <button class="nav-item" data-view="engineers">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Engineers
       </button>
     </div>
 
@@ -741,6 +827,17 @@
       </div>
     </div>
 
+    <!-- Engineers view -->
+    <div class="view" id="view-engineers">
+      <div class="page-header">
+        <div class="page-title">Engineers</div>
+        <div class="page-sub">All MSP engineers with ticket activity and performance metrics.</div>
+      </div>
+      <div class="eng-grid" id="eng-grid">
+        <div class="eng-loading">Loading engineers…</div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 
   <!-- ── Ticket detail panel ───────────────────────────────────────────── -->
@@ -781,7 +878,9 @@
           </div>
           <div class="form-row">
             <label>Assigned Engineer</label>
-            <input class="form-ctrl" id="upd-assigned" type="text" placeholder="e.g. Alex Chen" />
+            <select class="form-ctrl" id="upd-assigned">
+              <option value="">— Unassigned —</option>
+            </select>
           </div>
           <div class="form-row">
             <label>Engineer Notes</label>
@@ -829,9 +928,13 @@
     document.getElementById('topbar-date').textContent = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     // ── Navigation ─────────────────────────────────────────────────────────
-    const views    = { dashboard: document.getElementById('view-dashboard'), tickets: document.getElementById('view-tickets') };
+    const views    = {
+      dashboard: document.getElementById('view-dashboard'),
+      tickets:   document.getElementById('view-tickets'),
+      engineers: document.getElementById('view-engineers'),
+    };
     const navItems = document.querySelectorAll('.nav-item[data-view]');
-    const titles   = { dashboard: 'Dashboard', tickets: 'Service Tickets' };
+    const titles   = { dashboard: 'Dashboard', tickets: 'Service Tickets', engineers: 'Engineers' };
 
     function switchView(name) {
       Object.keys(views).forEach(k => {
@@ -839,7 +942,8 @@
       });
       navItems.forEach(el => el.classList.toggle('active', el.dataset.view === name));
       document.getElementById('topbar-title').textContent = titles[name];
-      if (name === 'tickets') loadTickets();
+      if (name === 'tickets')   loadTickets();
+      if (name === 'engineers') loadEngineers();
     }
 
     navItems.forEach(el => el.addEventListener('click', () => switchView(el.dataset.view)));
@@ -877,6 +981,84 @@
     }
 
     loadStats();
+
+    // ── Engineers ──────────────────────────────────────────────────────────
+    let allEngineers = [];
+
+    function initials(name) {
+      return name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
+    }
+
+    async function loadEngineers() {
+      const grid = document.getElementById('eng-grid');
+      if (allEngineers.length > 0) { renderEngineers(); return; } // cached
+      grid.innerHTML = '<div class="eng-loading">Loading engineers…</div>';
+      try {
+        const res = await api('/api/msp/engineers');
+        if (!res.ok) { grid.innerHTML = '<div class="eng-loading">Error loading engineers.</div>'; return; }
+        const data = await res.json();
+        allEngineers = data.engineers || [];
+        renderEngineers();
+        populateEngineerDropdown();
+      } catch(e) {
+        grid.innerHTML = '<div class="eng-loading">Network error.</div>';
+      }
+    }
+
+    function renderEngineers() {
+      const grid = document.getElementById('eng-grid');
+      if (allEngineers.length === 0) { grid.innerHTML = '<div class="eng-loading">No engineers found.</div>'; return; }
+      grid.innerHTML = allEngineers.map(e => `
+        <div class="eng-card">
+          <div class="eng-card-header">
+            <div class="eng-avatar">${initials(e.name)}</div>
+            <div>
+              <div class="eng-name">${escHtml(e.name)}</div>
+              <div class="eng-email">${escHtml(e.email)}</div>
+            </div>
+          </div>
+          <div class="eng-stats">
+            <div class="eng-stat">
+              <div class="eng-stat-val">${e.total_tickets}</div>
+              <div class="eng-stat-lbl">Total Tickets</div>
+            </div>
+            <div class="eng-stat">
+              <div class="eng-stat-val" style="color:var(--green)">${e.sla_rate}%</div>
+              <div class="eng-stat-lbl">SLA Rate</div>
+            </div>
+            <div class="eng-stat">
+              <div class="eng-stat-val">${e.resolved_tickets}</div>
+              <div class="eng-stat-lbl">Resolved</div>
+            </div>
+            <div class="eng-stat">
+              <div class="eng-stat-val">${e.avg_hours_per_ticket}h</div>
+              <div class="eng-stat-lbl">Avg Hours</div>
+            </div>
+          </div>
+          <div>
+            <span class="eng-specialty">
+              <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              ${escHtml(e.primary_specialty)}
+            </span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function populateEngineerDropdown() {
+      const sel = document.getElementById('upd-assigned');
+      // Remove old engineer options (keep the first "Unassigned" option)
+      while (sel.options.length > 1) sel.remove(1);
+      allEngineers.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.name;
+        opt.textContent = e.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    // Pre-load engineers on page load so dropdown is ready before any ticket is opened
+    loadEngineers();
 
     // ── Ticket table ───────────────────────────────────────────────────────
     let allTickets = [];
@@ -961,7 +1143,17 @@
       document.getElementById('dp-badges').innerHTML    = statusBadge(t.status) + ' ' + prioBadge(t.priority);
 
       document.getElementById('upd-status').value   = t.status;
-      document.getElementById('upd-assigned').value = t.assigned_to || '';
+      // Set engineer dropdown — fall back to empty string if assigned_to not in list
+      const sel = document.getElementById('upd-assigned');
+      sel.value = t.assigned_to || '';
+      if (sel.value !== (t.assigned_to || '')) {
+        // assigned_to not in dropdown list; add a temporary option
+        const opt = document.createElement('option');
+        opt.value = t.assigned_to;
+        opt.textContent = t.assigned_to;
+        sel.appendChild(opt);
+        sel.value = t.assigned_to;
+      }
       document.getElementById('upd-notes').value    = t.engineer_notes || '';
       document.getElementById('update-success').classList.remove('show');
 

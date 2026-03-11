@@ -57,7 +57,7 @@ from eval.evaluator import (
 
 app = typer.Typer(
     name="eval",
-    help="TechVault MSP Enterprise RAG -- Evaluation Framework",
+    help="Red Key Sandbox MSP Enterprise RAG -- Evaluation Framework",
     add_completion=False,
 )
 console = Console()
@@ -176,7 +176,7 @@ def main(
         output = f"eval/results/eval_{ts}.json"
 
     # Print run configuration
-    console.rule("[bold cyan]TechVault MSP RAG Evaluation")
+    console.rule("[bold cyan]Red Key Sandbox MSP RAG Evaluation")
     console.print(f"  Models:       {', '.join(resolved_models)}")
     console.print(f"  Categories:   {', '.join(resolved_categories)}")
     console.print(f"  Sample/cat:   {'all' if sample == 0 else sample}")

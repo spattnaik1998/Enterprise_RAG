@@ -213,7 +213,7 @@ def phase3(
     # --- Interactive loop -----------------------------------------------------
     console.print()
     console.print(
-        "[bold]Ask anything about TechVault's operations or AI/ML research.[/bold]"
+        "[bold]Ask anything about Red Key Sandbox's operations or AI/ML research.[/bold]"
     )
     console.print("[dim]Type 'exit', 'quit', or press Ctrl+C to quit.[/dim]\n")
 

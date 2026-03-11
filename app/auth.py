@@ -1,7 +1,7 @@
 """
 Portal Authentication
 ---------------------
-JWT-based auth for the TechVault Client Portal.
+JWT-based auth for the Red Key Sandbox Client Portal.
 
 Each token carries:
   - sub         : username

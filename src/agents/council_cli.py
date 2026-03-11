@@ -79,7 +79,7 @@ def main(
         return
 
     # Interactive mode
-    console.print("[bold cyan]TechVault Council Orchestrator[/bold cyan]  (type 'exit' to quit)")
+    console.print("[bold cyan]Red Key Sandbox Council Orchestrator[/bold cyan]  (type 'exit' to quit)")
     while True:
         try:
             q = console.input("[bold blue]council>[/bold blue] ").strip()

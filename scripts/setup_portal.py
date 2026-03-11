@@ -2,7 +2,7 @@
 """
 Portal Credential Setup
 -----------------------
-Generates login credentials for the TechVault Client Portal:
+Generates login credentials for the Red Key Sandbox Client Portal:
   - 1 MSP admin account (username: msp_admin)
   - 50 client accounts  (one per client in data/enterprise/clients.json)
 
@@ -53,8 +53,8 @@ from app.auth import hash_password
 # ---------------------------------------------------------------------------
 
 MSP_USERNAME = "msp_admin"
-MSP_PASSWORD = "TechVault@2025!"          # fixed, easy to remember
-MSP_DISPLAY  = "TechVault MSP Admin"
+MSP_PASSWORD = "RedKeySandbox@2025!"          # fixed, easy to remember
+MSP_DISPLAY  = "Red Key Sandbox MSP Admin"
 
 CLIENTS_FILE = ROOT / "data" / "enterprise" / "clients.json"
 CREDS_FILE   = ROOT / "data" / "portal_credentials.json"

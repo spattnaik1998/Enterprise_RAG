@@ -102,12 +102,16 @@ class CouncilOrchestrator:
             candidates = await loop.run_in_executor(
                 None, self._pipeline.retriever.retrieve, query
             )
+            # ContextManager expects plain Chunk objects, not (Chunk, float) tuples.
+            candidate_chunks = [chunk for chunk, _ in candidates]
+            candidate_scores = {chunk.chunk_id: score for chunk, score in candidates}
+
             context_bundle = await loop.run_in_executor(
                 None,
                 partial(
                     self._pipeline.context_manager.get_context,
                     query=query,
-                    chunks=candidates,
+                    chunks=candidate_chunks,
                     fast_path=False,
                 ),
             )
@@ -124,18 +128,17 @@ class CouncilOrchestrator:
                 latency_ms=(time.perf_counter() - t_start) * 1000,
             )
 
-        # Build chunk proxies for agents
-        chunks_for_agents = [
-            type("_ChunkProxy", (), {
-                "text":        p.text,
-                "source_type": p.source_type,
-                "source":      p.source,
-                "id":          p.id,
-                "score":       p.relevance_score,
-                "metadata":    {},
-            })()
-            for p in context_bundle.pieces
-        ] if context_bundle.pieces else candidates[:10]
+        # Build (Chunk, float) tuples for agents — same format generators expect.
+        if context_bundle.pieces:
+            chunks_for_agents = [
+                (
+                    candidate_chunks[p.chunk_index],
+                    candidate_scores.get(candidate_chunks[p.chunk_index].chunk_id, p.relevance_score),
+                )
+                for p in context_bundle.pieces
+            ]
+        else:
+            chunks_for_agents = candidates[:10]
 
         # -- Step 2: Parallel proposals -----------------------------------------
         attempt = 0

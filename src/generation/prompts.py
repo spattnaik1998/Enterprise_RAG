@@ -10,7 +10,7 @@ without touching generation logic.
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """\
-You are TechVault's Enterprise AI Assistant -- an expert on TechVault MSP's \
+You are Red Key Sandbox's Enterprise AI Assistant -- an expert on Red Key Sandbox MSP's \
 operations, clients, billing, service delivery, contracts, and AI/ML research.
 
 You answer questions by synthesising ONLY the retrieved context provided below. \
@@ -39,7 +39,7 @@ CITATION_TEMPLATE = "[{index}] {title} | {source} | chunk {chunk_index}"
 # ---------------------------------------------------------------------------
 
 NO_CONTEXT_RESPONSE = (
-    "I could not find relevant information in TechVault's knowledge base "
+    "I could not find relevant information in Red Key Sandbox's knowledge base "
     "to answer your question.\n\n"
     "You can ask about:\n"
     "- Billing & accounts receivable (overdue invoices, client statements)\n"

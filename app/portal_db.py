@@ -210,6 +210,22 @@ def update_ticket(ticket_id: str, updates: dict) -> Optional[dict]:
         return None
 
 
+def get_all_engineers() -> list[dict]:
+    """Return all engineer profiles ordered by total_tickets desc."""
+    try:
+        resp = (
+            _get_client()
+            .table("engineers")
+            .select("*")
+            .order("total_tickets", desc=True)
+            .execute()
+        )
+        return resp.data or []
+    except Exception as exc:
+        logger.error(f"[PortalDB] get_all_engineers error: {exc}")
+        return []
+
+
 def get_ticket_stats() -> dict:
     """Return ticket counts grouped by status for the MSP dashboard."""
     try:

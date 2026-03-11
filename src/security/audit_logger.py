@@ -105,9 +105,9 @@ class AuditLogger:
         canonical = json.dumps(entry_dict, sort_keys=True, ensure_ascii=False)
         entry.hmac_sig = self._sign(canonical.encode())
 
-        # Write line
+        # Write line (newline="" forces \n on all platforms, preventing \r\n on Windows)
         line = json.dumps(asdict(entry), ensure_ascii=False)
-        with open(self.log_path, "a", encoding="utf-8") as f:
+        with open(self.log_path, "a", encoding="utf-8", newline="") as f:
             f.write(line + "\n")
 
         # Update chain hash
@@ -223,7 +223,7 @@ class AuditLogger:
         with open(self.log_path, "rb") as f:
             for line in f:
                 if line.strip():
-                    last_line = line.rstrip(b"\n")
+                    last_line = line.rstrip(b"\r\n")
         if not last_line:
             return _GENESIS_HASH
         return self._hash_bytes(last_line)
