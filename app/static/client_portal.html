@@ -333,6 +333,68 @@
       .right-col { position: static; }
       .form-row-2 { grid-template-columns: 1fr; }
     }
+
+    /* ── Login overlay ── */
+    .login-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      align-items: center; justify-content: center;
+    }
+    .login-overlay.visible { display: flex; }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+    }
+
+    .login-icon {
+      width: 48px; height: 48px;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      margin-bottom: 20px;
+    }
+    .login-icon svg { width: 22px; height: 22px; stroke: var(--green); stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    .login-title { font-family: var(--font-d); font-size: 20px; font-weight: 700; color: var(--text-1); margin-bottom: 6px; }
+    .login-sub   { font-size: 13px; color: var(--text-3); margin-bottom: 24px; }
+
+    .login-error {
+      display: none;
+      align-items: flex-start; gap: 8px;
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      color: #dc2626;
+      border-radius: 9px;
+      padding: 10px 13px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .login-error.visible { display: flex; }
+    .login-error svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; margin-top: 1px; }
+
+    .login-btn {
+      width: 100%; height: 44px;
+      background: var(--green);
+      border: none; border-radius: 9px;
+      color: #fff; font-size: 14px; font-weight: 600;
+      font-family: var(--font-b);
+      cursor: pointer; margin-top: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity 0.15s;
+    }
+    .login-btn:hover { opacity: 0.88; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    .login-btn.loading .login-spinner { display: block; }
+    .login-btn.loading .login-btn-txt { display: none; }
   </style>
 </head>
 <body>
@@ -513,28 +575,41 @@
     </div>
   </div>
 
+  <!-- Login Overlay (shown when unauthenticated) -->
+  <div class="login-overlay" id="login-overlay" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-card">
+      <div class="login-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </div>
+      <div class="login-title" id="login-title">Client Portal Sign In</div>
+      <div class="login-sub">Enter your organization credentials to access support.</div>
+      <div class="login-error" id="login-error">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span id="login-error-text">Invalid username or password.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-username">Username</label>
+        <input class="form-input" id="login-username" type="text" placeholder="clt-001" autocomplete="username" spellcheck="false" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="login-password">Password</label>
+        <input class="form-input" id="login-password" type="password" placeholder="••••••••••" autocomplete="current-password" />
+      </div>
+      <button class="login-btn" id="login-btn" type="button">
+        <div class="login-spinner"></div>
+        <span class="login-btn-txt">Sign In to Client Portal</span>
+      </button>
+    </div>
+  </div>
+
   <script>
     const AUTH_KEY = 'portal_auth';
 
-    // ── Guard ──────────────────────────────────────────────────────────────
+    // ── Auth state ─────────────────────────────────────────────────────────
     let auth;
     try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch(e) { auth = null; }
-    if (!auth || auth.role !== 'client') { window.location.href = '/'; }
 
     function getToken() { return auth ? auth.token : ''; }
-
-    // ── Populate identity ──────────────────────────────────────────────────
-    const clientId   = auth?.client_id   || '—';
-    const clientName = auth?.client_name || auth?.username || '—';
-
-    document.getElementById('client-badge').textContent      = clientName;
-    document.getElementById('info-client-id').textContent   = clientId;
-    document.getElementById('info-client-name').textContent = clientName;
-
-    document.getElementById('btn-logout').addEventListener('click', () => {
-      localStorage.removeItem(AUTH_KEY);
-      window.location.href = '/';
-    });
 
     // ── API helpers ────────────────────────────────────────────────────────
     async function api(path, opts = {}) {
@@ -542,9 +617,70 @@
         ...opts,
         headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json', ...(opts.headers || {}) },
       });
-      if (res.status === 401) { localStorage.removeItem(AUTH_KEY); window.location.href = '/'; }
+      if (res.status === 401) { localStorage.removeItem(AUTH_KEY); showLoginOverlay(); }
       return res;
     }
+
+    // ── Login overlay ──────────────────────────────────────────────────────
+    function showLoginOverlay() {
+      const overlay = document.getElementById('login-overlay');
+      overlay.classList.add('visible');
+      // Pre-fill username from URL param (client_id from Manage Clients "View Portal" link)
+      const params = new URLSearchParams(window.location.search);
+      const cid = params.get('client_id') || '';
+      if (cid) document.getElementById('login-username').value = cid;
+      document.getElementById('login-password').focus();
+    }
+
+    function hideLoginOverlay() {
+      document.getElementById('login-overlay').classList.remove('visible');
+    }
+
+    function showLoginError(msg) {
+      const el = document.getElementById('login-error');
+      document.getElementById('login-error-text').textContent = msg;
+      el.classList.add('visible');
+    }
+
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      const btn = document.getElementById('login-btn');
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value;
+      document.getElementById('login-error').classList.remove('visible');
+
+      if (!u || !p) { showLoginError('Please enter both username and password.'); return; }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) { showLoginError(data.detail || 'Invalid username or password.'); return; }
+        if (data.role !== 'client') { showLoginError('This login is for clients only. Use the MSP Admin Portal for admin access.'); return; }
+
+        auth = { token: data.token, role: data.role, client_id: data.client_id || null, client_name: data.client_name || null };
+        localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+        hideLoginOverlay();
+        initPortal();
+      } catch(err) {
+        showLoginError('Network error. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    });
+
+    // Allow Enter key in password field to submit
+    document.getElementById('login-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('login-btn').click();
+    });
+    document.getElementById('login-username').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('login-password').focus();
+    });
 
     // ── Format helpers ─────────────────────────────────────────────────────
     function statusBadge(s) {
@@ -572,6 +708,25 @@
 
     function escHtml(str) {
       return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Populate identity + wire portal ────────────────────────────────────
+    function initPortal() {
+      const clientId   = auth?.client_id   || '—';
+      const clientName = auth?.client_name || auth?.username || '—';
+
+      document.getElementById('client-badge').textContent     = clientName;
+      document.getElementById('info-client-id').textContent   = clientId;
+      document.getElementById('info-client-name').textContent = clientName;
+
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        localStorage.removeItem(AUTH_KEY);
+        window.location.href = '/';
+      });
+
+      loadTickets();
+      document.getElementById('btn-reload').addEventListener('click', loadTickets);
+      wireSubmitForm();
     }
 
     // ── Load tickets ───────────────────────────────────────────────────────
@@ -632,57 +787,63 @@
       }
     }
 
-    loadTickets();
-    document.getElementById('btn-reload').addEventListener('click', loadTickets);
-
     // ── Submit ticket ──────────────────────────────────────────────────────
-    const formEl  = document.getElementById('ticket-form');
-    const errEl   = document.getElementById('form-error');
-    const errText = document.getElementById('form-error-text');
-    const sucEl   = document.getElementById('form-success');
-    const btnEl   = document.getElementById('btn-submit');
+    function wireSubmitForm() {
+      const formEl  = document.getElementById('ticket-form');
+      const errEl   = document.getElementById('form-error');
+      const errText = document.getElementById('form-error-text');
+      const sucEl   = document.getElementById('form-success');
+      const btnEl   = document.getElementById('btn-submit');
 
-    function showError(msg)   { errText.textContent = msg; errEl.classList.add('visible');     sucEl.classList.remove('visible'); }
-    function showSuccess(msg) { document.getElementById('form-success-text').textContent = msg; sucEl.classList.add('visible'); errEl.classList.remove('visible'); }
-    function clearAlerts()    { errEl.classList.remove('visible'); sucEl.classList.remove('visible'); }
+      function showError(msg)   { errText.textContent = msg; errEl.classList.add('visible');     sucEl.classList.remove('visible'); }
+      function showSuccess(msg) { document.getElementById('form-success-text').textContent = msg; sucEl.classList.add('visible'); errEl.classList.remove('visible'); }
+      function clearAlerts()    { errEl.classList.remove('visible'); sucEl.classList.remove('visible'); }
 
-    formEl.addEventListener('submit', async e => {
-      e.preventDefault();
-      clearAlerts();
+      formEl.addEventListener('submit', async e => {
+        e.preventDefault();
+        clearAlerts();
 
-      const title       = document.getElementById('f-title').value.trim();
-      const description = document.getElementById('f-description').value.trim();
-      const priority    = document.getElementById('f-priority').value;
-      const category    = document.getElementById('f-category').value;
+        const title       = document.getElementById('f-title').value.trim();
+        const description = document.getElementById('f-description').value.trim();
+        const priority    = document.getElementById('f-priority').value;
+        const category    = document.getElementById('f-category').value;
 
-      if (!title)       { showError('Please enter an issue title.'); return; }
-      if (!description) { showError('Please describe the issue.'); return; }
+        if (!title)       { showError('Please enter an issue title.'); return; }
+        if (!description) { showError('Please describe the issue.'); return; }
 
-      btnEl.disabled = true;
-      btnEl.classList.add('loading');
+        btnEl.disabled = true;
+        btnEl.classList.add('loading');
 
-      try {
-        const res = await api('/api/portal/tickets', {
-          method: 'POST',
-          body: JSON.stringify({ title, description, priority, category }),
-        });
+        try {
+          const res = await api('/api/portal/tickets', {
+            method: 'POST',
+            body: JSON.stringify({ title, description, priority, category }),
+          });
 
-        if (res.status === 201) {
-          const t = await res.json();
-          showSuccess(`Ticket ${t.ticket_number} submitted! Our team will respond shortly.`);
-          formEl.reset();
-          loadTickets();
-        } else {
-          const d = await res.json().catch(() => ({}));
-          showError(d.detail || 'Failed to submit ticket. Please try again.');
+          if (res.status === 201) {
+            const t = await res.json();
+            showSuccess(`Ticket ${t.ticket_number} submitted! Our team will respond shortly.`);
+            formEl.reset();
+            loadTickets();
+          } else {
+            const d = await res.json().catch(() => ({}));
+            showError(d.detail || 'Failed to submit ticket. Please try again.');
+          }
+        } catch(err) {
+          showError('Network error. Please check your connection.');
+        } finally {
+          btnEl.disabled = false;
+          btnEl.classList.remove('loading');
         }
-      } catch(err) {
-        showError('Network error. Please check your connection.');
-      } finally {
-        btnEl.disabled = false;
-        btnEl.classList.remove('loading');
-      }
-    });
+      });
+    }
+
+    // ── Boot ───────────────────────────────────────────────────────────────
+    if (auth && auth.role === 'client') {
+      initPortal();
+    } else {
+      showLoginOverlay();
+    }
   </script>
 </body>
 </html>
