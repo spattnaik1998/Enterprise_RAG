@@ -385,6 +385,15 @@ async def serve_engineer_portal():
     return FileResponse(str(path), media_type="text/html")
 
 
+@app.get("/observability", include_in_schema=False)
+async def serve_observability_dashboard():
+    """Serve the Agent Observability Dashboard."""
+    path = STATIC_DIR / "observability.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="observability.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
 @app.get("/forecast", include_in_schema=False)
 async def serve_forecast_ui():
     forecast_path = STATIC_DIR / "forecast.html"
@@ -883,6 +892,25 @@ async def get_traces_summary(
             for a in report.alerts
         ],
     }
+
+
+@app.get("/api/agent-metrics")
+async def get_agent_metrics(
+    hours: int = Query(default=24, ge=1, le=168),
+    _user: dict = Depends(require_msp),
+):
+    """
+    Return agent-level decision metrics and benchmark results.
+
+    Combines live trace signals with the most recent benchmark run to
+    provide a complete picture of the multi-agent pipeline performance.
+    """
+    from src.observability.aggregator import TraceAggregator
+    agg = TraceAggregator(trace_store_path="data/traces")
+    metrics = agg.agent_metrics(hours=hours)
+    throughput = agg.throughput_over_time(hours=hours, buckets=24)
+    metrics["throughput"] = throughput
+    return metrics
 
 
 @app.get("/api/traces/{trace_id}")

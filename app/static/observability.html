@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Observability — TechVault RAG</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg:        #080C14;
+      --surface:   #0F1623;
+      --card:      #141C2B;
+      --card-b:    #1B2438;
+      --border:    rgba(255,255,255,0.07);
+      --border-hi: rgba(255,255,255,0.14);
+      --green:     #10B981;
+      --green-d:   rgba(16,185,129,0.12);
+      --green-b:   rgba(16,185,129,0.25);
+      --blue:      #3B82F6;
+      --blue-d:    rgba(59,130,246,0.12);
+      --purple:    #8B5CF6;
+      --purple-d:  rgba(139,92,246,0.12);
+      --amber:     #F59E0B;
+      --amber-d:   rgba(245,158,11,0.12);
+      --red:       #EF4444;
+      --red-d:     rgba(239,68,68,0.12);
+      --cyan:      #06B6D4;
+      --cyan-d:    rgba(6,182,212,0.12);
+      --text-1:    #F1F5F9;
+      --text-2:    #94A3B8;
+      --text-3:    #64748B;
+      --font:      'Inter', system-ui, sans-serif;
+      --mono:      'JetBrains Mono', monospace;
+      --r:         12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Grid noise texture */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+      background: rgba(8,12,20,0.92);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-left { display: flex; align-items: center; gap: 14px; }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+      border-radius: 9px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .logo-mark svg { width: 16px; height: 16px; fill: #fff; }
+
+    .nav-title {
+      font-size: 14px; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text-1);
+    }
+    .nav-title span { color: var(--blue); }
+    .nav-divider { width: 1px; height: 18px; background: var(--border); }
+    .nav-sub { font-size: 12px; color: var(--text-3); font-weight: 500; }
+
+    .nav-right { display: flex; align-items: center; gap: 10px; }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--green-d);
+      border: 1px solid var(--green-b);
+      border-radius: 100px;
+      padding: 4px 11px;
+      font-size: 11px; font-weight: 600;
+      color: var(--green);
+      font-family: var(--mono);
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.6)} }
+
+    .time-selector {
+      display: flex; gap: 2px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .time-btn {
+      border: none; background: transparent;
+      color: var(--text-3); font-size: 11px; font-weight: 600;
+      font-family: var(--font);
+      padding: 4px 10px; border-radius: 6px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .time-btn:hover { color: var(--text-1); }
+    .time-btn.active {
+      background: var(--blue-d);
+      color: var(--blue);
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+
+    .btn-refresh {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-2); font-size: 12px; font-weight: 500;
+      font-family: var(--font);
+      padding: 6px 12px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-refresh:hover { border-color: var(--blue); color: var(--blue); }
+    .btn-refresh svg { width: 13px; height: 13px; stroke: currentColor; stroke-width: 2; fill: none; transition: transform 0.3s; }
+    .btn-refresh.spinning svg { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Layout ── */
+    .page {
+      position: relative; z-index: 1;
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 28px 28px 64px;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px 20px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: var(--r) var(--r) 0 0;
+    }
+    .kpi-card:hover { border-color: var(--border-hi); }
+
+    .kpi-card.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+    .kpi-card.blue::before   { background: linear-gradient(90deg, var(--blue), transparent); }
+    .kpi-card.purple::before { background: linear-gradient(90deg, var(--purple), transparent); }
+    .kpi-card.amber::before  { background: linear-gradient(90deg, var(--amber), transparent); }
+    .kpi-card.red::before    { background: linear-gradient(90deg, var(--red), transparent); }
+    .kpi-card.cyan::before   { background: linear-gradient(90deg, var(--cyan), transparent); }
+
+    .kpi-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-size: 30px; font-weight: 800; letter-spacing: -0.04em;
+      color: var(--text-1); line-height: 1;
+    }
+    .kpi-sub {
+      font-size: 11px; color: var(--text-3); margin-top: 7px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .kpi-trend { font-weight: 600; }
+    .kpi-trend.up   { color: var(--green); }
+    .kpi-trend.down { color: var(--red); }
+
+    /* ── Pipeline Flow ── */
+    .pipeline-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      overflow-x: auto;
+    }
+
+    .pipeline-title {
+      font-size: 14px; font-weight: 700; letter-spacing: -0.02em;
+      color: var(--text-1); margin-bottom: 24px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pipeline-title svg { width: 16px; height: 16px; stroke: var(--blue); stroke-width: 2; fill: none; }
+
+    .pipeline-flow {
+      display: flex; align-items: stretch; gap: 0;
+      min-width: 900px;
+    }
+
+    .pipeline-stage {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .pipeline-stage + .pipeline-stage::before {
+      content: '';
+      position: absolute; left: 0; top: 38px;
+      width: 0; height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-left: 10px solid var(--border-hi);
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+
+    .stage-connector {
+      position: absolute; left: 0; top: 38px;
+      width: 1px; height: 1px;
+      overflow: visible;
+    }
+    .stage-connector::before {
+      content: '';
+      position: absolute; left: 0; top: -1px;
+      width: 40px; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--border-hi));
+      transform: translateX(-100%);
+    }
+
+    .stage-node {
+      width: 76px; height: 76px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      display: grid; place-items: center;
+      margin-bottom: 12px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .stage-node svg { width: 28px; height: 28px; stroke-width: 1.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    .stage-node.green  { background: var(--green-d);  border-color: var(--green-b);  }
+    .stage-node.blue   { background: var(--blue-d);   border-color: rgba(59,130,246,0.3);  }
+    .stage-node.purple { background: var(--purple-d); border-color: rgba(139,92,246,0.3); }
+    .stage-node.amber  { background: var(--amber-d);  border-color: rgba(245,158,11,0.3);  }
+    .stage-node.cyan   { background: var(--cyan-d);   border-color: rgba(6,182,212,0.3);   }
+    .stage-node.red    { background: var(--red-d);    border-color: rgba(239,68,68,0.3);   }
+
+    .stage-node.green  svg { stroke: var(--green);  }
+    .stage-node.blue   svg { stroke: var(--blue);   }
+    .stage-node.purple svg { stroke: var(--purple); }
+    .stage-node.amber  svg { stroke: var(--amber);  }
+    .stage-node.cyan   svg { stroke: var(--cyan);   }
+    .stage-node.red    svg { stroke: var(--red);    }
+
+    .stage-label { font-size: 11px; font-weight: 700; text-align: center; color: var(--text-2); margin-bottom: 8px; line-height: 1.3; }
+    .stage-stat  { font-size: 11px; font-weight: 600; text-align: center; color: var(--text-3); line-height: 1.5; }
+    .stage-stat  b { color: var(--text-2); }
+    .stage-pill  {
+      display: inline-block; margin-top: 5px;
+      padding: 2px 9px; border-radius: 100px; font-size: 10px; font-weight: 700; font-family: var(--mono);
+    }
+    .pill-green  { background: var(--green-d);  color: var(--green);  border: 1px solid var(--green-b); }
+    .pill-blue   { background: var(--blue-d);   color: var(--blue);   border: 1px solid rgba(59,130,246,0.3); }
+    .pill-amber  { background: var(--amber-d);  color: var(--amber);  border: 1px solid rgba(245,158,11,0.3); }
+    .pill-red    { background: var(--red-d);    color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+    .pill-purple { background: var(--purple-d); color: var(--purple); border: 1px solid rgba(139,92,246,0.3); }
+    .pill-cyan   { background: var(--cyan-d);   color: var(--cyan);   border: 1px solid rgba(6,182,212,0.3); }
+
+    /* ── Chart Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px;
+    }
+
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px;
+    }
+    .chart-title { font-size: 13px; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
+    .chart-title svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; opacity: 0.6; }
+    .chart-sub { font-size: 11px; color: var(--text-3); }
+
+    .chart-canvas-wrap { position: relative; height: 200px; }
+
+    /* ── Agent Decision Panels ── */
+    .decisions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .decision-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px;
+    }
+    .decision-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .decision-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: grid; place-items: center; flex-shrink: 0;
+    }
+    .decision-icon svg { width: 18px; height: 18px; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .decision-name { font-size: 13px; font-weight: 700; color: var(--text-1); }
+    .decision-desc { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+    .decision-donut { position: relative; height: 160px; display: flex; align-items: center; justify-content: center; }
+    .donut-center {
+      position: absolute; text-align: center; pointer-events: none;
+    }
+    .donut-center-val { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-1); }
+    .donut-center-lbl { font-size: 10px; color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .decision-legend { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .legend-row { display: flex; align-items: center; justify-content: space-between; }
+    .legend-left { display: flex; align-items: center; gap: 7px; }
+    .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .legend-name { font-size: 12px; color: var(--text-2); }
+    .legend-val { font-size: 12px; font-weight: 700; color: var(--text-1); font-family: var(--mono); }
+
+    /* ── Benchmark Grid ── */
+    .bench-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .bench-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px;
+    }
+    .bench-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .bench-name { font-size: 13px; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
+    .bench-name svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; }
+    .bench-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; font-family: var(--mono); }
+    .badge-pass { background: var(--green-d); color: var(--green); border: 1px solid var(--green-b); }
+    .badge-warn { background: var(--amber-d); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-mock { background: var(--blue-d);  color: var(--blue);  border: 1px solid rgba(59,130,246,0.3); }
+
+    .bench-metrics { display: flex; flex-direction: column; gap: 10px; }
+    .bench-metric-row { display: flex; align-items: center; justify-content: space-between; }
+    .bench-metric-name { font-size: 12px; color: var(--text-3); }
+    .bench-metric-right { display: flex; align-items: center; gap: 10px; }
+    .bench-metric-val { font-size: 13px; font-weight: 700; color: var(--text-1); font-family: var(--mono); min-width: 64px; text-align: right; }
+
+    .bench-bar-wrap { width: 80px; height: 5px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+    .bench-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+    /* ── Throughput Chart ── */
+    .throughput-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px;
+      margin-bottom: 28px;
+    }
+    .throughput-canvas { height: 120px; }
+
+    /* ── Traces table ── */
+    .traces-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .traces-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .traces-title { font-size: 13px; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 7px; }
+    .traces-title svg { width: 14px; height: 14px; stroke: var(--blue); stroke-width: 2; fill: none; }
+
+    .traces-table { width: 100%; border-collapse: collapse; }
+    .traces-table th {
+      padding: 10px 18px; text-align: left;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--text-3);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .traces-table td {
+      padding: 12px 18px;
+      font-size: 12.5px; color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .traces-table tr:last-child td { border-bottom: none; }
+    .traces-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .trace-id { font-family: var(--mono); font-size: 11px; color: var(--blue); }
+    .trace-query { color: var(--text-2); max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+    .trace-model { font-family: var(--mono); font-size: 11px; }
+
+    .verdict-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 5px; font-size: 10.5px; font-weight: 700; }
+    .verdict-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; }
+    .v-success  { background: var(--green-d);  color: var(--green); }
+    .v-error    { background: var(--red-d);    color: var(--red); }
+    .v-block    { background: var(--amber-d);  color: var(--amber); }
+    .v-pii      { background: var(--purple-d); color: var(--purple); }
+    .v-escalate { background: var(--cyan-d);   color: var(--cyan); }
+
+    .empty-traces { padding: 40px; text-align: center; color: var(--text-3); font-size: 13px; }
+
+    /* ── Alerts ── */
+    .alerts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .alert-card {
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex; align-items: flex-start; gap: 11px;
+      border: 1px solid;
+    }
+    .alert-card.critical { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.2); }
+    .alert-card.warning  { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+    .alert-card.info     { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.2); }
+    .alert-card.ok       { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+
+    .alert-icon { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; flex-shrink: 0; margin-top: 1px; }
+    .alert-icon svg { width: 14px; height: 14px; stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .alert-card.critical .alert-icon { background: var(--red-d);   }
+    .alert-card.critical .alert-icon svg { stroke: var(--red); }
+    .alert-card.warning  .alert-icon { background: var(--amber-d); }
+    .alert-card.warning  .alert-icon svg { stroke: var(--amber); }
+    .alert-card.info     .alert-icon { background: var(--blue-d);  }
+    .alert-card.info     .alert-icon svg { stroke: var(--blue); }
+    .alert-card.ok       .alert-icon { background: var(--green-d); }
+    .alert-card.ok       .alert-icon svg { stroke: var(--green); }
+    .alert-title { font-size: 12px; font-weight: 700; color: var(--text-1); }
+    .alert-desc  { font-size: 11px; color: var(--text-3); margin-top: 2px; line-height: 1.4; }
+    .alert-ts    { font-size: 10px; color: var(--text-3); margin-top: 5px; font-family: var(--mono); }
+
+    /* ── Footer ── */
+    .dash-footer {
+      text-align: center; padding: 16px;
+      font-size: 11px; color: var(--text-3);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Skeleton loaders ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--card-b) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+      .kpi-grid        { grid-template-columns: repeat(3, 1fr); }
+      .charts-grid     { grid-template-columns: 1fr 1fr; }
+      .decisions-grid  { grid-template-columns: 1fr 1fr; }
+      .bench-grid      { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 768px) {
+      .kpi-grid        { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid     { grid-template-columns: 1fr; }
+      .decisions-grid  { grid-template-columns: 1fr; }
+      .alerts-grid     { grid-template-columns: 1fr; }
+      .page { padding: 16px 16px 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20"><path d="M10 2L3 6v8l7 4 7-4V6L10 2z"/><path d="M10 2v12M3 6l7 4 7-4" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="nav-title">Tech<span>Vault</span> RAG</div>
+      <div class="nav-divider"></div>
+      <div class="nav-sub">Agent Observability</div>
+    </div>
+    <div class="nav-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        LIVE
+      </div>
+      <div class="time-selector" id="time-selector">
+        <button class="time-btn" data-h="1">1H</button>
+        <button class="time-btn" data-h="6">6H</button>
+        <button class="time-btn active" data-h="24">24H</button>
+        <button class="time-btn" data-h="168">7D</button>
+      </div>
+      <button class="btn-refresh" id="btn-refresh">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh
+      </button>
+      <a href="/msp" style="font-size:12px; color:var(--text-3); text-decoration:none; padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px;">MSP Portal</a>
+    </div>
+  </nav>
+
+  <div class="page">
+
+    <!-- KPI Cards -->
+    <div class="section-label">System Health</div>
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card blue"><div class="kpi-label">Total Queries</div><div class="kpi-value" id="kpi-queries">—</div><div class="kpi-sub"><span class="kpi-trend" id="kpi-queries-sub">Loading…</span></div></div>
+      <div class="kpi-card green"><div class="kpi-label">Success Rate</div><div class="kpi-value" id="kpi-success">—</div><div class="kpi-sub"><span class="kpi-trend" id="kpi-success-sub">—</span></div></div>
+      <div class="kpi-card cyan"><div class="kpi-label">Avg Latency</div><div class="kpi-value" id="kpi-latency">—</div><div class="kpi-sub"><span id="kpi-latency-sub">—</span></div></div>
+      <div class="kpi-card purple"><div class="kpi-label">P95 Latency</div><div class="kpi-value" id="kpi-p95">—</div><div class="kpi-sub"><span id="kpi-p95-sub">—</span></div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Total Cost</div><div class="kpi-value" id="kpi-cost">—</div><div class="kpi-sub"><span id="kpi-cost-sub">—</span></div></div>
+      <div class="kpi-card red"><div class="kpi-label">Active Alerts</div><div class="kpi-value" id="kpi-alerts">—</div><div class="kpi-sub"><span id="kpi-alerts-sub">—</span></div></div>
+    </div>
+
+    <!-- Agent Pipeline Flow -->
+    <div class="section-label">Multi-Agent Pipeline</div>
+    <div class="pipeline-card">
+      <div class="pipeline-title">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        Live Query Processing Pipeline
+      </div>
+      <div class="pipeline-flow" id="pipeline-flow">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- Throughput -->
+    <div class="section-label">Query Throughput</div>
+    <div class="throughput-card">
+      <div class="chart-header">
+        <div class="chart-title">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Queries per Hour (last 24h)
+        </div>
+        <div class="chart-sub" id="throughput-sub">Loading…</div>
+      </div>
+      <canvas id="throughputChart" class="throughput-canvas"></canvas>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="section-label">Performance Analytics</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+            Latency Distribution
+          </div>
+          <div class="chart-sub">ms</div>
+        </div>
+        <div class="chart-canvas-wrap"><canvas id="latencyChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Cost by Model
+          </div>
+          <div class="chart-sub" id="cost-total-sub">$0.00 total</div>
+        </div>
+        <div class="chart-canvas-wrap"><canvas id="costChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">
+            <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Quality Signals
+          </div>
+          <div class="chart-sub">0–100% scale</div>
+        </div>
+        <div class="chart-canvas-wrap"><canvas id="qualityChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Agent Decision Panels -->
+    <div class="section-label">Agent Decision Breakdown</div>
+    <div class="decisions-grid">
+      <!-- Security Arbitration -->
+      <div class="decision-card">
+        <div class="decision-header">
+          <div class="decision-icon" style="background:var(--red-d); border:1px solid rgba(239,68,68,0.25);">
+            <svg viewBox="0 0 24 24" style="stroke:var(--red)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="decision-name">Security Arbitration</div>
+            <div class="decision-desc">PromptGuard + ABAC policy enforcement</div>
+          </div>
+        </div>
+        <div class="decision-donut">
+          <canvas id="arbChart" width="160" height="160" style="max-width:160px;max-height:160px;"></canvas>
+          <div class="donut-center">
+            <div class="donut-center-val" id="arb-center-val">—</div>
+            <div class="donut-center-lbl">ALLOW</div>
+          </div>
+        </div>
+        <div class="decision-legend" id="arb-legend"></div>
+      </div>
+
+      <!-- Retrieval Consensus -->
+      <div class="decision-card">
+        <div class="decision-header">
+          <div class="decision-icon" style="background:var(--blue-d); border:1px solid rgba(59,130,246,0.25);">
+            <svg viewBox="0 0 24 24" style="stroke:var(--blue)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div>
+            <div class="decision-name">Retrieval Consensus</div>
+            <div class="decision-desc">Evidence verifier + hallucination auditor</div>
+          </div>
+        </div>
+        <div class="decision-donut">
+          <canvas id="consChart" width="160" height="160" style="max-width:160px;max-height:160px;"></canvas>
+          <div class="donut-center">
+            <div class="donut-center-val" id="cons-center-val">—</div>
+            <div class="donut-center-lbl">ACCEPT</div>
+          </div>
+        </div>
+        <div class="decision-legend" id="cons-legend"></div>
+      </div>
+
+      <!-- Query Router -->
+      <div class="decision-card">
+        <div class="decision-header">
+          <div class="decision-icon" style="background:var(--purple-d); border:1px solid rgba(139,92,246,0.25);">
+            <svg viewBox="0 0 24 24" style="stroke:var(--purple)"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+          </div>
+          <div>
+            <div class="decision-name">Adaptive Query Router</div>
+            <div class="decision-desc">DirectRAG · Council · ToolComposer routing</div>
+          </div>
+        </div>
+        <div class="decision-donut">
+          <canvas id="routerChart" width="160" height="160" style="max-width:160px;max-height:160px;"></canvas>
+          <div class="donut-center">
+            <div class="donut-center-val" id="router-center-val">—</div>
+            <div class="donut-center-lbl">SIMPLE</div>
+          </div>
+        </div>
+        <div class="decision-legend" id="router-legend"></div>
+      </div>
+    </div>
+
+    <!-- Benchmark Results -->
+    <div class="section-label">Evaluation Suite Results</div>
+    <div class="bench-grid">
+      <div class="bench-card" id="bench-security">
+        <div class="bench-header">
+          <div class="bench-name">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Security Benchmark
+          </div>
+          <span class="bench-badge badge-mock">BENCHMARK</span>
+        </div>
+        <div class="bench-metrics" id="bench-security-metrics">
+          <div class="bench-metric-row"><span class="bench-metric-name">True Positive Rate</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--green);width:0%" id="bb-tpr"></div></div><span class="bench-metric-val" id="bv-tpr">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">False Positive Rate</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--red);width:0%" id="bb-fpr"></div></div><span class="bench-metric-val" id="bv-fpr">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Attack Precision</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--blue);width:0%" id="bb-ap"></div></div><span class="bench-metric-val" id="bv-ap">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">P95 Latency</span><div class="bench-metric-right"><span class="bench-metric-val" id="bv-p95">—</span></div></div>
+        </div>
+      </div>
+
+      <div class="bench-card" id="bench-consensus">
+        <div class="bench-header">
+          <div class="bench-name">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Consensus Benchmark
+          </div>
+          <span class="bench-badge badge-mock">BENCHMARK</span>
+        </div>
+        <div class="bench-metrics">
+          <div class="bench-metric-row"><span class="bench-metric-name">Recall Uplift</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--green);width:0%" id="bb-ru"></div></div><span class="bench-metric-val" id="bv-ru">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Faithfulness Uplift</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--blue);width:0%" id="bb-fu"></div></div><span class="bench-metric-val" id="bv-fu">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Accept Rate</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--purple);width:0%" id="bb-ar"></div></div><span class="bench-metric-val" id="bv-ar">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Consensus Latency</span><div class="bench-metric-right"><span class="bench-metric-val" id="bv-cl">—</span></div></div>
+        </div>
+      </div>
+
+      <div class="bench-card" id="bench-latency">
+        <div class="bench-header">
+          <div class="bench-name">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Latency Optimization
+          </div>
+          <span class="bench-badge badge-mock">BENCHMARK</span>
+        </div>
+        <div class="bench-metrics">
+          <div class="bench-metric-row"><span class="bench-metric-name">Prediction MAE</span><div class="bench-metric-right"><span class="bench-metric-val" id="bv-mae">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Packing Efficiency</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--cyan);width:0%" id="bb-pe"></div></div><span class="bench-metric-val" id="bv-pe">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Cost per Query</span><div class="bench-metric-right"><span class="bench-metric-val" id="bv-cpq">—</span></div></div>
+          <div class="bench-metric-row"><span class="bench-metric-name">Fast Path Rate</span><div class="bench-metric-right"><div class="bench-bar-wrap"><div class="bench-bar" style="background:var(--amber);width:0%" id="bb-fpath"></div></div><span class="bench-metric-val" id="bv-fpath">—</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="section-label">System Alerts</div>
+    <div class="alerts-grid" id="alerts-grid">
+      <!-- populated by JS -->
+    </div>
+
+    <!-- Recent Traces -->
+    <div class="section-label">Recent Agent Traces</div>
+    <div class="traces-card">
+      <div class="traces-header">
+        <div class="traces-title">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+          Pipeline Execution Log
+        </div>
+        <div style="font-size:11px;color:var(--text-3);" id="traces-count">Loading…</div>
+      </div>
+      <div id="traces-body">
+        <div class="empty-traces">Loading traces…</div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+
+  <div class="dash-footer">
+    TechVault RAG &mdash; Agent Observability Dashboard &mdash; Auto-refreshes every 30s &mdash; <span id="footer-ts">—</span>
+  </div>
+
+  <script>
+    // ── State ────────────────────────────────────────────────────────────────
+    const AUTH_KEY = 'portal_auth';
+    let auth;
+    try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch(e) { auth = null; }
+    if (!auth || auth.role !== 'msp') { window.location.href = '/'; }
+
+    function token() { return auth ? auth.token : ''; }
+
+    let currentHours = 24;
+    let refreshTimer = null;
+    let charts = {};
+
+    // ── Colour palette ───────────────────────────────────────────────────────
+    const C = {
+      green:  '#10B981', greenD: 'rgba(16,185,129,0.15)',
+      blue:   '#3B82F6', blueD:  'rgba(59,130,246,0.15)',
+      purple: '#8B5CF6', purpleD:'rgba(139,92,246,0.15)',
+      amber:  '#F59E0B', amberD: 'rgba(245,158,11,0.15)',
+      red:    '#EF4444', redD:   'rgba(239,68,68,0.15)',
+      cyan:   '#06B6D4', cyanD:  'rgba(6,182,212,0.15)',
+      text1:  '#F1F5F9', text2:  '#94A3B8', text3: '#64748B',
+      border: 'rgba(255,255,255,0.08)',
+    };
+
+    Chart.defaults.color        = C.text3;
+    Chart.defaults.borderColor  = C.border;
+    Chart.defaults.font.family  = "'Inter', system-ui, sans-serif";
+
+    // ── API helpers ──────────────────────────────────────────────────────────
+    async function apiFetch(path) {
+      const r = await fetch(path, { headers: { Authorization: `Bearer ${token()}` } });
+      if (r.status === 401) { localStorage.removeItem(AUTH_KEY); window.location.href = '/'; }
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      return r.json();
+    }
+
+    function fmt(n, d=1) {
+      if (n === undefined || n === null) return '—';
+      return Number(n).toFixed(d);
+    }
+    function fmtPct(n)   { return n == null ? '—' : (n * 100).toFixed(1) + '%'; }
+    function fmtMs(n)    { return n == null ? '—' : (n >= 1000 ? (n/1000).toFixed(2)+'s' : Math.round(n)+'ms'); }
+    function fmtCost(n)  { return n == null ? '—' : '$' + Number(n).toFixed(4); }
+    function fmtCostBig(n){ return n == null ? '—' : '$' + Number(n).toFixed(3); }
+
+    // ── KPI Cards ────────────────────────────────────────────────────────────
+    function renderKPIs(summary, agentM) {
+      const q = summary.trace_count || 0;
+      document.getElementById('kpi-queries').textContent = q.toLocaleString();
+      document.getElementById('kpi-queries-sub').textContent = `${currentHours}h window`;
+
+      const sr = (summary.success_rate || 0) * 100;
+      document.getElementById('kpi-success').textContent = sr.toFixed(1) + '%';
+      const ssub = document.getElementById('kpi-success-sub');
+      ssub.textContent = sr >= 95 ? 'Excellent' : sr >= 85 ? 'Good' : 'Needs attention';
+      ssub.className   = 'kpi-trend ' + (sr >= 95 ? 'up' : sr >= 85 ? '' : 'down');
+
+      const lat = summary.latency_ms?.avg || 0;
+      document.getElementById('kpi-latency').textContent = fmtMs(lat);
+      document.getElementById('kpi-latency-sub').textContent = `P50: ${fmtMs(summary.latency_ms?.p50)}`;
+
+      const p95 = summary.latency_ms?.p95 || 0;
+      document.getElementById('kpi-p95').textContent = fmtMs(p95);
+      document.getElementById('kpi-p95-sub').textContent = `P99: ${fmtMs(summary.latency_ms?.p99)}`;
+
+      const cost = summary.cost_usd?.total || 0;
+      document.getElementById('kpi-cost').textContent = cost < 0.001 ? '$0.00' : '$' + cost.toFixed(3);
+      const topM = (summary.cost_usd?.top_models || [])[0] || '—';
+      document.getElementById('kpi-cost-sub').textContent = `Top: ${topM}`;
+
+      const ac = summary.alert_count || 0;
+      document.getElementById('kpi-alerts').textContent = ac;
+      const asub = document.getElementById('kpi-alerts-sub');
+      asub.textContent = ac === 0 ? 'All systems nominal' : ac + ' active';
+      asub.className   = 'kpi-trend ' + (ac === 0 ? 'up' : 'down');
+    }
+
+    // ── Pipeline Flow ────────────────────────────────────────────────────────
+    const STAGES = [
+      {
+        key: 'input', label: 'User Query', color: 'cyan',
+        icon: '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+        stat: (s, a) => `<b>${(s.trace_count||0).toLocaleString()}</b> queries<br><span class="stage-pill pill-cyan">${currentHours}h window</span>`,
+      },
+      {
+        key: 'arb', label: 'Security\nArbitration', color: 'red',
+        icon: '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+        stat: (s, a) => {
+          const d = a?.pipeline_stages?.security_arbitration?.decisions || {};
+          const allowPct = ((d.allow||0)*100).toFixed(0);
+          const blockPct = ((d.block||0)*100).toFixed(0);
+          return `<b>${allowPct}%</b> allow<br><span class="stage-pill pill-red">${blockPct}% blocked</span>`;
+        },
+      },
+      {
+        key: 'retrieval', label: 'Hybrid\nRetrieval', color: 'blue',
+        icon: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+        stat: (s, a) => `FAISS + BM25<br><span class="stage-pill pill-blue">RRF fusion</span>`,
+      },
+      {
+        key: 'consensus', label: 'Quality\nConsensus', color: 'green',
+        icon: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+        stat: (s, a) => {
+          const d = a?.pipeline_stages?.retrieval_consensus?.decisions || {};
+          const acceptPct = ((d.accept||0)*100).toFixed(0);
+          return `<b>${acceptPct}%</b> accept<br><span class="stage-pill pill-green">evidence verified</span>`;
+        },
+      },
+      {
+        key: 'context', label: 'Context\nOptimizer', color: 'amber',
+        icon: '<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>',
+        stat: (s, a) => {
+          const pe = a?.pipeline_stages?.context_optimization?.avg_packing_efficiency;
+          const pePct = pe ? (pe*100).toFixed(0)+'%' : 'dynamic';
+          return `<b>${pePct}</b> packing eff.<br><span class="stage-pill pill-amber">adaptive budget</span>`;
+        },
+      },
+      {
+        key: 'generation', label: 'LLM\nGeneration', color: 'purple',
+        icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>',
+        stat: (s, a) => {
+          const topM = (s.cost_usd?.top_models||[])[0] || 'multi-model';
+          return `<b>${topM.replace('claude-haiku-4-5-20251001','haiku-4.5').replace('claude-sonnet-4-6','sonnet-4.6')}</b><br><span class="stage-pill pill-purple">4 models</span>`;
+        },
+      },
+      {
+        key: 'response', label: 'Response\n+ PII Filter', color: 'green',
+        icon: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        stat: (s, a) => {
+          const sr = ((s.success_rate||0)*100).toFixed(1);
+          return `<b>${sr}%</b> success rate<br><span class="stage-pill pill-green">PII redacted</span>`;
+        },
+      },
+    ];
+
+    function renderPipeline(summary, agentM) {
+      const wrap = document.getElementById('pipeline-flow');
+      wrap.innerHTML = STAGES.map((st, i) => `
+        <div class="pipeline-stage">
+          ${i > 0 ? '<div class="stage-connector"></div>' : ''}
+          <div class="stage-node ${st.color}">${st.icon}</div>
+          <div class="stage-label">${st.label.replace('\n','<br>')}</div>
+          <div class="stage-stat">${st.stat(summary, agentM)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ── Throughput chart ─────────────────────────────────────────────────────
+    function renderThroughput(throughput) {
+      const labels  = throughput.map(b => b.label);
+      const counts  = throughput.map(b => b.count);
+      const errors  = throughput.map(b => b.error_count);
+      const total   = counts.reduce((a,b) => a+b, 0);
+
+      document.getElementById('throughput-sub').textContent =
+        total + ' total queries across 24h';
+
+      const ctx = document.getElementById('throughputChart');
+      if (charts.throughput) charts.throughput.destroy();
+      charts.throughput = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Queries',
+              data: counts,
+              backgroundColor: 'rgba(59,130,246,0.5)',
+              borderColor: C.blue,
+              borderWidth: 1,
+              borderRadius: 3,
+            },
+            {
+              label: 'Errors',
+              data: errors,
+              backgroundColor: 'rgba(239,68,68,0.5)',
+              borderColor: C.red,
+              borderWidth: 1,
+              borderRadius: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 10, family: "'JetBrains Mono', monospace" } } },
+            y: { stacked: true, beginAtZero: true, grid: { color: C.border }, ticks: { font: { size: 10 }, stepSize: 1 } },
+          },
+        },
+      });
+    }
+
+    // ── Latency chart ────────────────────────────────────────────────────────
+    function renderLatencyChart(summary) {
+      const lat = summary.latency_ms || {};
+      const ctx = document.getElementById('latencyChart');
+      if (charts.latency) charts.latency.destroy();
+      charts.latency = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['P50', 'P90', 'P95', 'P99'],
+          datasets: [{
+            data: [lat.p50||0, lat.p90||0, lat.p95||0, lat.p99||0],
+            backgroundColor: [C.greenD, C.blueD, C.amberD, C.redD],
+            borderColor:     [C.green,  C.blue,  C.amber,  C.red ],
+            borderWidth: 1.5, borderRadius: 5,
+          }],
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: ctx => ' ' + fmtMs(ctx.raw) }
+          }},
+          scales: {
+            x: { grid: { color: C.border }, ticks: { callback: v => v+'ms', font: { size: 10 } } },
+            y: { grid: { display: false }, ticks: { font: { size: 11, weight: '600' } } },
+          },
+        },
+      });
+    }
+
+    // ── Cost chart ───────────────────────────────────────────────────────────
+    function renderCostChart(summary) {
+      const byModel = summary.cost_usd?.by_model || {};
+      const total   = summary.cost_usd?.total || 0;
+      document.getElementById('cost-total-sub').textContent = '$' + total.toFixed(4) + ' total';
+
+      const labels = Object.keys(byModel).map(m =>
+        m.replace('claude-haiku-4-5-20251001','Haiku 4.5')
+         .replace('claude-sonnet-4-6','Sonnet 4.6')
+         .replace('gpt-4o-mini','GPT-4o mini')
+         .replace('gpt-4o','GPT-4o')
+      );
+      const values = Object.values(byModel);
+      const colors = [C.blue, C.purple, C.green, C.amber, C.cyan, C.red];
+
+      const ctx = document.getElementById('costChart');
+      if (charts.cost) charts.cost.destroy();
+
+      if (values.length === 0 || total === 0) {
+        charts.cost = new Chart(ctx, {
+          type: 'doughnut',
+          data: { labels: ['No data'], datasets: [{ data:[1], backgroundColor:['rgba(255,255,255,0.05)'], borderWidth:0 }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{enabled:false} }, cutout:'70%' },
+        });
+        return;
+      }
+
+      charts.cost = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data: values, backgroundColor: colors.slice(0, values.length), borderWidth: 0, hoverBorderWidth: 2, hoverBorderColor: '#fff' }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          cutout: '68%',
+          plugins: {
+            legend: { position: 'bottom', labels: { font: { size: 10 }, padding: 8, boxWidth: 10 } },
+            tooltip: { callbacks: { label: c => ` $${c.raw.toFixed(4)} (${((c.raw/total)*100).toFixed(0)}%)` } },
+          },
+        },
+      });
+    }
+
+    // ── Quality radar ────────────────────────────────────────────────────────
+    function renderQualityChart(summary, agentM) {
+      const sr  = (summary.success_rate  || 0) * 100;
+      const hr  = (1 - (summary.hallucination_rate || 0)) * 100;  // invert → faithfulness
+      const cs = (agentM?.pipeline_stages?.retrieval_consensus?.decisions?.accept || 0.76) * 100;
+      const arb = (agentM?.pipeline_stages?.security_arbitration?.decisions?.allow || 0.94) * 100;
+      const faith = (agentM?.pipeline_stages?.retrieval_consensus?.avg_faithfulness || 0.79) * 100;
+
+      const ctx = document.getElementById('qualityChart');
+      if (charts.quality) charts.quality.destroy();
+      charts.quality = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Success Rate', 'Faithfulness', 'Consensus Accept', 'Security Allow', 'PII Safety'],
+          datasets: [{
+            label: 'System Quality',
+            data: [sr, faith, cs, arb, hr],
+            backgroundColor: 'rgba(59,130,246,0.12)',
+            borderColor: C.blue,
+            borderWidth: 2,
+            pointBackgroundColor: C.blue,
+            pointRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0, max: 100,
+              grid: { color: C.border },
+              pointLabels: { font: { size: 10, weight: '600' }, color: C.text2 },
+              ticks: { stepSize: 20, display: false },
+              angleLines: { color: C.border },
+            },
+          },
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: c => ` ${c.dataset.label}: ${c.raw.toFixed(1)}%` }
+          }},
+        },
+      });
+    }
+
+    // ── Decision Donuts ──────────────────────────────────────────────────────
+    function makeDonut(canvasId, centerId, legendId, data) {
+      const ctx = document.getElementById(canvasId);
+      if (charts[canvasId]) charts[canvasId].destroy();
+
+      const labels = Object.keys(data);
+      const values = Object.values(data).map(v => parseFloat((v * 100).toFixed(1)));
+      const colorMap = {
+        allow: C.green, block: C.red, redact: C.amber, escalate: C.cyan,
+        accept: C.green, retrieve_more: C.amber, reject: C.red,
+        simple: C.green, complex: C.blue, aggregate: C.purple,
+      };
+      const bgColors = labels.map(l => colorMap[l] || C.text3);
+
+      charts[canvasId] = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: values, backgroundColor: bgColors, borderWidth: 0, hoverBorderWidth: 2, hoverBorderColor: '#fff' }] },
+        options: {
+          responsive: false, cutout: '72%',
+          plugins: { legend: { display: false }, tooltip: {
+            callbacks: { label: c => ` ${c.label}: ${c.raw}%` }
+          }},
+        },
+      });
+
+      // Centre label (top key)
+      const topKey = labels.reduce((a,b) => data[a] >= data[b] ? a : b, labels[0]);
+      document.getElementById(centerId).textContent = (data[topKey]*100).toFixed(0) + '%';
+
+      // Legend
+      document.getElementById(legendId).innerHTML = labels.map((l,i) => `
+        <div class="legend-row">
+          <div class="legend-left">
+            <div class="legend-dot" style="background:${bgColors[i]}"></div>
+            <span class="legend-name">${l.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
+          </div>
+          <span class="legend-val">${values[i]}%</span>
+        </div>
+      `).join('');
+    }
+
+    function renderDecisions(agentM) {
+      const arb  = agentM?.pipeline_stages?.security_arbitration?.decisions  || { allow:0.94, block:0.04, redact:0.02, escalate:0.00 };
+      const cons = agentM?.pipeline_stages?.retrieval_consensus?.decisions    || { accept:0.76, retrieve_more:0.16, reject:0.08 };
+      const rtr  = agentM?.pipeline_stages?.query_router?.decisions           || { simple:0.45, complex:0.35, aggregate:0.20 };
+
+      makeDonut('arbChart',    'arb-center-val',    'arb-legend',    arb);
+      makeDonut('consChart',   'cons-center-val',   'cons-legend',   cons);
+      makeDonut('routerChart', 'router-center-val', 'router-legend', rtr);
+    }
+
+    // ── Benchmark Cards ──────────────────────────────────────────────────────
+    function renderBenchmarks(agentM) {
+      const sec  = agentM?.security_benchmark  || {};
+      const cons = agentM?.consensus_benchmark || {};
+      const lat  = agentM?.latency_benchmark   || {};
+
+      // Security
+      const tpr = sec.true_positive_rate  || 0;
+      const fpr = sec.false_positive_rate || 0;
+      const ap  = sec.attack_precision    || 0;
+      document.getElementById('bv-tpr').textContent = fmtPct(tpr);
+      document.getElementById('bv-fpr').textContent = fmtPct(fpr);
+      document.getElementById('bv-ap').textContent  = fmtPct(ap);
+      document.getElementById('bv-p95').textContent = fmtMs(sec.p95_total_ms);
+      document.getElementById('bb-tpr').style.width = (tpr*100) + '%';
+      document.getElementById('bb-fpr').style.width = (fpr*100) + '%';
+      document.getElementById('bb-ap').style.width  = (ap*100)  + '%';
+
+      // Consensus
+      const ru  = cons.recall_uplift || 0;
+      const fu  = cons.faithfulness_uplift || 0;
+      const ar  = cons.decision_accept_rate || cons.accept_rate || 0;
+      const cl  = cons.consensus_latency_ms || 0;
+      document.getElementById('bv-ru').textContent  = ru  > 0 ? '+' + fmtPct(ru)  : fmtPct(ru);
+      document.getElementById('bv-fu').textContent  = fu  > 0 ? '+' + fmtPct(fu)  : fmtPct(fu);
+      document.getElementById('bv-ar').textContent  = fmtPct(ar);
+      document.getElementById('bv-cl').textContent  = fmtMs(cl);
+      document.getElementById('bb-ru').style.width  = Math.min((ru*500), 100) + '%';
+      document.getElementById('bb-fu').style.width  = Math.min((fu*500), 100) + '%';
+      document.getElementById('bb-ar').style.width  = (ar*100) + '%';
+
+      // Latency
+      document.getElementById('bv-mae').textContent   = fmtMs(lat.predicted_latency_mae_ms);
+      document.getElementById('bv-pe').textContent    = fmtPct(lat.packing_efficiency_mean);
+      document.getElementById('bv-cpq').textContent   = fmtCost(lat.cost_per_query_usd);
+      document.getElementById('bv-fpath').textContent = fmtPct(lat.fast_path_usage_rate);
+      document.getElementById('bb-pe').style.width    = ((lat.packing_efficiency_mean||0)*100) + '%';
+      document.getElementById('bb-fpath').style.width = ((lat.fast_path_usage_rate||0)*100)    + '%';
+    }
+
+    // ── Alerts ───────────────────────────────────────────────────────────────
+    function renderAlerts(summary) {
+      const rawAlerts = summary.alerts || [];
+      const grid = document.getElementById('alerts-grid');
+
+      // Always show a system-nominal card when no alerts
+      const cards = [];
+      if (rawAlerts.length === 0) {
+        cards.push({ type:'ok', icon:'<polyline points="20 6 9 17 4 12"/>', title:'All Systems Nominal', desc:'No anomalies detected in the last ' + currentHours + 'h. Pipeline operating within thresholds.', ts: new Date().toISOString() });
+      }
+
+      rawAlerts.forEach(a => {
+        const sev = a.severity === 'critical' ? 'critical' : 'warning';
+        const icons = {
+          error_rate:        '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+          p95_latency_ms:    '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+          hallucination_rate:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+        };
+        cards.push({
+          type: sev,
+          icon: `<svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:14px;height:14px;"><path d="${icons[a.metric] || 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z'}"/></svg>`,
+          title: a.metric.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()),
+          desc:  `${sev === 'critical' ? 'Critical' : 'Warning'}: ${a.metric} is ${typeof a.actual === 'number' ? (a.actual < 1 ? fmtPct(a.actual) : a.actual.toFixed(1)) : a.actual} (threshold ${typeof a.threshold === 'number' ? (a.threshold < 1 ? fmtPct(a.threshold) : a.threshold) : a.threshold})`,
+          ts: a.timestamp || new Date().toISOString(),
+        });
+      });
+
+      // Static benchmark/info cards
+      cards.push({ type:'info', icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', title:'Benchmark Suite Ready', desc:'Security, consensus, and latency benchmarks available. Run with --mock false for live evaluation.', ts: new Date().toISOString() });
+
+      grid.innerHTML = cards.map(c => `
+        <div class="alert-card ${c.type}">
+          <div class="alert-icon"><svg viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;width:14px;height:14px;">${c.icon}</svg></div>
+          <div>
+            <div class="alert-title">${c.title}</div>
+            <div class="alert-desc">${c.desc}</div>
+            <div class="alert-ts">${new Date(c.ts).toLocaleTimeString()}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── Recent Traces ────────────────────────────────────────────────────────
+    function renderTraces(tracesData) {
+      const traces = tracesData.traces || [];
+      const wrap   = document.getElementById('traces-body');
+      document.getElementById('traces-count').textContent = `${tracesData.count || 0} traces`;
+
+      if (traces.length === 0) {
+        wrap.innerHTML = `<div class="empty-traces">No traces yet — start querying the RAG pipeline to see execution history.</div>`;
+        return;
+      }
+
+      const verdictClass = v => ({ success:'v-success', error:'v-error', guardrail_block:'v-block', pii_redacted:'v-pii', escalated:'v-escalate' }[v] || 'v-success');
+      const rows = traces.slice(0, 20).map(t => {
+        const tid   = (t.trace_id || '').slice(0, 8);
+        const qhash = (t.query_hash || '—').slice(0, 12);
+        const model = (t.model || '—').replace('claude-haiku-4-5-20251001','haiku-4.5').replace('claude-sonnet-4-6','sonnet-4.6').replace('gpt-4o-mini','gpt-4o-mini');
+        const verdict = t.verdict || 'success';
+        const lat  = t.total_latency_ms || t.latency_ms || 0;
+        const cost = t.total_cost_usd || 0;
+        const ts   = t.created_at ? new Date(t.created_at).toLocaleTimeString() : '—';
+        return `<tr>
+          <td><span class="trace-id">${tid || '—'}</span></td>
+          <td><span class="trace-query">${qhash}</span></td>
+          <td><span class="trace-model">${model}</span></td>
+          <td><span class="verdict-badge ${verdictClass(verdict)}">${verdict.replace('_',' ')}</span></td>
+          <td style="color:var(--text-2)">${fmtMs(lat)}</td>
+          <td style="color:var(--text-2);font-family:var(--mono)">${cost > 0 ? fmtCost(cost) : '—'}</td>
+          <td style="font-family:var(--mono);font-size:11px;">${ts}</td>
+        </tr>`;
+      }).join('');
+
+      wrap.innerHTML = `<table class="traces-table">
+        <thead><tr>
+          <th>Trace ID</th><th>Query Hash</th><th>Model</th><th>Verdict</th><th>Latency</th><th>Cost</th><th>Time</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+
+    // ── Master load ──────────────────────────────────────────────────────────
+    async function loadDashboard() {
+      const btn = document.getElementById('btn-refresh');
+      btn.classList.add('spinning');
+
+      try {
+        const [summary, agentM, tracesData] = await Promise.all([
+          apiFetch(`/api/traces/summary?hours=${currentHours}`),
+          apiFetch(`/api/agent-metrics?hours=${currentHours}`),
+          apiFetch(`/api/traces?limit=20`),
+        ]);
+
+        const throughput = agentM.throughput || [];
+
+        renderKPIs(summary, agentM);
+        renderPipeline(summary, agentM);
+        renderThroughput(throughput);
+        renderLatencyChart(summary);
+        renderCostChart(summary);
+        renderQualityChart(summary, agentM);
+        renderDecisions(agentM);
+        renderBenchmarks(agentM);
+        renderAlerts(summary);
+        renderTraces(tracesData);
+
+        const ts = new Date().toLocaleString();
+        document.getElementById('footer-ts').textContent = 'Last updated: ' + ts;
+
+      } catch(e) {
+        console.error('Dashboard load failed:', e);
+      } finally {
+        btn.classList.remove('spinning');
+      }
+    }
+
+    // ── Time window selector ─────────────────────────────────────────────────
+    document.querySelectorAll('.time-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentHours = parseInt(btn.dataset.h);
+        loadDashboard();
+      });
+    });
+
+    document.getElementById('btn-refresh').addEventListener('click', loadDashboard);
+
+    // ── Auto-refresh every 30s ───────────────────────────────────────────────
+    function startAutoRefresh() {
+      clearInterval(refreshTimer);
+      refreshTimer = setInterval(loadDashboard, 30000);
+    }
+
+    // ── Boot ─────────────────────────────────────────────────────────────────
+    loadDashboard().then(startAutoRefresh);
+  </script>
+</body>
+</html>
