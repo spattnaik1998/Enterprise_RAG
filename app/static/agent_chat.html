@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Council — TechVault</title>
+
+  <!-- Premium fonts: Playfair Display + Outfit + IBM Plex Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <style>
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* Design System: Luxury Minimalism — Charcoal, Platinum, Gold Accents   */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    :root {
+      --bg-primary:      #0F0F0F;   /* Deep charcoal */
+      --bg-secondary:    #1A1A1A;
+      --bg-tertiary:     #242424;
+      --border:          rgba(255, 255, 255, 0.08);
+      --border-hi:       rgba(255, 255, 255, 0.14);
+      --text-primary:    #F5F5F5;
+      --text-secondary:  #B8B8B8;
+      --text-muted:      #808080;
+      --accent-gold:     #D4AF37;
+      --accent-copper:   #B87333;
+      --accent-platinum: #E8E8E8;
+      --success:         #2ECC71;
+      --warning:         #F39C12;
+      --error:           #E74C3C;
+
+      --font-display:    'Playfair Display', serif;
+      --font-body:       'Outfit', sans-serif;
+      --font-mono:       'IBM Plex Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* HEADER                                                                 */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 72px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-copper));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-mark svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--bg-primary);
+    }
+
+    .header-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .header-title-main {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .header-title-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .stat-badge strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(46, 204, 113, 0.4);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* MAIN LAYOUT                                                            */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    .container {
+      display: flex;
+      width: 100%;
+      height: calc(100vh - 72px);
+    }
+
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sidebar-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .agent-card {
+      padding: 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .agent-card:hover {
+      border-color: var(--border-hi);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .agent-card-name {
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .agent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .agent-dot.creative { background: var(--accent-gold); }
+    .agent-dot.conservative { background: var(--success); }
+    .agent-dot.verifier { background: var(--warning); }
+
+    .agent-card-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .sidebar-nav {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar-link:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .sidebar-link svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 1.5;
+      fill: none;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* MAIN CONTENT                                                           */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    .chat-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .messages-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .messages-container::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+      background: var(--border-hi);
+      border-radius: 4px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* Welcome screen */
+    .welcome-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      min-height: 100%;
+      text-align: center;
+    }
+
+    .welcome-screen.hidden {
+      display: none;
+    }
+
+    .welcome-hero {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 500px;
+    }
+
+    .welcome-hero-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    .welcome-hero-title-accent {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-copper));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-hero-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .welcome-use-cases {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      max-width: 500px;
+    }
+
+    .use-case-pill {
+      padding: 12px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .use-case-pill:hover {
+      border-color: var(--accent-gold);
+      background: rgba(212, 175, 55, 0.05);
+      color: var(--text-primary);
+    }
+
+    /* Message bubbles */
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message-bubble {
+      max-width: 65%;
+      padding: 14px 18px;
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+
+    .message.user .message-bubble {
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-copper));
+      color: var(--bg-primary);
+      font-weight: 500;
+    }
+
+    /* Agent verdict card */
+    .verdict-card {
+      max-width: 75%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .verdict-header {
+      padding: 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .verdict-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .verdict-badge.creative {
+      border-left: 3px solid var(--accent-gold);
+    }
+
+    .verdict-badge.conservative {
+      border-left: 3px solid var(--success);
+    }
+
+    .verdict-badge.verifier {
+      border-left: 3px solid var(--warning);
+    }
+
+    .verdict-badge.escalated {
+      border-left: 3px solid var(--error);
+    }
+
+    .verdict-metrics {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .verdict-body {
+      padding: 18px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .verdict-body p {
+      margin-bottom: 12px;
+    }
+
+    .verdict-body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .verdict-alerts {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 18px 14px 18px;
+    }
+
+    .alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .alert-pill.escalated {
+      background: rgba(243, 156, 18, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(243, 156, 18, 0.2);
+    }
+
+    .alert-pill.hallucination {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--error);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .alert-pill.pii {
+      background: rgba(243, 156, 18, 0.1);
+      color: var(--warning);
+      border: 1px solid rgba(243, 156, 18, 0.2);
+    }
+
+    /* Deliberation details */
+    .deliberation-section {
+      border-top: 1px solid var(--border);
+      padding: 0;
+    }
+
+    .deliberation-toggle {
+      width: 100%;
+      padding: 14px 18px;
+      background: transparent;
+      border: none;
+      color: var(--accent-gold);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.2s ease;
+    }
+
+    .deliberation-toggle:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .deliberation-toggle::after {
+      content: '▼';
+      font-size: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .deliberation-toggle[aria-expanded="false"]::after {
+      transform: rotate(-90deg);
+    }
+
+    .deliberation-content {
+      display: none;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      gap: 14px;
+      font-size: 13px;
+    }
+
+    .deliberation-content[aria-hidden="false"] {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .deliberation-item {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .deliberation-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .deliberation-value {
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .policy-reasons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .policy-reason {
+      padding: 8px 10px;
+      background: rgba(212, 175, 55, 0.05);
+      border-left: 2px solid var(--accent-gold);
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--text-primary);
+    }
+
+    /* Thinking indicator */
+    .thinking-card {
+      max-width: 75%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-hi);
+      border-radius: 12px;
+      padding: 18px;
+    }
+
+    .thinking-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .thinking-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .thinking-spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent-gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .thinking-step.done .thinking-spinner {
+      animation: none;
+      border: none;
+      color: var(--success);
+      font-size: 16px;
+    }
+
+    .thinking-step.done::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: 700;
+      width: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* INPUT AREA                                                             */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    .input-area {
+      border-top: 1px solid var(--border);
+      background: var(--bg-secondary);
+      padding: 20px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    #message-input {
+      flex: 1;
+      padding: 12px 14px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      resize: none;
+      max-height: 120px;
+      transition: border-color 0.2s ease;
+    }
+
+    #message-input:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+    }
+
+    #message-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .send-btn {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-copper));
+      border: none;
+      border-radius: 8px;
+      color: var(--bg-primary);
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cost-note {
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    /* UTILITIES                                                              */
+    /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+    /* Markdown rendering */
+    .verdict-body h1, .verdict-body h2, .verdict-body h3 {
+      font-family: var(--font-display);
+      font-weight: 600;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    .verdict-body h1 { font-size: 16px; }
+    .verdict-body h2 { font-size: 15px; }
+    .verdict-body h3 { font-size: 14px; }
+
+    .verdict-body strong {
+      color: var(--accent-gold);
+      font-weight: 600;
+    }
+
+    .verdict-body em {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .verdict-body code {
+      background: var(--bg-tertiary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-platinum);
+    }
+
+    .verdict-body ul, .verdict-body ol {
+      margin-left: 20px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .verdict-body li {
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth guard & fetch interceptor -->
+  <script>
+    const AUTH_KEY = 'portal_auth';
+    let auth;
+    try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch(e) { auth = null; }
+
+    if (!auth || auth.role !== 'msp') {
+      document.documentElement.style.visibility = 'hidden';
+      window.location.replace('/');
+      throw new Error('unauthenticated');
+    }
+
+    function token() { return auth ? auth.token : ''; }
+
+    // Intercept all fetch calls to /api/ and inject auth header
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = function(resource, init) {
+      const url = typeof resource === 'string' ? resource : (resource && resource.url) || '';
+      if (url.includes('/api/')) {
+        const merged = Object.assign({}, init || {});
+        const hdrs = Object.assign({ 'Authorization': 'Bearer ' + token() }, merged.headers || {});
+        merged.headers = hdrs;
+        init = merged;
+      }
+      return _origFetch(resource, init).then(res => {
+        if ((res.status === 401 || res.status === 403) && url.includes('/api/')) {
+          localStorage.removeItem(AUTH_KEY);
+          window.location.replace('/');
+        }
+        return res;
+      });
+    };
+  </script>
+
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">
+        <svg viewBox="0 0 20 20"><path d="M10 2L3 6v8l7 4 7-4V6L10 2z"/><path d="M10 2v12M3 6l7 4 7-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="header-title">
+        <div class="header-title-main">Agent Council</div>
+        <div class="header-title-sub">Deliberation Engine</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="stat-badge">
+        <span>Agents:</span> <strong>3-way Vote</strong>
+      </div>
+      <div class="stat-badge">
+        <span>Status:</span> <div class="status-indicator"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Agent Architecture</div>
+
+        <div class="agent-card">
+          <div class="agent-card-name">
+            <div class="agent-dot creative"></div> FastCreative
+          </div>
+          <div class="agent-card-desc">Speed-optimized, expansive retrieval synthesis</div>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-card-name">
+            <div class="agent-dot conservative"></div> ConservativeChecker
+          </div>
+          <div class="agent-card-desc">Fact-checks claims, flags uncertainty & gaps</div>
+        </div>
+
+        <div class="agent-card">
+          <div class="agent-card-name">
+            <div class="agent-dot verifier"></div> PolicyVerifier
+          </div>
+          <div class="agent-card-desc">Final arbiter: selects winner or escalates</div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav">
+        <a class="sidebar-link" href="/rag" target="_blank">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          RAG Chat
+        </a>
+        <a class="sidebar-link" href="/observability" target="_blank">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+          Dashboard
+        </a>
+        <a class="sidebar-link" href="/msp" target="_blank">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Portal
+        </a>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+      <div class="messages-container" id="messages"></div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea id="message-input" placeholder="Ask for high-stakes decisions... (Shift+Enter for new line)" rows="1"></textarea>
+          <button class="send-btn" id="send-btn" title="Send">↑</button>
+        </div>
+        <div class="input-note">
+          <span>Ask about escalations, disputes, or strategic decisions</span>
+          <span class="cost-note" id="cost-estimate">~$0.05</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    marked.setOptions({ breaks: true, gfm: true });
+
+    const API = window.location.origin;
+    let isLoading = false;
+    let sessionId = `session_${Date.now()}`;
+
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const costEstimate = document.getElementById('cost-estimate');
+
+    function autoResize() {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    }
+
+    function createWelcome() {
+      const el = document.createElement('div');
+      el.id = 'welcome';
+      el.className = 'welcome-screen';
+      el.innerHTML = `
+        <div class="welcome-hero">
+          <h1 class="welcome-hero-title">
+            Deliberate with<br><span class="welcome-hero-title-accent">Three Minds</span>
+          </h1>
+          <p class="welcome-hero-desc">
+            For high-stakes MSP decisions: contract renewals, billing disputes, client escalations, and churn risk. Watch 3 agents deliberate in real-time.
+          </p>
+          <div class="welcome-use-cases">
+            <div class="use-case-pill" data-q="Should we escalate Alpine Financial due to overdue payments?">Escalation Decision</div>
+            <div class="use-case-pill" data-q="Analyze renewal risk for our top 5 clients and recommend actions.">Renewal Analysis</div>
+            <div class="use-case-pill" data-q="Which accounts show highest churn risk based on recent activity?">Churn Risk</div>
+            <div class="use-case-pill" data-q="Review contract terms and SLA compliance for our enterprise clients.">Contract Review</div>
+          </div>
+        </div>
+      `;
+
+      el.querySelectorAll('.use-case-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          const q = pill.dataset.q;
+          inputEl.value = q;
+          autoResize();
+          inputEl.focus();
+          sendMessage();
+        });
+      });
+
+      messagesEl.appendChild(el);
+    }
+
+    function hideWelcome() {
+      const welcome = document.getElementById('welcome');
+      if (welcome) welcome.remove();
+    }
+
+    function createThinking() {
+      const el = document.createElement('div');
+      el.className = 'message';
+      el.id = 'thinking';
+      el.innerHTML = `
+        <div class="thinking-card">
+          <div class="thinking-steps">
+            <div class="thinking-step" id="step-retrieve">
+              <div class="thinking-spinner"></div>
+              Retrieving context
+            </div>
+            <div class="thinking-step" id="step-agents">
+              <div class="thinking-spinner"></div>
+              2 agents deliberating
+            </div>
+            <div class="thinking-step" id="step-verify">
+              <div class="thinking-spinner"></div>
+              Policy verification
+            </div>
+          </div>
+        </div>
+      `;
+      messagesEl.appendChild(el);
+
+      setTimeout(() => {
+        document.getElementById('step-retrieve').classList.add('done');
+      }, 600);
+      setTimeout(() => {
+        document.getElementById('step-agents').classList.add('done');
+      }, 1400);
+      setTimeout(() => {
+        document.getElementById('step-verify').classList.add('done');
+      }, 2200);
+
+      scrollBottom();
+      return el;
+    }
+
+    function addMessage(text, isUser) {
+      const el = document.createElement('div');
+      el.className = `message ${isUser ? 'user' : 'assistant'}`;
+
+      if (isUser) {
+        el.innerHTML = `<div class="message-bubble">${DOMPurify.sanitize(text)}</div>`;
+      } else {
+        const safeMd = DOMPurify.sanitize(marked.parse(text));
+        el.innerHTML = `<div class="message-bubble">${safeMd}</div>`;
+      }
+
+      messagesEl.appendChild(el);
+      scrollBottom();
+    }
+
+    function createVerdictCard(data) {
+      const el = document.createElement('div');
+      el.className = 'message';
+
+      const agentClass = data.winning_agent === 'FastCreativeAgent' ? 'creative' :
+                         data.winning_agent === 'ConservativeCheckerAgent' ? 'conservative' :
+                         data.escalated ? 'escalated' : 'verifier';
+      const agentLabel = data.winning_agent.replace('Agent', '').replace(/([A-Z])/g, ' $1').trim();
+
+      let alertsHtml = '';
+      if (data.escalated) alertsHtml += '<div class="alert-pill escalated">⚠ Escalated</div>';
+      if (data.hallucination_detected) alertsHtml += '<div class="alert-pill hallucination">⚡ Hallucination Flag</div>';
+      if (data.pii_concern) alertsHtml += '<div class="alert-pill pii">🔒 PII Concern</div>';
+
+      let reasonsHtml = '';
+      if (data.policy_reasons && data.policy_reasons.length) {
+        reasonsHtml = data.policy_reasons.map(r => `<div class="policy-reason">${DOMPurify.sanitize(r)}</div>`).join('');
+      }
+
+      const safeMd = DOMPurify.sanitize(marked.parse(data.accepted_answer || '(No answer generated)'));
+
+      el.innerHTML = `
+        <div class="verdict-card">
+          <div class="verdict-header">
+            <div class="verdict-badge ${agentClass}">${agentLabel}</div>
+            <div class="verdict-metrics">
+              <span>⏱ ${data.latency_ms ? Math.round(data.latency_ms) : '—'}ms</span>
+              <span>💰 $${(data.total_cost_usd || 0).toFixed(4)}</span>
+            </div>
+          </div>
+          <div class="verdict-body">${safeMd}</div>
+          ${alertsHtml ? `<div class="verdict-alerts">${alertsHtml}</div>` : ''}
+          <div class="deliberation-section">
+            <button class="deliberation-toggle" aria-expanded="false" aria-controls="deliberation-${Date.now()}">
+              Agent Deliberation Details
+            </button>
+            <div class="deliberation-content" aria-hidden="true" id="deliberation-${Date.now()}">
+              <div class="deliberation-item">
+                <div class="deliberation-label">Winning Agent</div>
+                <div class="deliberation-value">${DOMPurify.sanitize(agentLabel)}</div>
+              </div>
+              <div class="deliberation-item">
+                <div class="deliberation-label">Dissenting Proposal</div>
+                <div class="deliberation-value">${DOMPurify.sanitize(data.dissent_summary || '(No dissent recorded)')}</div>
+              </div>
+              ${reasonsHtml ? `<div class="deliberation-item">
+                <div class="deliberation-label">Policy Verification Notes</div>
+                <div class="policy-reasons">${reasonsHtml}</div>
+              </div>` : ''}
+              <div class="deliberation-item">
+                <div class="deliberation-label">Trace ID</div>
+                <div class="deliberation-value" style="font-family: var(--font-mono); font-size: 11px;">${DOMPurify.sanitize(data.trace_id)}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      messagesEl.appendChild(el);
+
+      // Wire toggle
+      const toggle = el.querySelector('.deliberation-toggle');
+      const content = el.querySelector('.deliberation-content');
+      toggle.addEventListener('click', () => {
+        const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', !isOpen);
+        content.setAttribute('aria-hidden', isOpen);
+      });
+
+      scrollBottom();
+    }
+
+    function scrollBottom() {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text || isLoading) return;
+
+      hideWelcome();
+      isLoading = true;
+      sendBtn.disabled = true;
+
+      addMessage(text, true);
+      const thinkingEl = createThinking();
+
+      try {
+        const res = await fetch(`${API}/api/council`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            user_role: 'msp',
+            session_id: sessionId,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+          throw new Error(err.detail || `Error ${res.status}`);
+        }
+
+        const data = await res.json();
+        thinkingEl.remove();
+        createVerdictCard(data);
+
+        // Update cost estimate
+        const nextCost = (data.total_cost_usd || 0) + 0.02;
+        costEstimate.textContent = `~$${Math.min(nextCost.toFixed(2), 0.25)}`;
+
+      } catch (err) {
+        thinkingEl.remove();
+        addMessage(`⚠ ${err.message}`, false);
+      } finally {
+        isLoading = false;
+        sendBtn.disabled = false;
+        inputEl.value = '';
+        autoResize();
+        inputEl.focus();
+      }
+    }
+
+    inputEl.addEventListener('input', autoResize);
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    // Boot
+    createWelcome();
+    autoResize();
+    inputEl.focus();
+  </script>
+
+</body>
+</html>

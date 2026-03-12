@@ -778,12 +778,138 @@
     TechVault RAG &mdash; Agent Observability Dashboard &mdash; Auto-refreshes every 30s &mdash; <span id="footer-ts">—</span>
   </div>
 
+  <!-- MSP Login Overlay (shown when not authenticated) -->
+  <div id="login-overlay" style="
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(8,12,20,0.97); backdrop-filter:blur(12px);
+    align-items:center; justify-content:center;
+  ">
+    <div style="
+      background:var(--card); border:1px solid var(--border-hi);
+      border-radius:16px; padding:40px; width:100%; max-width:400px;
+      box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    ">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+        <div style="
+          width:40px;height:40px;border-radius:12px;
+          background:linear-gradient(135deg,var(--blue),var(--purple));
+          display:grid;place-items:center;flex-shrink:0;
+        ">
+          <svg viewBox="0 0 20 20" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.5;stroke-linecap:round;">
+            <path d="M10 2L3 6v8l7 4 7-4V6L10 2z"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text-1);">Agent Observability</div>
+          <div style="font-size:12px;color:var(--text-3);">MSP Administrator access required</div>
+        </div>
+      </div>
+      <div id="login-error" style="
+        display:none; background:var(--red-d); border:1px solid rgba(239,68,68,0.3);
+        border-radius:8px; padding:10px 14px; margin-bottom:16px;
+        font-size:13px; color:var(--red);
+      "></div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">USERNAME</label>
+        <input id="login-user" type="text" placeholder="msp_admin" style="
+          width:100%; padding:10px 14px; background:var(--card-b);
+          border:1px solid var(--border); border-radius:8px;
+          color:var(--text-1); font-size:14px; outline:none;
+          font-family:var(--font);
+        " />
+      </div>
+      <div style="margin-bottom:22px;">
+        <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:6px;">PASSWORD</label>
+        <input id="login-pass" type="password" placeholder="••••••••" style="
+          width:100%; padding:10px 14px; background:var(--card-b);
+          border:1px solid var(--border); border-radius:8px;
+          color:var(--text-1); font-size:14px; outline:none;
+          font-family:var(--font);
+        " />
+      </div>
+      <button id="login-btn" style="
+        width:100%; padding:12px; background:linear-gradient(135deg,var(--blue),var(--purple));
+        border:none; border-radius:8px; color:#fff; font-size:14px;
+        font-weight:600; cursor:pointer; font-family:var(--font);
+        transition:opacity 0.2s;
+      ">Sign In</button>
+      <div id="login-spinner" style="display:none;text-align:center;margin-top:14px;font-size:12px;color:var(--text-3);">
+        Authenticating…
+      </div>
+    </div>
+  </div>
+
   <script>
     // ── State ────────────────────────────────────────────────────────────────
     const AUTH_KEY = 'portal_auth';
     let auth;
     try { auth = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch(e) { auth = null; }
-    if (!auth || auth.role !== 'msp') { window.location.href = '/'; }
+
+    // Show login overlay if not MSP-authenticated
+    const _overlay = document.getElementById('login-overlay');
+    if (!auth || auth.role !== 'msp') {
+      _overlay.style.display = 'flex';
+    }
+
+    // ── Login overlay logic ───────────────────────────────────────────────────
+    async function handleLogin() {
+      const username = document.getElementById('login-user').value.trim();
+      const password = document.getElementById('login-pass').value;
+      const errEl    = document.getElementById('login-error');
+      const spinner  = document.getElementById('login-spinner');
+      const btn      = document.getElementById('login-btn');
+
+      errEl.style.display = 'none';
+      if (!username || !password) {
+        errEl.textContent = 'Username and password are required.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || 'Login failed');
+        }
+        if (data.role !== 'msp') {
+          throw new Error('Access denied: MSP administrator account required.');
+        }
+        // Store auth and reload
+        localStorage.setItem(AUTH_KEY, JSON.stringify({
+          token:       data.token,
+          role:        data.role,
+          username:    data.username,
+          client_id:   data.client_id || null,
+          client_name: data.client_name || null,
+        }));
+        auth = JSON.parse(localStorage.getItem(AUTH_KEY));
+        _overlay.style.display = 'none';
+        // Kick off the dashboard
+        initDashboard();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+      }
+    }
+
+    document.getElementById('login-btn').addEventListener('click', handleLogin);
+    document.getElementById('login-pass').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
+    });
+    document.getElementById('login-user').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('login-pass').focus();
+    });
 
     function token() { return auth ? auth.token : ''; }
 
@@ -810,7 +936,12 @@
     // ── API helpers ──────────────────────────────────────────────────────────
     async function apiFetch(path) {
       const r = await fetch(path, { headers: { Authorization: `Bearer ${token()}` } });
-      if (r.status === 401) { localStorage.removeItem(AUTH_KEY); window.location.href = '/'; }
+      if (r.status === 401 || r.status === 403) {
+        localStorage.removeItem(AUTH_KEY);
+        auth = null;
+        _overlay.style.display = 'flex';
+        throw new Error('Session expired. Please sign in again.');
+      }
       if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
       return r.json();
     }
@@ -1313,7 +1444,14 @@
     }
 
     // ── Boot ─────────────────────────────────────────────────────────────────
-    loadDashboard().then(startAutoRefresh);
+    function initDashboard() {
+      loadDashboard().then(startAutoRefresh);
+    }
+
+    // Only start if already authenticated
+    if (auth && auth.role === 'msp') {
+      initDashboard();
+    }
   </script>
 </body>
 </html>

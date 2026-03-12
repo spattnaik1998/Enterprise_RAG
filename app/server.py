@@ -6,7 +6,8 @@ plus the Client Portal with JWT-based authentication.
 
 Public routes (no auth required):
   GET  /                          -> serve app/static/landing.html (dual login)
-  GET  /rag                       -> serve app/static/index.html   (RAG chat -- MSP)
+  GET  /rag                       -> serve app/static/index.html        (RAG chat -- MSP)
+  GET  /agent                     -> serve app/static/agent_chat.html  (Council chat -- MSP)
   GET  /forecast                  -> serve app/static/forecast.html
   GET  /logs                      -> serve app/static/logs.html
   GET  /msp                       -> serve app/static/msp_portal.html
@@ -47,6 +48,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import time
 from contextlib import asynccontextmanager
 from functools import partial
 from pathlib import Path
@@ -346,6 +348,15 @@ async def serve_rag_ui():
     path = STATIC_DIR / "index.html"
     if not path.exists():
         raise HTTPException(status_code=404, detail="index.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
+@app.get("/agent", include_in_schema=False)
+async def serve_agent_chat():
+    """Serve the Multi-Agent Council chat UI (MSP only -- guarded client-side)."""
+    path = STATIC_DIR / "agent_chat.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="agent_chat.html not found")
     return FileResponse(str(path), media_type="text/html")
 
 
@@ -689,6 +700,17 @@ async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
     if _pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not ready")
 
+    # Warn early if the vector index has no data (Supabase not migrated)
+    if _pipeline.index.ntotal == 0:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "The knowledge base index is empty. "
+                "Please migrate data to Supabase first: "
+                "python scripts/migrate_to_supabase.py"
+            ),
+        )
+
     message = request.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -983,14 +1005,25 @@ async def council_query(request: CouncilRequest, _user: dict = Depends(require_m
     logger.info(f"[API] Council | role={request.user_role} | query={message[:80]!r}")
 
     from src.agents.council import CouncilOrchestrator
+
     council = CouncilOrchestrator(_pipeline)
+    session_id = request.session_id or f"council_{int(time.time() * 1000)}"
 
     try:
+        t0 = time.perf_counter()
         verdict = await council.run(
             query=message,
             budget_tokens=request.budget_tokens,
-            session_id=request.session_id,
+            session_id=session_id,
         )
+        latency_ms = (time.perf_counter() - t0) * 1000
+
+        logger.info(
+            f"[API] Council complete | session={session_id} | "
+            f"agent={verdict.winning_agent} | latency={latency_ms:.0f}ms | "
+            f"cost=${verdict.total_cost_usd:.6f}"
+        )
+
     except Exception as exc:
         logger.error(f"[API] Council error: {exc}")
         raise HTTPException(status_code=500, detail=str(exc))

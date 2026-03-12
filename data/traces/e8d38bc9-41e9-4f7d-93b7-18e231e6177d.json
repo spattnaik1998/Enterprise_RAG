@@ -1,0 +1,35 @@
+{
+  "trace_id": "e8d38bc9-41e9-4f7d-93b7-18e231e6177d",
+  "session_id": "session_1773296151219",
+  "query_hash": "34936e4a066864689eec95b4abeda0e5031dcc9cf3c15689f03097b87420d5ba",
+  "model": "council-3-agent",
+  "user_role": "msp",
+  "verdict": "success",
+  "total_cost_usd": 0.0,
+  "capture_reason": "baseline_sample",
+  "created_at": "2026-03-12T06:19:12.835001+00:00",
+  "events": [
+    {
+      "event_type": "council_start",
+      "timestamp": "2026-03-12T06:19:12.835001+00:00",
+      "duration_ms": 0.0,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "agents": 3
+      }
+    },
+    {
+      "event_type": "council_verdict",
+      "timestamp": "2026-03-12T06:19:22.204215+00:00",
+      "duration_ms": 9368.36,
+      "cost_usd": 0.0,
+      "error": null,
+      "payload": {
+        "winning_agent": "ConservativeChecker",
+        "escalated": false,
+        "cost_usd": 0.0
+      }
+    }
+  ]
+}

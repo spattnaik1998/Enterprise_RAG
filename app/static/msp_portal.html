@@ -288,6 +288,9 @@
     .tile-amber .tool-icon { background: rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.2); }
     .tile-amber .tool-icon svg { stroke: var(--amber); }
     .tile-amber:hover { border-color: rgba(245,158,11,0.3); box-shadow: 0 8px 30px rgba(245,158,11,0.08); }
+    .tile-cyan  .tool-icon { background: rgba(6,182,212,0.1); border:1px solid rgba(6,182,212,0.2); }
+    .tile-cyan  .tool-icon svg { stroke: #06B6D4; }
+    .tile-cyan:hover { border-color: rgba(6,182,212,0.3); box-shadow: 0 8px 30px rgba(6,182,212,0.08); }
 
     /* ── Ticket table ── */
     .table-header {
@@ -782,6 +785,10 @@
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
         RAG Intelligence
       </a>
+      <a class="nav-item" href="/agent" target="_blank">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Agent Council
+      </a>
       <a class="nav-item" href="/forecast" target="_blank">
         <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Forecasting
@@ -855,6 +862,11 @@
           <div class="tool-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
           <div class="tool-name">RAG Intelligence</div>
           <div class="tool-desc">Query the AI knowledge base across all enterprise data sources.</div>
+        </a>
+        <a class="tool-tile tile-cyan" href="/agent" target="_blank">
+          <div class="tool-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="tool-name">Agent Council</div>
+          <div class="tool-desc">3-agent deliberation for high-stakes queries: escalations, disputes, churn risk.</div>
         </a>
         <a class="tool-tile tile-green" href="/forecast" target="_blank">
           <div class="tool-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>

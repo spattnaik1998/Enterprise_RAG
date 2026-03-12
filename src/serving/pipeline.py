@@ -273,32 +273,41 @@ class RAGPipeline:
 
             # -- 4. Context management -----------------------------------------
             # ContextManager expects plain Chunk objects, not (Chunk, float) tuples.
+            # Wrapped in try/except so any edge-case failure falls back to the
+            # raw reranked list — keeping the RAG pipeline independent of the
+            # observability / context-management layer.
             reranked_chunks_only = [chunk for chunk, _ in reranked]
             reranked_scores = {chunk.chunk_id: score for chunk, score in reranked}
 
-            context_bundle = self.context_manager.get_context(
-                query=user_query,
-                chunks=reranked_chunks_only,
-                fast_path=fast_path,
-            )
-            tc.add_event(TraceEvent(
-                event_type="context_pack",
-                payload={
-                    "total_tokens": context_bundle.total_tokens,
-                    "budget_tokens": context_bundle.budget_tokens,
-                    "truncated": context_bundle.truncated,
-                    "n_pieces": len(context_bundle.pieces),
-                },
-            ))
-            # Reconstruct (Chunk, float) tuples from context-selected pieces for generator.
-            if context_bundle.pieces:
-                chunks_for_gen = [
-                    (
-                        reranked_chunks_only[p.chunk_index],
-                        reranked_scores.get(reranked_chunks_only[p.chunk_index].chunk_id, p.relevance_score),
-                    )
-                    for p in context_bundle.pieces
-                ]
+            context_bundle = None
+            try:
+                context_bundle = self.context_manager.get_context(
+                    query=user_query,
+                    chunks=reranked_chunks_only,
+                    fast_path=fast_path,
+                )
+                tc.add_event(TraceEvent(
+                    event_type="context_pack",
+                    payload={
+                        "total_tokens": context_bundle.total_tokens,
+                        "budget_tokens": context_bundle.budget_tokens,
+                        "truncated": context_bundle.truncated,
+                        "n_pieces": len(context_bundle.pieces),
+                    },
+                ))
+            except Exception as ctx_exc:
+                logger.warning(f"[RAGPipeline] ContextManager failed (using raw reranked): {ctx_exc}")
+                context_bundle = None
+
+            # Reconstruct (Chunk, float) tuples for generator.
+            # If context_bundle succeeded and has pieces, use the LIM-reordered set.
+            # Otherwise fall back to the reranker's order directly.
+            if context_bundle is not None and context_bundle.pieces:
+                chunks_for_gen = []
+                for p in context_bundle.pieces:
+                    chunk = reranked_chunks_only[p.chunk_index]
+                    score = reranked_scores.get(chunk.chunk_id, p.relevance_score)
+                    chunks_for_gen.append((chunk, score))
             else:
                 chunks_for_gen = reranked
 
