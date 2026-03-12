@@ -367,6 +367,15 @@ async def serve_client_portal():
     return FileResponse(str(path), media_type="text/html")
 
 
+@app.get("/portal", include_in_schema=False)
+async def serve_portal_by_client(client_id: str = ""):
+    """Serve the client portal — linked from Manage Clients 'View Portal' button."""
+    path = STATIC_DIR / "client_portal.html"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="client_portal.html not found")
+    return FileResponse(str(path), media_type="text/html")
+
+
 @app.get("/engineer", include_in_schema=False)
 async def serve_engineer_portal():
     """Serve the engineer portal (view and update assigned tickets)."""
