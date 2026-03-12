@@ -145,7 +145,8 @@ def run(
     if results:
         if not output:
             from datetime import datetime
-            output = f"eval/results/benchmarks_{datetime.utcnow().isoformat()}.json"
+            timestamp = datetime.utcnow().isoformat().replace(":", "-")
+            output = f"eval/results/benchmarks_{timestamp}.json"
 
         output_path = Path(output)
         output_path.parent.mkdir(parents=True, exist_ok=True)
