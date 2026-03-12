@@ -1,0 +1,260 @@
+{
+  "metadata": {
+    "description": "Comprehensive latency test suite for RAG and Agent systems",
+    "categories": 6,
+    "total_queries": 40,
+    "complexity_levels": 3
+  },
+  "simple": {
+    "description": "Direct lookups, single-source queries",
+    "expected_rag_latency_ms": 800,
+    "expected_agent_latency_ms": 7000,
+    "queries": [
+      {
+        "id": "simple_001",
+        "query": "List all overdue invoices",
+        "category": "billing",
+        "expected_source": "invoices.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_002",
+        "query": "What invoices are more than 60 days overdue?",
+        "category": "billing",
+        "expected_source": "invoices.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_003",
+        "query": "Show me all open service tickets",
+        "category": "psa",
+        "expected_source": "psa_tickets.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_004",
+        "query": "Which clients have RED account health?",
+        "category": "crm",
+        "expected_source": "crm_profiles.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_005",
+        "query": "List all active contracts",
+        "category": "contracts",
+        "expected_source": "contracts.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_006",
+        "query": "Show recent invoice reminders",
+        "category": "communications",
+        "expected_source": "communications.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_007",
+        "query": "What is the total outstanding balance?",
+        "category": "billing",
+        "expected_source": "invoices.json",
+        "difficulty": "easy"
+      },
+      {
+        "id": "simple_008",
+        "query": "Which unresolved tickets are assigned to a technician?",
+        "category": "psa",
+        "expected_source": "psa_tickets.json",
+        "difficulty": "easy"
+      }
+    ]
+  },
+  "moderate": {
+    "description": "Multi-hop reasoning, single or dual-source queries",
+    "expected_rag_latency_ms": 1200,
+    "expected_agent_latency_ms": 10000,
+    "queries": [
+      {
+        "id": "moderate_001",
+        "query": "Which clients have overdue invoices AND RED account health?",
+        "category": "billing",
+        "expected_sources": ["invoices.json", "crm_profiles.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_002",
+        "query": "What is the renewal status for Alpine Financial?",
+        "category": "contracts",
+        "expected_sources": ["contracts.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_003",
+        "query": "Show me high-priority tickets from clients with YELLOW health",
+        "category": "psa",
+        "expected_sources": ["psa_tickets.json", "crm_profiles.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_004",
+        "query": "Which clients have overdue invoices exceeding $10,000?",
+        "category": "billing",
+        "expected_sources": ["invoices.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_005",
+        "query": "List clients with expiring contracts in the next 90 days",
+        "category": "contracts",
+        "expected_sources": ["contracts.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_006",
+        "query": "What are the SLA response times for critical service contracts?",
+        "category": "contracts",
+        "expected_sources": ["contracts.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_007",
+        "query": "How many unresolved tickets do we have per client?",
+        "category": "psa",
+        "expected_sources": ["psa_tickets.json"],
+        "difficulty": "medium"
+      },
+      {
+        "id": "moderate_008",
+        "query": "Which clients received invoice reminders but haven't paid?",
+        "category": "billing",
+        "expected_sources": ["invoices.json", "communications.json"],
+        "difficulty": "medium"
+      }
+    ]
+  },
+  "complex": {
+    "description": "Multi-source aggregation, multi-hop reasoning",
+    "expected_rag_latency_ms": 2000,
+    "expected_agent_latency_ms": 14000,
+    "queries": [
+      {
+        "id": "complex_001",
+        "query": "Which clients have overdue invoices, RED account health, AND unresolved high-priority tickets?",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "crm_profiles.json", "psa_tickets.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_002",
+        "query": "Show me clients at risk of churn: overdue invoices, declining health, and no recent successful ticket resolutions",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "crm_profiles.json", "psa_tickets.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_003",
+        "query": "Provide a client 360 view for Northern Lights Healthcare: invoices, tickets, contracts, and contact info",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "psa_tickets.json", "contracts.json", "crm_profiles.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_004",
+        "query": "Which clients are due for contract renewal AND have RED health AND have more than 5 unresolved tickets?",
+        "category": "cross_source",
+        "expected_sources": ["contracts.json", "crm_profiles.json", "psa_tickets.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_005",
+        "query": "Identify escalation candidates: clients with high-value contracts, critical SLAs, AND recent support issues",
+        "category": "cross_source",
+        "expected_sources": ["contracts.json", "psa_tickets.json", "crm_profiles.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_006",
+        "query": "Calculate revenue at risk: show clients with overdue invoices over $5k who also have expiring contracts",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "contracts.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_007",
+        "query": "What is the health trend for clients with large outstanding balances? Who should we reach out to?",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "crm_profiles.json", "communications.json"],
+        "difficulty": "hard"
+      },
+      {
+        "id": "complex_008",
+        "query": "Show me the top 3 at-risk accounts by composite score: (invoice aging + health status + ticket backlog + contract renewal)",
+        "category": "cross_source",
+        "expected_sources": ["invoices.json", "crm_profiles.json", "psa_tickets.json", "contracts.json"],
+        "difficulty": "hard"
+      }
+    ]
+  },
+  "edge_cases": {
+    "description": "Edge cases, error handling, boundary conditions",
+    "expected_rag_latency_ms": 600,
+    "expected_agent_latency_ms": 6000,
+    "queries": [
+      {
+        "id": "edge_001",
+        "query": "Show me clients with exactly zero invoices",
+        "category": "billing",
+        "expected_response": "No clients found OR list of clients with no invoices",
+        "difficulty": "medium"
+      },
+      {
+        "id": "edge_002",
+        "query": "What is the oldest overdue invoice?",
+        "category": "billing",
+        "expected_response": "Single oldest invoice with maximum age",
+        "difficulty": "easy"
+      },
+      {
+        "id": "edge_003",
+        "query": "Show me contracts with auto-renewal disabled",
+        "category": "contracts",
+        "expected_response": "List of non-auto-renewing contracts",
+        "difficulty": "easy"
+      },
+      {
+        "id": "edge_004",
+        "query": "Which clients have both RED AND GREEN accounts simultaneously?",
+        "category": "crm",
+        "expected_response": "Empty list OR error explaining account_health is singular",
+        "difficulty": "medium"
+      },
+      {
+        "id": "edge_005",
+        "query": "List tickets with zero hours billed",
+        "category": "psa",
+        "expected_response": "Tickets with 0 hours_billed",
+        "difficulty": "easy"
+      },
+      {
+        "id": "edge_006",
+        "query": "Show me contracts expiring in the past",
+        "category": "contracts",
+        "expected_response": "Empty list OR expired contracts",
+        "difficulty": "easy"
+      },
+      {
+        "id": "edge_007",
+        "query": "What is the status of a non-existent client ABC123?",
+        "category": "cross_source",
+        "expected_response": "No data found for this client",
+        "difficulty": "easy"
+      },
+      {
+        "id": "edge_008",
+        "query": "Find invoices with negative amounts",
+        "category": "billing",
+        "expected_response": "Credit memos or refunds if they exist",
+        "difficulty": "medium"
+      }
+    ]
+  }
+}
