@@ -40,6 +40,7 @@ from loguru import logger
 from src.context.manager import ContextManager
 from src.observability.collector import TraceCollector, get_active_collector
 from src.observability.schemas import TraceEvent
+from src.observability.quality_monitor import QualityMonitor
 from src.embedding.embedder import Embedder
 from src.embedding.faiss_index import FAISSIndex  # used for local / CLI mode
 from src.generation.generator import (
@@ -48,6 +49,7 @@ from src.generation.generator import (
     _MODEL_PRICING,
     _cost_usd,
 )
+from src.learning.hard_negative_miner import HardNegativeMiner
 from src.retrieval.guardrails import PIIFilter, PromptGuard
 from src.retrieval.reranker import LLMReranker
 from src.retrieval.retriever import HybridRetriever
@@ -194,6 +196,10 @@ class RAGPipeline:
         self.pii_filter = PIIFilter() if enable_pii_filter else None
         self.context_manager = ContextManager()
 
+        # Tier 1 + 2: Quality monitoring and hard negative mining
+        self.quality_monitor = QualityMonitor()
+        self.hard_negative_miner = HardNegativeMiner()
+
         logger.info(
             f"[RAGPipeline] Ready | {self.index.ntotal} vectors | "
             f"model={generator_model} | rerank={enable_reranking}"
@@ -285,6 +291,7 @@ class RAGPipeline:
                     query=user_query,
                     chunks=reranked_chunks_only,
                     fast_path=fast_path,
+                    scores=reranked_scores,
                 )
                 tc.add_event(TraceEvent(
                     event_type="context_pack",
@@ -356,7 +363,7 @@ class RAGPipeline:
                 f"tokens={rag_response.total_tokens}"
             )
 
-            return QueryResult(
+            result = QueryResult(
                 query=user_query,
                 answer=answer,
                 citations=rag_response.citations,
@@ -370,3 +377,39 @@ class RAGPipeline:
                 context_bundle=context_bundle,
                 trace_id=tc.trace_id,
             )
+
+            # Tier 1 + 2: Log to quality monitor and hard negative miner
+            try:
+                self.quality_monitor.log_result(
+                    query=user_query,
+                    answer=answer,
+                    citations=rag_response.citations,
+                    latency_ms=result.total_ms,
+                    model=rag_response.model,
+                )
+
+                # Get current metrics and check for degradation
+                alerts = self.quality_monitor.get_degradation_signal()
+                if alerts:
+                    for alert in alerts:
+                        logger.warning(
+                            f"[RAGPipeline] Quality alert: {alert.alert_type} "
+                            f"({alert.current_value:.2f} < {alert.threshold:.2f})"
+                        )
+                        # Tier 2: Collect hard negatives when quality degrades
+                        # (we collect a sample of failures for later retraining)
+                        if alert.alert_type in ["recall_degradation", "source_hit_degradation"]:
+                            self.hard_negative_miner.collect(
+                                query=user_query,
+                                answer=answer,
+                                citations=rag_response.citations,
+                                recall_score=0.0 if "recall" in alert.alert_type else 0.5,
+                                source_hit_score=0.0 if "source_hit" in alert.alert_type else 0.5,
+                                category="unknown",
+                                model=rag_response.model,
+                                latency_ms=result.total_ms,
+                            )
+            except Exception as monitor_exc:
+                logger.error(f"[RAGPipeline] Monitoring error (non-fatal): {monitor_exc}")
+
+            return result
