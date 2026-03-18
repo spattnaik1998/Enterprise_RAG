@@ -1209,3 +1209,120 @@ async def acknowledge_alert(
     except Exception as e:
         logger.error(f"[API] Acknowledge alert error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Skills API
+# ---------------------------------------------------------------------------
+
+
+class SkillMetadataModel(BaseModel):
+    """Skill metadata."""
+    name: str
+    description: str
+    version: str
+    required_sources: list[str]
+
+
+class SkillExecutionRequest(BaseModel):
+    """Request to execute a skill."""
+    query: Optional[str] = None
+    metadata: dict = {}
+
+
+class SkillExecutionResponse(BaseModel):
+    """Response from skill execution."""
+    success: bool
+    skill_name: str
+    data: Optional[dict] = None
+    error: Optional[str] = None
+    latency_ms: float
+
+
+@app.get("/api/skills", response_model=list[SkillMetadataModel])
+@limiter.limit("30/minute")
+async def list_skills(
+    request: Request,
+    _user: dict = Depends(require_msp),
+):
+    """
+    List available skills.
+
+    Returns:
+        List of skill metadata (name, description, version, required_sources)
+    """
+    try:
+        from src.skills.registry import SkillRegistry
+
+        registry = SkillRegistry()
+        skills = registry.list_skills()
+
+        logger.info(f"[API] Listed {len(skills)} skills | role={_user.get('role')}")
+
+        return [SkillMetadataModel(**skill) for skill in skills]
+
+    except Exception as e:
+        logger.error(f"[API] List skills error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/skills/{skill_name}/execute", response_model=SkillExecutionResponse)
+@limiter.limit("10/minute")
+async def execute_skill(
+    request: Request,
+    skill_name: str,
+    body: SkillExecutionRequest,
+    _user: dict = Depends(require_msp),
+):
+    """
+    Execute a skill.
+
+    Path parameters:
+      - skill_name: Name of the skill to execute
+
+    Request body:
+      - query: Optional query context (e.g., client name for escalation brief)
+      - metadata: Optional metadata dict
+
+    Returns:
+        Skill execution result with data, error, and latency
+    """
+    try:
+        from src.skills.base import SkillContext
+        from src.skills.registry import SkillRegistry
+
+        registry = SkillRegistry()
+        skill = registry.get(skill_name)
+
+        if not skill:
+            raise HTTPException(status_code=404, detail=f"Skill '{skill_name}' not found")
+
+        # Execute skill
+        context = SkillContext(
+            query=body.query or "",
+            user_id=_user.get("sub"),
+            user_role=_user.get("role", "msp"),
+            metadata=body.metadata,
+        )
+
+        result = await skill.execute(context)
+
+        logger.info(
+            f"[API] Skill executed: {skill_name} | "
+            f"success={result.success} | latency={result.latency_ms:.0f}ms | "
+            f"role={_user.get('role')}"
+        )
+
+        return SkillExecutionResponse(
+            success=result.success,
+            skill_name=result.skill_name,
+            data=result.data,
+            error=result.error,
+            latency_ms=result.latency_ms,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API] Execute skill error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
