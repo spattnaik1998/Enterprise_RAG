@@ -129,6 +129,8 @@ async def lifespan(app: FastAPI):
         from src.embedding.supabase_index import SupabaseIndex
         from src.serving.pipeline import RAGPipeline
         from src.utils.logger import setup_logger
+        from src.proactive.alert_store import AlertStore
+        from src.proactive.scheduler import ProactiveScheduler
 
         setup_logger()
         logger.info("[Server] Connecting to Supabase index...")
@@ -142,10 +144,26 @@ async def lifespan(app: FastAPI):
             f"{vector_count:,} vectors | "
             f"default model={_pipeline.generator.model}"
         )
+
+        # Initialize AlertStore with Supabase client
+        alert_store = AlertStore(supabase_client=supabase_index._sb)
+        app.state.alert_store = alert_store
+        logger.info("[Server] AlertStore initialized")
+
+        # Initialize and start ProactiveScheduler
+        scheduler = ProactiveScheduler()
+        await scheduler.start(alert_store)
+        app.state.scheduler = scheduler
+
     except Exception as exc:
         logger.error(f"[Server] Startup failed: {exc}")
         raise
     yield
+    # Shutdown scheduler
+    if hasattr(app.state, "scheduler"):
+        app.state.scheduler.stop()
+        logger.info("[Server] Scheduler stopped")
+
     _pipeline = None
     logger.info("[Server] Pipeline unloaded.")
 
@@ -262,6 +280,29 @@ class ChatResponse(BaseModel):
     model: str
     provider: str
     context_bundle: Optional[ContextBundleModel] = None
+
+
+# ---------------------------------------------------------------------------
+# Proactive alert models
+# ---------------------------------------------------------------------------
+
+class AlertModel(BaseModel):
+    """Alert response model."""
+    id: str
+    alert_type: str
+    severity: str
+    payload: dict
+    acknowledged: bool
+    created_at: str
+    acknowledged_at: Optional[str] = None
+
+
+class AlertListResponse(BaseModel):
+    """Paginated alerts response."""
+    alerts: list[AlertModel]
+    total: int
+    limit: int
+    offset: int
 
 
 # ---------------------------------------------------------------------------
@@ -1083,3 +1124,88 @@ async def council_query(request: Request, body: CouncilRequest, _user: dict = De
             raise HTTPException(status_code=500, detail=str(exc))
 
     return CouncilVerdictResponse(**verdict.to_dict())
+
+
+# ---------------------------------------------------------------------------
+# Proactive Alerts API
+# ---------------------------------------------------------------------------
+
+
+@app.get("/api/alerts", response_model=AlertListResponse)
+@limiter.limit("30/minute")
+async def list_alerts(
+    request: Request,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    acknowledged: Optional[bool] = Query(None),
+    _user: dict = Depends(require_msp),
+):
+    """
+    List proactive alerts (AR risk, contract expiry, quality degradation).
+
+    Query parameters:
+      - limit: Max results (1-500, default 50)
+      - offset: Pagination offset (default 0)
+      - acknowledged: Filter by read status (None = all)
+
+    Returns:
+        Paginated alerts list
+    """
+    if not hasattr(app.state, "alert_store"):
+        raise HTTPException(status_code=503, detail="Alert store not ready")
+
+    try:
+        store = app.state.alert_store
+        alerts = await store.list_alerts(limit=limit, offset=offset, acknowledged=acknowledged)
+
+        logger.info(f"[API] Listed {len(alerts)} alerts | role={_user.get('role')}")
+
+        return AlertListResponse(
+            alerts=[AlertModel(**alert) for alert in alerts],
+            total=len(alerts),
+            limit=limit,
+            offset=offset,
+        )
+    except Exception as e:
+        logger.error(f"[API] List alerts error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.patch("/api/alerts/{alert_id}/acknowledge", response_model=dict)
+@limiter.limit("30/minute")
+async def acknowledge_alert(
+    alert_id: str,
+    acknowledged: bool = Query(True),
+    _user: dict = Depends(require_msp),
+):
+    """
+    Mark an alert as acknowledged (read) or unacknowledged.
+
+    Path parameters:
+      - alert_id: UUID of the alert
+
+    Query parameters:
+      - acknowledged: True = mark read, False = mark unread (default True)
+
+    Returns:
+        {success: bool, message: str}
+    """
+    if not hasattr(app.state, "alert_store"):
+        raise HTTPException(status_code=503, detail="Alert store not ready")
+
+    try:
+        store = app.state.alert_store
+        success = await store.acknowledge_alert(alert_id, acknowledged=acknowledged)
+
+        if success:
+            status = "acknowledged" if acknowledged else "unacknowledged"
+            logger.info(f"[API] Alert {status}: {alert_id} | role={_user.get('role')}")
+            return {"success": True, "message": f"Alert {status}"}
+        else:
+            raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API] Acknowledge alert error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
