@@ -37,7 +37,9 @@ from dotenv import load_dotenv
 from langsmith import traceable
 from loguru import logger
 
+from src.context.budget_classifier import classify_budget
 from src.context.manager import ContextManager
+from src.context.session_memory import SessionMemory
 from src.observability.collector import TraceCollector, get_active_collector
 from src.observability.schemas import TraceEvent
 from src.observability.quality_monitor import QualityMonitor
@@ -199,6 +201,7 @@ class RAGPipeline:
         # Tier 1 + 2: Quality monitoring and hard negative mining
         self.quality_monitor = QualityMonitor()
         self.hard_negative_miner = HardNegativeMiner()
+        self.session_memory = SessionMemory()
 
         logger.info(
             f"[RAGPipeline] Ready | {self.index.ntotal} vectors | "
@@ -206,7 +209,7 @@ class RAGPipeline:
         )
 
     @traceable(name="rag_query", run_type="chain")
-    def query(self, user_query: str, generator=None, fast_path: bool = False) -> QueryResult:
+    def query(self, user_query: str, generator=None, fast_path: bool = False, session_id: str = "") -> QueryResult:
         """
         Run the full RAG pipeline for a single user query.
         """
@@ -248,6 +251,20 @@ class RAGPipeline:
                     blocked_reason=guard_result.blocked_reason,
                 )
 
+            # -- 1b. Session memory -----------------------------------------------
+            session_history = ""
+            if session_id:
+                try:
+                    turns = self.session_memory.load_history(session_id)
+                    session_history = self.session_memory.format_history(turns)
+                    if session_history:
+                        tc.add_event(TraceEvent(
+                            event_type="session_memory",
+                            payload={"turns_loaded": len(turns), "history_chars": len(session_history)},
+                        ))
+                except Exception as mem_exc:
+                    logger.warning(f"[RAGPipeline] Session memory failed (non-fatal): {mem_exc}")
+
             # -- 2. Retrieve ---------------------------------------------------
             t0 = time.perf_counter()
             candidates = self.retriever.retrieve(user_query)
@@ -285,11 +302,15 @@ class RAGPipeline:
             reranked_chunks_only = [chunk for chunk, _ in reranked]
             reranked_scores = {chunk.chunk_id: score for chunk, score in reranked}
 
+            # -- Dynamic token budget ------------------------------------------
+            budget_tokens = classify_budget(user_query) if not fast_path else 1024
+
             context_bundle = None
             try:
                 context_bundle = self.context_manager.get_context(
                     query=user_query,
                     chunks=reranked_chunks_only,
+                    budget_tokens=budget_tokens,
                     fast_path=fast_path,
                     scores=reranked_scores,
                 )
@@ -320,7 +341,7 @@ class RAGPipeline:
 
             # -- 5. Generate ---------------------------------------------------
             t2 = time.perf_counter()
-            rag_response: RAGResponse = active_gen.generate(user_query, chunks_for_gen)
+            rag_response: RAGResponse = active_gen.generate(user_query, chunks_for_gen, session_history=session_history)
             generation_ms = (time.perf_counter() - t2) * 1000
             tc.add_event(TraceEvent(
                 event_type="generate",

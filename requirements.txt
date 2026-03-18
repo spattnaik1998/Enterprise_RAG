@@ -14,11 +14,6 @@ aiofiles>=23.0.0
 # MCP (Model Context Protocol)
 mcp>=1.0.0
 
-# Data Sources
-arxiv>=2.1.0
-wikipedia-api>=0.6.0
-feedparser>=6.0.0
-
 # Language Detection
 langdetect>=1.0.9
 
@@ -64,6 +59,7 @@ supabase>=2.3.0
 fastapi>=0.109.0
 uvicorn[standard]>=0.27.0
 python-multipart>=0.0.9
+slowapi>=0.1.9
 
 # ── Portal Auth (JWT + bcrypt password hashing) ──────────────────────────────
 python-jose[cryptography]>=3.3.0

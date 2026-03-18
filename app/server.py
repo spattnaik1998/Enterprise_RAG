@@ -64,12 +64,16 @@ if sys.platform == "win32":
 from dotenv import load_dotenv
 load_dotenv()
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from pydantic import BaseModel, field_validator, model_validator
+from slowapi.errors import RateLimitExceeded
+from slowapi import _rate_limit_exceeded_handler
+
+from app.rate_limiter import limiter
 
 from app.auth import (
     create_token,
@@ -79,7 +83,7 @@ from app.auth import (
     require_msp,
     verify_password,
 )
-from app.chat_logger import compute_stats, load_logs, log_interaction
+from app.chat_logger import compute_stats, load_logs, log_interaction, update_feedback
 from app.portal_db import (
     create_ticket,
     get_all_client_credentials,
@@ -164,6 +168,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Rate limiting (slowapi)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -313,6 +321,18 @@ class UpdateTicketRequest(BaseModel):
     def validate_status(cls, v: str | None) -> str | None:
         if v is not None and v not in VALID_STATUSES:
             raise ValueError(f"status must be one of {sorted(VALID_STATUSES)}")
+        return v
+
+
+class FeedbackRequest(BaseModel):
+    rating: int
+    feedback: str = ""
+
+    @field_validator("rating")
+    @classmethod
+    def validate_rating(cls, v: int) -> int:
+        if v < 1 or v > 5:
+            raise ValueError("rating must be between 1 and 5")
         return v
 
 
@@ -642,7 +662,8 @@ async def list_clients(_user: dict = Depends(require_msp)):
 
 
 @app.get("/api/forecast/{client_id}")
-async def forecast_invoices(client_id: str, horizon: int = 6, _user: dict = Depends(require_msp)):
+@limiter.limit("30/minute")
+async def forecast_invoices(request: Request, client_id: str, horizon: int = 6, _user: dict = Depends(require_msp)):
     """
     Run TimeFM revenue forecast for a client.
 
@@ -686,7 +707,8 @@ async def forecast_invoices(client_id: str, horizon: int = 6, _user: dict = Depe
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
+@limiter.limit("60/minute")
+async def chat(request: Request, body: ChatRequest, _user: dict = Depends(require_msp)):
     """
     Run the full RAG pipeline for a user question.
 
@@ -711,20 +733,20 @@ async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
             ),
         )
 
-    message = request.message.strip()
+    message = body.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
     logger.info(
-        f"[API] Chat | provider={request.provider} model={request.model} | "
+        f"[API] Chat | provider={body.provider} model={body.model} | "
         f"query={message[:80]!r}"
     )
 
-    generator = _make_generator(request.provider, request.model)
+    generator = _make_generator(body.provider, body.model)
 
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(
-        None, partial(_pipeline.query, message, generator)
+        None, partial(_pipeline.query, message, generator, session_id=body.session_id or "")
     )
 
     citations = [
@@ -788,17 +810,17 @@ async def chat(request: ChatRequest, _user: dict = Depends(require_msp)):
         estimated_cost_usd=round(result.estimated_cost_usd, 6),
         pii_redacted=result.pii_redacted,
         model=result.model,
-        provider=request.provider,
+        provider=body.provider,
         context_bundle=ctx_bundle_model,
     )
 
     # Persist interaction to JSONL log (non-blocking; errors must not affect the response)
     try:
         log_interaction(
-            session_id=request.session_id,
+            session_id=body.session_id,
             query=message,
             answer=result.answer,
-            provider=request.provider,
+            provider=body.provider,
             model=result.model,
             blocked=result.blocked,
             blocked_reason=result.blocked_reason,
@@ -985,7 +1007,8 @@ class CouncilVerdictResponse(BaseModel):
 
 
 @app.post("/api/council", response_model=CouncilVerdictResponse)
-async def council_query(request: CouncilRequest, _user: dict = Depends(require_msp)):
+@limiter.limit("20/minute")
+async def council_query(request: Request, body: CouncilRequest, _user: dict = Depends(require_msp)):
     """
     Run the 3-agent Council pattern for a high-stakes MSP query.
 
@@ -998,31 +1021,31 @@ async def council_query(request: CouncilRequest, _user: dict = Depends(require_m
     if _pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not ready")
 
-    message = request.message.strip()
+    message = body.message.strip()
     if not message:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    logger.info(f"[API] Council | role={request.user_role} | query={message[:80]!r}")
+    logger.info(f"[API] Council | role={body.user_role} | query={message[:80]!r}")
 
     from src.agents.council import CouncilOrchestrator
     from src.observability.collector import TraceCollector
     from src.observability.schemas import TraceEvent
 
     council = CouncilOrchestrator(_pipeline)
-    session_id = request.session_id or f"council_{int(time.time() * 1000)}"
+    session_id = body.session_id or f"council_{int(time.time() * 1000)}"
 
     # Wrap with TraceCollector for observability
     with TraceCollector(
         session_id=session_id,
         query=message,
         model="council-3-agent",
-        user_role=request.user_role,
+        user_role=body.user_role,
     ) as tc:
         try:
             t0 = time.perf_counter()
             verdict = await council.run(
                 query=message,
-                budget_tokens=request.budget_tokens,
+                budget_tokens=body.budget_tokens,
                 session_id=session_id,
             )
             latency_ms = (time.perf_counter() - t0) * 1000

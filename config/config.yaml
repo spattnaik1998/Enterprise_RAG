@@ -4,57 +4,10 @@ project:
   description: >
     Enterprise RAG pipeline for Red Key Sandbox MSP that aggregates data from five
     disparate back-office systems (QuickBooks, ConnectWise, HubSpot, Exchange,
-    SharePoint) plus AI/ML research sources to power intelligent Q&A over
-    billing, service delivery, client relationships, communications, and contracts.
+    SharePoint) to power intelligent Q&A over billing, service delivery, client
+    relationships, communications, and contracts.
 
 collection:
-  # ── Research sources (AI/ML knowledge base) ──────────────────────────────
-  arxiv:
-    enabled: true
-    max_results: 25
-    categories:
-      - "cs.AI"
-      - "cs.LG"
-      - "cs.CL"
-      - "cs.IR"
-    queries:
-      - "cat:cs.CL retrieval augmented generation"
-      - "cat:cs.AI large language models enterprise deployment"
-      - "cat:cs.IR vector databases approximate nearest neighbor search"
-      - "cat:cs.AI LLM evaluation benchmarks hallucination"
-      - "cat:cs.CR prompt injection attacks defense LLM"
-      - "cat:cs.LG RAG pipeline knowledge base question answering"
-
-  wikipedia:
-    enabled: true
-    topics:
-      - "Large language model"
-      - "Retrieval-augmented generation"
-      - "Vector database"
-      - "FAISS"
-      - "Transformer (machine learning model)"
-      - "Prompt injection"
-      - "Word embedding"
-      - "Named-entity recognition"
-
-  rss:
-    enabled: true
-    feeds:
-      - name: "ArXiv CS.AI"
-        url: "http://arxiv.org/rss/cs.AI"
-      - name: "ArXiv CS.CL"
-        url: "http://arxiv.org/rss/cs.CL"
-      - name: "ArXiv CS.IR"
-        url: "http://arxiv.org/rss/cs.IR"
-      - name: "The Gradient"
-        url: "https://thegradient.pub/rss/"
-      - name: "Ahead of AI"
-        url: "https://magazine.sebastianraschka.com/feed"
-
-  local:
-    enabled: false
-    paths: []
-
   # ── Enterprise MSP sources (Red Key Sandbox back-office systems) ───────────────
   billing:
     enabled: true

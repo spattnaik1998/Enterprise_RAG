@@ -158,9 +158,6 @@ class EvidenceVerifierAgent:
                 "crm",
                 "contracts",
                 "communications",
-                "arxiv",
-                "wikipedia",
-                "rss",
             ]:
                 risk_flags.append(f"Unrecognized source_type: {source_type}")
                 continue

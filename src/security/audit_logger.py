@@ -75,9 +75,15 @@ class AuditLogger:
 
         raw_key = os.environ.get("AUDIT_HMAC_KEY", "")
         if not raw_key:
+            env = os.environ.get("ENVIRONMENT", "dev")
+            if env == "production":
+                raise RuntimeError(
+                    "[AuditLogger] AUDIT_HMAC_KEY must be set in production. "
+                    "Set ENVIRONMENT=dev to use the insecure dev key."
+                )
             _logger.warning(
                 "[AuditLogger] AUDIT_HMAC_KEY not set in environment. "
-                "Using insecure dev key — do not use in production."
+                "Using insecure dev key -- do not use in production."
             )
             self._key = _DEV_HMAC_KEY
         else:

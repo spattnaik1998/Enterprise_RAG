@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Vercel production requirements (serving layer only)
-# Excludes: faiss-cpu, rank-bm25, tiktoken, nltk, langdetect, faker, mcp,
-#           arxiv, wikipedia-api, feedparser  (Phase I/II tools not needed at runtime)
+# Excludes: faiss-cpu, rank-bm25, tiktoken, nltk, langdetect, faker, mcp
+#           (Phase I/II tools not needed at runtime)
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Core

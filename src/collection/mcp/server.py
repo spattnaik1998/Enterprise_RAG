@@ -3,10 +3,8 @@ Enterprise RAG - MCP Collection Server
 ---------------------------------------
 A Model Context Protocol server that exposes data-collection tools.
 Any MCP-compatible client (Claude Desktop, custom clients) can connect
-to this server and invoke tools to pull from ArXiv, Wikipedia, RSS, the web,
-or the five enterprise MSP back-office systems.
+to this server and invoke tools for the five enterprise MSP back-office systems.
 
-Original sources: ArXiv, Wikipedia, RSS, Web
 Enterprise tools: Billing, PSA, CRM, Communications, Contracts, Client 360
 
 Run standalone:
@@ -16,28 +14,13 @@ from __future__ import annotations
 
 import asyncio
 import json
-import time
-from datetime import datetime, timezone
 from pathlib import Path
 
-import arxiv
-import feedparser
-import httpx
-import wikipediaapi
 from loguru import logger
 from mcp.server import Server
 from mcp.server.models import InitializationOptions
 from mcp.types import TextContent, Tool
 import mcp.server.stdio
-
-# --- Shared SDK Clients -------------------------------------------------------
-
-_WIKI = wikipediaapi.Wikipedia(
-    language="en",
-    user_agent="EnterpriseRAG-MCP/1.0",
-)
-_ARXIV = arxiv.Client(page_size=25, delay_seconds=3.0, num_retries=3)
-_HEADERS = {"User-Agent": "EnterpriseRAG-MCP/1.0"}
 
 # --- Enterprise data paths ----------------------------------------------------
 
@@ -64,91 +47,6 @@ server = Server("enterprise-rag-collector")
 @server.list_tools()
 async def list_tools() -> list[Tool]:
     return [
-        # -- Original research tools ------------------------------------------
-        Tool(
-            name="search_arxiv",
-            description=(
-                "Search ArXiv for research papers by keyword query. "
-                "Returns paper titles, abstracts, authors, publication dates, "
-                "categories, and entry URLs."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "Search query (e.g. 'retrieval augmented generation')",
-                    },
-                    "max_results": {
-                        "type": "integer",
-                        "description": "Maximum papers to return (1-50, default 10)",
-                        "default": 10,
-                    },
-                },
-                "required": ["query"],
-            },
-        ),
-        Tool(
-            name="fetch_wikipedia",
-            description=(
-                "Fetch a Wikipedia article by its exact title. "
-                "Returns the article summary, section headings, and full text."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "topic": {
-                        "type": "string",
-                        "description": "Exact Wikipedia article title (e.g. 'FAISS')",
-                    },
-                },
-                "required": ["topic"],
-            },
-        ),
-        Tool(
-            name="fetch_rss_feed",
-            description=(
-                "Download and parse an RSS or Atom feed URL. "
-                "Returns article titles, summaries, links, and publication dates."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "type": "string",
-                        "description": "Full URL of the RSS/Atom feed",
-                    },
-                    "max_items": {
-                        "type": "integer",
-                        "description": "Maximum items to return (default 20)",
-                        "default": 20,
-                    },
-                },
-                "required": ["url"],
-            },
-        ),
-        Tool(
-            name="fetch_webpage",
-            description=(
-                "Fetch raw text content from a given webpage URL. "
-                "Returns the response body (first 10,000 characters)."
-            ),
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "type": "string",
-                        "description": "Full HTTP/HTTPS URL of the page to fetch",
-                    },
-                },
-                "required": ["url"],
-            },
-        ),
-        Tool(
-            name="list_available_sources",
-            description="List all data source types supported by this MCP server.",
-            inputSchema={"type": "object", "properties": {}},
-        ),
         # -- Enterprise Billing Tools (QuickBooks) ----------------------------
         Tool(
             name="billing_get_overdue_invoices",
@@ -347,17 +245,6 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     try:
         match name:
-            # Research tools
-            case "search_arxiv":
-                return await _search_arxiv(arguments)
-            case "fetch_wikipedia":
-                return await _fetch_wikipedia(arguments)
-            case "fetch_rss_feed":
-                return await _fetch_rss_feed(arguments)
-            case "fetch_webpage":
-                return await _fetch_webpage(arguments)
-            case "list_available_sources":
-                return await _list_sources()
             # Billing tools
             case "billing_get_overdue_invoices":
                 return await _billing_overdue(arguments)
@@ -391,128 +278,6 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
     except Exception as exc:
         logger.error(f"[MCP] Tool error [{name}]: {exc}")
         return [TextContent(type="text", text=f"Error in {name}: {exc}")]
-
-
-# --- Original Tool Implementations --------------------------------------------
-
-async def _search_arxiv(args: dict) -> list[TextContent]:
-    query = args["query"]
-    max_results = min(int(args.get("max_results", 10)), 50)
-    loop = asyncio.get_event_loop()
-
-    def _sync():
-        search = arxiv.Search(
-            query=query,
-            max_results=max_results,
-            sort_by=arxiv.SortCriterion.SubmittedDate,
-        )
-        return list(_ARXIV.results(search))
-
-    papers = await loop.run_in_executor(None, _sync)
-    results = [
-        {
-            "arxiv_id": p.entry_id,
-            "title": p.title,
-            "abstract": p.summary[:600] + ("..." if len(p.summary) > 600 else ""),
-            "authors": [str(a) for a in p.authors[:6]],
-            "published": p.published.isoformat() if p.published else None,
-            "categories": p.categories,
-            "url": p.entry_id,
-            "pdf_url": str(p.pdf_url) if p.pdf_url else None,
-        }
-        for p in papers
-    ]
-    return [TextContent(type="text", text=json.dumps(results, indent=2, default=str))]
-
-
-async def _fetch_wikipedia(args: dict) -> list[TextContent]:
-    topic = args["topic"]
-    loop = asyncio.get_event_loop()
-
-    def _sync():
-        page = _WIKI.page(topic)
-        if not page.exists():
-            return {"error": f"Wikipedia page not found: '{topic}'"}
-        return {
-            "title": page.title,
-            "url": page.fullurl,
-            "summary": page.summary[:1500],
-            "char_count": len(page.text),
-            "sections": [s.title for s in page.sections[:12]],
-            "content_preview": page.text[:6000] + ("..." if len(page.text) > 6000 else ""),
-        }
-
-    result = await loop.run_in_executor(None, _sync)
-    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-
-
-async def _fetch_rss_feed(args: dict) -> list[TextContent]:
-    url = args["url"]
-    max_items = min(int(args.get("max_items", 20)), 100)
-
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-        resp = await client.get(url, headers=_HEADERS)
-        resp.raise_for_status()
-        raw = resp.text
-
-    loop = asyncio.get_event_loop()
-    feed = await loop.run_in_executor(None, lambda: feedparser.parse(raw))
-
-    def _parse_date(t):
-        if t is None:
-            return None
-        try:
-            return datetime.fromtimestamp(time.mktime(t), tz=timezone.utc).isoformat()
-        except Exception:
-            return None
-
-    items = [
-        {
-            "title": e.get("title", ""),
-            "summary": e.get("summary", "")[:400],
-            "url": e.get("link", ""),
-            "published": _parse_date(e.get("published_parsed")),
-        }
-        for e in feed.entries[:max_items]
-    ]
-    result = {
-        "feed_title": feed.feed.get("title", url),
-        "feed_url": url,
-        "total_entries": len(feed.entries),
-        "returned": len(items),
-        "items": items,
-    }
-    return [TextContent(type="text", text=json.dumps(result, indent=2, default=str))]
-
-
-async def _fetch_webpage(args: dict) -> list[TextContent]:
-    url = args["url"]
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-        resp = await client.get(url, headers=_HEADERS)
-        resp.raise_for_status()
-        content = resp.text[:10_000]
-    result = {"url": url, "content_length": len(resp.text), "content": content}
-    return [TextContent(type="text", text=json.dumps(result, indent=2))]
-
-
-async def _list_sources() -> list[TextContent]:
-    sources = {
-        "server": "enterprise-rag-collector",
-        "version": "2.0.0",
-        "available_sources": [
-            {"name": "arxiv",          "tool": "search_arxiv",                 "description": "Research papers from ArXiv.org"},
-            {"name": "wikipedia",      "tool": "fetch_wikipedia",              "description": "English Wikipedia articles"},
-            {"name": "rss",            "tool": "fetch_rss_feed",               "description": "RSS/Atom news and blog feeds"},
-            {"name": "web",            "tool": "fetch_webpage",                "description": "Generic HTTP web pages"},
-            {"name": "billing",        "tool": "billing_get_overdue_invoices", "description": "QuickBooks-style invoice AR system"},
-            {"name": "psa",            "tool": "psa_get_client_tickets",       "description": "ConnectWise-style PSA service tickets"},
-            {"name": "crm",            "tool": "crm_get_client_profile",       "description": "HubSpot-style CRM client profiles"},
-            {"name": "communications", "tool": "comms_get_invoice_history",    "description": "Exchange Online email/reminder log"},
-            {"name": "contracts",      "tool": "contracts_get_terms",          "description": "SharePoint service agreement repository"},
-            {"name": "cross_source",   "tool": "get_client_360",               "description": "Multi-system 360 client view (enterprise RAG)"},
-        ],
-    }
-    return [TextContent(type="text", text=json.dumps(sources, indent=2))]
 
 
 # --- Enterprise Billing Tool Implementations ----------------------------------

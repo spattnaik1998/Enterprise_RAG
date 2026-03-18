@@ -16,6 +16,8 @@ Falls back to the original retrieval order if the LLM call fails.
 from __future__ import annotations
 
 import json
+import math
+from collections import defaultdict
 
 from langsmith import traceable
 from loguru import logger
@@ -98,11 +100,18 @@ class LLMReranker:
             logger.warning("[Reranker] Falling back to retrieval order (score mismatch)")
             return candidates[: self.rerank_top_k]
 
-        # Pair chunks with their LLM scores and sort
+        # Pair chunks with their LLM scores
         scored = [
             (chunk, float(scores[i]))
             for i, (chunk, _) in enumerate(candidates)
         ]
+
+        # Detect and demote anomalous scores (context poisoning defense)
+        anomalies = self._detect_anomalies(scored)
+        if anomalies:
+            logger.warning(f"[Reranker] {len(anomalies)} scoring anomalies detected")
+
+        # Re-sort after potential demotion
         scored.sort(key=lambda x: x[1], reverse=True)
         top = scored[: self.rerank_top_k]
 
@@ -159,3 +168,65 @@ class LLMReranker:
         except Exception as exc:
             logger.warning(f"[Reranker] Batch scoring failed: {exc}")
             return []
+
+    def _detect_anomalies(
+        self, scored: list[tuple["Chunk", float]]
+    ) -> list[dict]:
+        """
+        Detect scoring anomalies that may indicate context poisoning.
+
+        Groups chunks by source_type, computes mean/stddev per group,
+        and flags chunks with z-score > 2.0. Demotes outliers with
+        z-score > 2.5 by halving their score.
+
+        Returns list of anomaly dicts for logging.
+        """
+        if len(scored) < 3:
+            return []
+
+        # Group scores by source_type
+        groups: dict[str, list[tuple[int, float]]] = defaultdict(list)
+        for idx, (chunk, score) in enumerate(scored):
+            src = getattr(chunk, "source_type", "unknown")
+            groups[src].append((idx, score))
+
+        anomalies = []
+        all_scores = [s for _, s in scored]
+        global_mean = sum(all_scores) / len(all_scores)
+        global_var = sum((s - global_mean) ** 2 for s in all_scores) / len(all_scores)
+        global_std = math.sqrt(global_var) if global_var > 0 else 1.0
+
+        for src_type, entries in groups.items():
+            if len(entries) < 2:
+                continue
+            scores_in_group = [s for _, s in entries]
+            mean = sum(scores_in_group) / len(scores_in_group)
+            var = sum((s - mean) ** 2 for s in scores_in_group) / len(scores_in_group)
+            std = math.sqrt(var) if var > 0 else 1.0
+
+            for idx, score in entries:
+                z_score = abs(score - mean) / std if std > 0.01 else 0.0
+                global_z = abs(score - global_mean) / global_std if global_std > 0.01 else 0.0
+
+                if z_score > 2.0 or global_z > 2.0:
+                    anomaly = {
+                        "chunk_index": idx,
+                        "source_type": src_type,
+                        "score": score,
+                        "group_mean": round(mean, 2),
+                        "z_score": round(z_score, 2),
+                        "global_z": round(global_z, 2),
+                    }
+                    anomalies.append(anomaly)
+
+                    # Demote chunks with extreme z-scores
+                    if z_score > 2.5 or global_z > 2.5:
+                        old_score = scored[idx][1]
+                        chunk_ref = scored[idx][0]
+                        scored[idx] = (chunk_ref, old_score * 0.5)
+                        anomaly["demoted"] = True
+                        anomaly["new_score"] = round(old_score * 0.5, 2)
+                        logger.warning(
+                            f"[Reranker] Anomaly: {src_type} chunk #{idx} "
+                            f"score={score:.1f} z={z_score:.1f} -> demoted to {old_score * 0.5:.1f}"
+                        )

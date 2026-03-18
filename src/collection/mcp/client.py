@@ -2,17 +2,14 @@
 Enterprise RAG - MCP Collection Client
 ---------------------------------------
 Thin async client that spawns the MCP server as a subprocess and
-invokes its tools over stdio.
+invokes its enterprise MSP tools over stdio.
 
 Usage (async context manager):
     async with MCPCollectorClient() as client:
-        papers = await client.search_arxiv("retrieval augmented generation")
-        article = await client.fetch_wikipedia("FAISS")
+        # Use enterprise tools (billing, PSA, CRM, comms, contracts)
+        pass
 """
 from __future__ import annotations
-
-import json
-from pathlib import Path
 
 from loguru import logger
 from mcp import ClientSession
@@ -63,33 +60,3 @@ class MCPCollectorClient:
         if self._stdio_ctx:
             await self._stdio_ctx.__aexit__(None, None, None)
 
-    # --- Tool Wrappers --------------------------------------------------------
-
-    async def search_arxiv(self, query: str, max_results: int = 10) -> list[dict]:
-        """Search ArXiv and return a list of paper dicts."""
-        result = await self._session.call_tool(
-            "search_arxiv", {"query": query, "max_results": max_results}
-        )
-        return json.loads(result.content[0].text)
-
-    async def fetch_wikipedia(self, topic: str) -> dict:
-        """Fetch a Wikipedia article and return its content dict."""
-        result = await self._session.call_tool("fetch_wikipedia", {"topic": topic})
-        return json.loads(result.content[0].text)
-
-    async def fetch_rss_feed(self, url: str, max_items: int = 20) -> dict:
-        """Fetch and parse an RSS/Atom feed."""
-        result = await self._session.call_tool(
-            "fetch_rss_feed", {"url": url, "max_items": max_items}
-        )
-        return json.loads(result.content[0].text)
-
-    async def fetch_webpage(self, url: str) -> dict:
-        """Fetch raw text from a webpage."""
-        result = await self._session.call_tool("fetch_webpage", {"url": url})
-        return json.loads(result.content[0].text)
-
-    async def list_sources(self) -> dict:
-        """List all sources the server can collect from."""
-        result = await self._session.call_tool("list_available_sources", {})
-        return json.loads(result.content[0].text)

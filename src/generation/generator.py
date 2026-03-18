@@ -140,12 +140,15 @@ class RAGGenerator:
         self,
         query: str,
         reranked_chunks: list[tuple[Chunk, float]],
+        session_history: str = "",
     ) -> RAGResponse:
         if not reranked_chunks:
             return RAGResponse(answer=NO_CONTEXT_RESPONSE, citations=[], model=self.model)
 
         context, citations = _build_context(reranked_chunks, self.max_context_chunks)
         system_message = SYSTEM_PROMPT.format(context=context)
+        if session_history:
+            system_message = session_history + "\n" + system_message
 
         logger.debug(
             f"[OpenAIGenerator] {self.model} | {len(citations)} chunks | "
@@ -215,12 +218,15 @@ class AnthropicGenerator:
         self,
         query: str,
         reranked_chunks: list[tuple[Chunk, float]],
+        session_history: str = "",
     ) -> RAGResponse:
         if not reranked_chunks:
             return RAGResponse(answer=NO_CONTEXT_RESPONSE, citations=[], model=self.model)
 
         context, citations = _build_context(reranked_chunks, self.max_context_chunks)
         system_message = SYSTEM_PROMPT.format(context=context)
+        if session_history:
+            system_message = session_history + "\n" + system_message
 
         logger.debug(
             f"[AnthropicGenerator] {self.model} | {len(citations)} chunks | "

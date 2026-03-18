@@ -17,11 +17,15 @@ Two protection layers applied around every RAG query:
 """
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import numpy as np
 from loguru import logger
+
+from src.retrieval.homoglyph import normalize_homoglyphs
 
 
 # ---------------------------------------------------------------------------
@@ -90,6 +94,46 @@ def _load_supplemental_patterns() -> list[re.Pattern[str]]:
 
 
 # ---------------------------------------------------------------------------
+# Semantic Injection Library (embedding-based detection)
+# ---------------------------------------------------------------------------
+
+_INJECTION_EMBEDDINGS: np.ndarray | None = None
+_INJECTION_TEMPLATES: list[str] = []
+_SEMANTIC_LOADED = False
+
+
+def _load_injection_embeddings() -> tuple[np.ndarray | None, list[str]]:
+    """Load and embed injection templates for semantic similarity detection."""
+    global _INJECTION_EMBEDDINGS, _INJECTION_TEMPLATES, _SEMANTIC_LOADED
+    if _SEMANTIC_LOADED:
+        return _INJECTION_EMBEDDINGS, _INJECTION_TEMPLATES
+
+    _SEMANTIC_LOADED = True
+    lib_path = Path("config/injection_embeddings.json")
+    if not lib_path.exists():
+        logger.debug("[PromptGuard] No injection_embeddings.json found; semantic check disabled")
+        return None, []
+
+    try:
+        with open(lib_path, encoding="utf-8") as f:
+            data = json.load(f)
+        templates = data.get("templates", [])
+        if not templates:
+            return None, []
+
+        from src.embedding.embedder import Embedder
+        embedder = Embedder()
+        embeddings = embedder.embed_texts(templates)
+        _INJECTION_EMBEDDINGS = embeddings
+        _INJECTION_TEMPLATES = templates
+        logger.info(f"[PromptGuard] Loaded {len(templates)} semantic injection templates")
+        return _INJECTION_EMBEDDINGS, _INJECTION_TEMPLATES
+    except Exception as exc:
+        logger.warning(f"[PromptGuard] Failed to load injection embeddings: {exc}")
+        return None, []
+
+
+# ---------------------------------------------------------------------------
 # PII Redaction Patterns  (label, compiled pattern)
 # ---------------------------------------------------------------------------
 
@@ -149,30 +193,72 @@ class PromptGuard:
         Return GuardrailResult.passed=True if the query is safe,
         False if an injection pattern is detected.
 
-        Checks both the hardcoded baseline patterns and supplemental
-        patterns loaded from config/injection_patterns.yaml.
+        Detection pipeline:
+          1. Normalize homoglyphs (Cyrillic/Greek/math spoofing)
+          2. Regex pattern matching (baseline + supplemental)
+          3. Semantic similarity check (embedding cosine distance)
         """
         flags: list[str] = []
+
+        # Step 1: Normalize homoglyphs before regex check
+        normalized = normalize_homoglyphs(query)
+
+        # Step 2: Regex patterns (on normalized text)
         all_patterns = _INJECTION_PATTERNS + _load_supplemental_patterns()
         for pattern in all_patterns:
-            if pattern.search(query):
+            if pattern.search(normalized):
                 flags.append(pattern.pattern)
 
         if flags:
             logger.warning(
-                f"[PromptGuard] Injection detected | query={query[:80]!r} | "
+                f"[PromptGuard] Injection detected (regex) | query={query[:80]!r} | "
                 f"patterns={len(flags)}"
             )
             return GuardrailResult(
                 passed=False,
                 blocked_reason=(
                     "Your query contains patterns that look like prompt injection. "
-                    "Please rephrase your question about Red Key Sandbox operations or AI/ML research."
+                    "Please rephrase your question about Red Key Sandbox operations."
                 ),
                 flags=flags,
             )
 
+        # Step 3: Semantic similarity check
+        semantic_score = self._check_semantic(normalized)
+        if semantic_score > 0.82:
+            logger.warning(
+                f"[PromptGuard] Injection detected (semantic) | "
+                f"query={query[:80]!r} | score={semantic_score:.3f}"
+            )
+            return GuardrailResult(
+                passed=False,
+                blocked_reason=(
+                    "Your query is semantically similar to known injection patterns. "
+                    "Please rephrase your question about Red Key Sandbox operations."
+                ),
+                flags=[f"semantic_similarity={semantic_score:.3f}"],
+            )
+
         return GuardrailResult(passed=True)
+
+    def _check_semantic(self, query: str) -> float:
+        """
+        Compute max cosine similarity between the query and the injection
+        template library. Returns 0.0 if the library is not loaded.
+        """
+        embeddings, templates = _load_injection_embeddings()
+        if embeddings is None or len(templates) == 0:
+            return 0.0
+        try:
+            from src.embedding.embedder import Embedder
+            embedder = Embedder()
+            query_vec = embedder.embed_query(query)
+            # Cosine similarity (vectors are L2-normalized)
+            similarities = embeddings @ query_vec
+            return float(np.max(similarities))
+        except Exception as exc:
+            logger.warning(f"[PromptGuard] Semantic check failed: {exc}")
+            return 0.0
 
 
 # ---------------------------------------------------------------------------

@@ -11,7 +11,7 @@ without touching generation logic.
 
 SYSTEM_PROMPT = """\
 You are Red Key Sandbox's Enterprise AI Assistant -- an expert on Red Key Sandbox MSP's \
-operations, clients, billing, service delivery, contracts, and AI/ML research.
+operations, clients, billing, service delivery, and contracts.
 
 You answer questions by synthesising ONLY the retrieved context provided below. \
 You are accurate, concise, and always cite every factual claim with its source number.
@@ -35,6 +35,14 @@ RETRIEVED CONTEXT:
 CITATION_TEMPLATE = "[{index}] {title} | {source} | chunk {chunk_index}"
 
 # ---------------------------------------------------------------------------
+# Session history template (injected before retrieved context)
+# ---------------------------------------------------------------------------
+
+SESSION_HISTORY_TEMPLATE = """\
+{session_history}
+"""
+
+# ---------------------------------------------------------------------------
 # Fallback when no context is retrieved
 # ---------------------------------------------------------------------------
 
@@ -45,6 +53,5 @@ NO_CONTEXT_RESPONSE = (
     "- Billing & accounts receivable (overdue invoices, client statements)\n"
     "- Service tickets and PSA work logs (ConnectWise)\n"
     "- Client profiles and account health (HubSpot CRM)\n"
-    "- Contract terms and SLA details (SharePoint)\n"
-    "- AI/ML research (RAG, vector databases, LLMs, prompt injection)"
+    "- Contract terms and SLA details (SharePoint)"
 )

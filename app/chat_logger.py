@@ -76,6 +76,7 @@ def log_interaction(
         "session_id":             session_id or "anonymous",
         "query":                  query,
         "answer_length":          len(answer),
+        "answer_preview":         answer[:300] if answer else "",
         "provider":               provider,
         "model":                  model,
         "blocked":                blocked,
@@ -125,6 +126,37 @@ def load_logs(limit: int = 50, offset: int = 0) -> list[dict]:
     except Exception as exc:
         logger.warning(f"[ChatLogger] load_logs failed: {exc}")
         return []
+
+
+# ---------------------------------------------------------------------------
+# Feedback — update user rating on an existing log entry
+# ---------------------------------------------------------------------------
+
+def update_feedback(log_id: str, rating: int, feedback: str = "") -> bool:
+    """
+    Update user rating and feedback on an existing chat log entry.
+
+    Args:
+        log_id:   The id (primary key) of the chat_logs row.
+        rating:   1-5 star rating.
+        feedback: Optional free-form text comment.
+
+    Returns:
+        True if the update succeeded, False otherwise.
+    """
+    if rating < 1 or rating > 5:
+        logger.warning(f"[ChatLogger] Invalid rating {rating} (must be 1-5)")
+        return False
+    try:
+        updates = {"user_rating": rating}
+        if feedback:
+            updates["user_feedback"] = feedback[:1000]  # cap at 1000 chars
+        _client().table("chat_logs").update(updates).eq("id", log_id).execute()
+        logger.info(f"[ChatLogger] Feedback updated: log_id={log_id} rating={rating}")
+        return True
+    except Exception as exc:
+        logger.warning(f"[ChatLogger] update_feedback failed: {exc}")
+        return False
 
 
 # ---------------------------------------------------------------------------

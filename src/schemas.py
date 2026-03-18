@@ -18,12 +18,6 @@ from pydantic import BaseModel, Field, computed_field
 # --- Enumerations ------------------------------------------------------------
 
 class SourceType(str, Enum):
-    ARXIV = "arxiv"
-    WIKIPEDIA = "wikipedia"
-    RSS = "rss"
-    LOCAL = "local"
-    WEB = "web"
-    MCP = "mcp"
     # Enterprise MSP source systems
     BILLING = "billing"          # QuickBooks-style invoice/AR system
     PSA = "psa"                  # ConnectWise-style professional services automation

@@ -5,7 +5,6 @@ Orchestrates all configured collectors, aggregates RawDocuments,
 and persists them to disk for the validation stage.
 
 Collectors registered:
-  Research  : ArXiv, Wikipedia, RSS
   Enterprise: Billing (QuickBooks), PSA (ConnectWise), CRM (HubSpot),
               Communications (Exchange), Contracts (SharePoint)
 """
@@ -19,14 +18,11 @@ from loguru import logger
 from rich.console import Console
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, SpinnerColumn, TextColumn
 
-from src.collection.arxiv_collector import ArXivCollector
 from src.collection.billing_collector import BillingCollector
 from src.collection.comms_collector import CommsCollector
 from src.collection.contracts_collector import ContractsCollector
 from src.collection.crm_collector import CRMCollector
 from src.collection.psa_collector import PSACollector
-from src.collection.rss_collector import RSSCollector
-from src.collection.wikipedia_collector import WikipediaCollector
 from src.schemas import CollectionStats, RawDocument
 from src.utils.helpers import ensure_dirs, save_json
 
@@ -51,19 +47,6 @@ class CollectionPipeline:
 
         self.collectors: list = []
         col_cfg = config.get("collection", {})
-
-        # --- Research sources ------------------------------------------------
-        if col_cfg.get("arxiv", {}).get("enabled", False):
-            self.collectors.append(ArXivCollector(col_cfg["arxiv"]))
-            logger.debug("ArXivCollector enabled")
-
-        if col_cfg.get("wikipedia", {}).get("enabled", False):
-            self.collectors.append(WikipediaCollector(col_cfg["wikipedia"]))
-            logger.debug("WikipediaCollector enabled")
-
-        if col_cfg.get("rss", {}).get("enabled", False):
-            self.collectors.append(RSSCollector(col_cfg["rss"]))
-            logger.debug("RSSCollector enabled")
 
         # --- Enterprise sources ----------------------------------------------
         if col_cfg.get("billing", {}).get("enabled", False):

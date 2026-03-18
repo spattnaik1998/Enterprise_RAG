@@ -34,11 +34,6 @@ _TIER_MAP: dict[str, TierType] = {
     # Ephemeral tier — query-relevant but not urgent
     "crm":       "ephemeral",
     "contracts": "ephemeral",
-
-    # Longterm tier — background knowledge
-    "arxiv":     "longterm",
-    "wikipedia": "longterm",
-    "rss":       "longterm",
 }
 
 _TIER_PRIORITY: dict[TierType, int] = {
