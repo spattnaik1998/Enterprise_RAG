@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 from loguru import logger
 
@@ -44,8 +44,10 @@ class PSACollector(BaseCollector):
             logger.warning(f"[PSA] Data file not found: {self.data_file}")
         return ok
 
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: Optional[str] = None) -> AsyncIterator[RawDocument]:
         logger.info(f"[PSA] Loading tickets from {self.data_file}")
+        if delta_since:
+            logger.info(f"[PSA] Delta mode: collecting since {delta_since}")
         try:
             raw = json.loads(self.data_file.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -56,6 +58,12 @@ class PSACollector(BaseCollector):
         logger.info(f"[PSA] Processing {len(tickets)} ticket records")
 
         for ticket in tickets:
+            # Delta filtering: skip if created_date is before delta_since
+            if delta_since:
+                created_date_str = ticket.get("created_date", "")
+                if created_date_str < delta_since:
+                    continue
+
             try:
                 yield self._to_document(ticket)
             except Exception as exc:

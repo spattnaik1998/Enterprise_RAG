@@ -1326,3 +1326,143 @@ async def execute_skill(
     except Exception as e:
         logger.error(f"[API] Execute skill error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Approval Requests API
+# ---------------------------------------------------------------------------
+
+
+class ApprovalRequest(BaseModel):
+    """Approval request."""
+    id: Optional[str] = None
+    action: str
+    username: str
+    justification: str
+    status: str
+    approver: Optional[str] = None
+    created_at: str
+    resolved_at: Optional[str] = None
+
+
+@app.get("/api/approvals", response_model=list[ApprovalRequest])
+@limiter.limit("30/minute")
+async def list_approval_requests(
+    request: Request,
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+    _user: dict = Depends(require_msp),
+):
+    """
+    List pending approval requests (admin only).
+
+    Query parameters:
+      - limit: Max results (1-500, default 50)
+      - offset: Pagination offset (default 0)
+
+    Returns:
+        List of pending approval requests
+    """
+    # Check if user is admin
+    if _user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        from src.security.approval_queue import ApprovalQueue
+
+        approval_queue = ApprovalQueue()
+        requests = await approval_queue.list_pending(limit=limit, offset=offset)
+
+        logger.info(f"[API] Listed {len(requests)} pending approvals | role={_user.get('role')}")
+
+        return [ApprovalRequest(**req) for req in requests]
+
+    except Exception as e:
+        logger.error(f"[API] List approvals error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/approvals/{request_id}/approve", response_model=dict)
+@limiter.limit("30/minute")
+async def approve_request(
+    request_id: str,
+    request: Request,
+    _user: dict = Depends(require_msp),
+):
+    """
+    Approve a pending request (admin only).
+
+    Path parameters:
+      - request_id: ID of the approval request
+
+    Returns:
+        {success: bool, message: str}
+    """
+    # Check if user is admin
+    if _user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        from src.security.approval_queue import ApprovalQueue
+
+        approval_queue = ApprovalQueue()
+        success = await approval_queue.approve(request_id, approver=_user.get("username", "unknown"))
+
+        if success:
+            logger.info(f"[API] Approved request {request_id} | approver={_user.get('username')}")
+            return {"success": True, "message": "Request approved"}
+        else:
+            raise HTTPException(status_code=404, detail=f"Request {request_id} not found")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API] Approve request error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/approvals/{request_id}/reject", response_model=dict)
+@limiter.limit("30/minute")
+async def reject_request(
+    request_id: str,
+    reason: str = Query("", description="Reason for rejection"),
+    request: Request = ...,
+    _user: dict = Depends(require_msp),
+):
+    """
+    Reject a pending request (admin only).
+
+    Path parameters:
+      - request_id: ID of the approval request
+
+    Query parameters:
+      - reason: Reason for rejection (optional)
+
+    Returns:
+        {success: bool, message: str}
+    """
+    # Check if user is admin
+    if _user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    try:
+        from src.security.approval_queue import ApprovalQueue
+
+        approval_queue = ApprovalQueue()
+        success = await approval_queue.reject(
+            request_id,
+            approver=_user.get("username", "unknown"),
+            reason=reason,
+        )
+
+        if success:
+            logger.info(f"[API] Rejected request {request_id} | approver={_user.get('username')}")
+            return {"success": True, "message": "Request rejected"}
+        else:
+            raise HTTPException(status_code=404, detail=f"Request {request_id} not found")
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[API] Reject request error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

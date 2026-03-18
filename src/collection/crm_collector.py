@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 from loguru import logger
 
@@ -41,8 +41,10 @@ class CRMCollector(BaseCollector):
             logger.warning(f"[CRM] Data file not found: {self.data_file}")
         return ok
 
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: Optional[str] = None) -> AsyncIterator[RawDocument]:
         logger.info(f"[CRM] Loading profiles from {self.data_file}")
+        if delta_since:
+            logger.info("[CRM] Delta mode (note: CRM has no date field, collecting all profiles)")
         try:
             raw = json.loads(self.data_file.read_text(encoding="utf-8"))
         except Exception as exc:

@@ -73,6 +73,9 @@ def phase1(
     skip_health: bool = typer.Option(
         False, "--skip-health", help="Skip source health checks"
     ),
+    delta: bool = typer.Option(
+        False, "--delta", help="Incremental collection: only collect new documents since last run"
+    ),
 ) -> None:
     """
     Phase I: Collect data from all sources and run validation.
@@ -80,12 +83,14 @@ def phase1(
     \b
     Steps:
       1. Source health checks
-      2. Data collection  (ArXiv - Wikipedia - RSS)
-      3. Document validation  (7 quality checks)
+      2. Data collection (enterprise sources only)
+      3. Document validation (7 quality checks)
       4. Validation report generation
       5. Human checkpoint - pipeline pauses here
+
+    Use --delta flag for incremental collection (only new documents since last checkpoint).
     """
-    asyncio.run(_phase1_async(config, dry_run, skip_health))
+    asyncio.run(_phase1_async(config, dry_run, skip_health, delta))
 
 
 @app.command()
@@ -325,7 +330,9 @@ def status() -> None:
 
 # --- Async Phase I ------------------------------------------------------------
 
-async def _phase1_async(config_path: str, dry_run: bool, skip_health: bool) -> None:
+async def _phase1_async(config_path: str, dry_run: bool, skip_health: bool, delta: bool = False) -> None:
+    from src.collection.delta_tracker import DeltaTracker
+
     cfg = _load_config(config_path)
 
     log_cfg = cfg.get("logging", {})
@@ -341,6 +348,8 @@ async def _phase1_async(config_path: str, dry_run: bool, skip_health: bool) -> N
     logger.info(f"Project : {project.get('name', 'Enterprise RAG')}")
     logger.info(f"Phase   : I - Collection & Validation")
     logger.info(f"Started : {datetime.utcnow().isoformat()}")
+    if delta:
+        logger.info("Mode    : Delta (incremental collection)")
     logger.info("=" * 60)
 
     if dry_run:
@@ -350,7 +359,8 @@ async def _phase1_async(config_path: str, dry_run: bool, skip_health: bool) -> N
         )
         return
 
-    pipeline = CollectionPipeline(cfg)
+    delta_tracker = DeltaTracker()
+    pipeline = CollectionPipeline(cfg, delta_tracker=delta_tracker)
     validator = DocumentValidator(cfg.get("validation", {}))
     reporter = ValidationReportGenerator(output_dir="data")
     checkpoint = PhaseICheckpoint(cfg)
@@ -367,10 +377,17 @@ async def _phase1_async(config_path: str, dry_run: bool, skip_health: bool) -> N
 
     # -- Step 2: Collect -------------------------------------------------------
     console.print("\n[bold cyan]Step 2 / 4 - Collecting data from sources[/bold cyan]")
-    raw_docs = await pipeline.collect_all()
+    raw_docs = await pipeline.collect_all(delta_mode=delta)
     stats.total_collected = len(raw_docs)
     stats.by_source = pipeline.stats.by_source
     console.print(f"[green][OK] {len(raw_docs)} raw documents collected[/green]")
+
+    # Update delta checkpoints after successful collection
+    if delta and raw_docs:
+        for source_key, count in pipeline.stats.by_source.items():
+            if count > 0:
+                delta_tracker.set_checkpoint(source_key)
+                logger.info(f"[Delta] Updated checkpoint for {source_key}")
 
     # -- Step 3: Validate ------------------------------------------------------
     console.print("\n[bold cyan]Step 3 / 4 - Running validation checks[/bold cyan]")

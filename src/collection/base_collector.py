@@ -23,9 +23,10 @@ class BaseCollector(ABC):
         self.config = config
         self.collected_count: int = 0
         self.error_count: int = 0
+        self._delta_since: str | None = None  # Set by pipeline in delta mode
 
     @abstractmethod
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: str | None = None) -> AsyncIterator[RawDocument]:
         """Yield RawDocument instances from the source."""
         ...
 
@@ -37,7 +38,7 @@ class BaseCollector(ABC):
     async def safe_collect(self) -> AsyncIterator[RawDocument]:
         """collect() wrapped with per-document error isolation."""
         try:
-            async for doc in self.collect():
+            async for doc in self.collect(delta_since=self._delta_since):
                 self.collected_count += 1
                 yield doc
         except Exception as exc:

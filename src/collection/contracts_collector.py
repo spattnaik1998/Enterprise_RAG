@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 from loguru import logger
 
@@ -41,8 +41,10 @@ class ContractsCollector(BaseCollector):
             logger.warning(f"[Contracts] Data file not found: {self.data_file}")
         return ok
 
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: Optional[str] = None) -> AsyncIterator[RawDocument]:
         logger.info(f"[Contracts] Loading contracts from {self.data_file}")
+        if delta_since:
+            logger.info(f"[Contracts] Delta mode: collecting since {delta_since}")
         try:
             raw = json.loads(self.data_file.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -53,6 +55,12 @@ class ContractsCollector(BaseCollector):
         logger.info(f"[Contracts] Processing {len(contracts)} contract records")
 
         for contract in contracts:
+            # Delta filtering: skip if effective_date is before delta_since
+            if delta_since:
+                effective_date_str = contract.get("effective_date", "")
+                if effective_date_str < delta_since:
+                    continue
+
             try:
                 yield self._to_document(contract)
             except Exception as exc:

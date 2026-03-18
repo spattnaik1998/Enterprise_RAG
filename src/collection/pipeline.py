@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from loguru import logger
 from rich.console import Console
@@ -22,6 +23,7 @@ from src.collection.billing_collector import BillingCollector
 from src.collection.comms_collector import CommsCollector
 from src.collection.contracts_collector import ContractsCollector
 from src.collection.crm_collector import CRMCollector
+from src.collection.delta_tracker import DeltaTracker
 from src.collection.psa_collector import PSACollector
 from src.schemas import CollectionStats, RawDocument
 from src.utils.helpers import ensure_dirs, save_json
@@ -39,11 +41,12 @@ class CollectionPipeline:
         3. _save_raw()      - persist to data/raw/ + write manifest
     """
 
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: dict, delta_tracker: Optional[DeltaTracker] = None) -> None:
         self.config = config
         self.raw_dir = Path(config.get("storage", {}).get("raw_dir", "data/raw"))
         self.stats = CollectionStats()
         self.documents: list[RawDocument] = []
+        self.delta_tracker = delta_tracker or DeltaTracker()
 
         self.collectors: list = []
         col_cfg = config.get("collection", {})
@@ -86,14 +89,19 @@ class CollectionPipeline:
 
         return results
 
-    async def collect_all(self) -> list[RawDocument]:
+    async def collect_all(self, delta_mode: bool = False) -> list[RawDocument]:
         """
         Run every enabled collector sequentially, aggregate all documents,
         de-duplicate by checksum, then persist to disk.
+
+        Args:
+            delta_mode: If True, use delta collection (only new documents since last checkpoint)
         """
         ensure_dirs(self.raw_dir)
         self.stats.started_at = datetime.utcnow()
         logger.info(f"Starting collection with {len(self.collectors)} collector(s)...")
+        if delta_mode:
+            logger.info("[Collection] Delta mode enabled - collecting only new documents")
 
         with Progress(
             SpinnerColumn(),
@@ -107,6 +115,17 @@ class CollectionPipeline:
                 name = collector.__class__.__name__
                 task_id = progress.add_task(f"[cyan]{name}[/cyan]", total=None)
                 batch: list[RawDocument] = []
+
+                # Get delta_since from tracker if in delta mode
+                delta_since = None
+                if delta_mode:
+                    source_key = collector.source_type.value
+                    delta_since = self.delta_tracker.get_checkpoint(source_key)
+                    if delta_since:
+                        logger.info(f"[{name}] Collecting since {delta_since}")
+
+                # Store delta_since on collector for safe_collect to use
+                collector._delta_since = delta_since
 
                 async for doc in collector.safe_collect():
                     batch.append(doc)

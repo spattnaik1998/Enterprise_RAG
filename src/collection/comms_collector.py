@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 from loguru import logger
 
@@ -45,8 +45,10 @@ class CommsCollector(BaseCollector):
             logger.warning(f"[Comms] Data file not found: {self.data_file}")
         return ok
 
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: Optional[str] = None) -> AsyncIterator[RawDocument]:
         logger.info(f"[Comms] Loading communications from {self.data_file}")
+        if delta_since:
+            logger.info(f"[Comms] Delta mode: collecting since {delta_since}")
         try:
             raw = json.loads(self.data_file.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -57,6 +59,12 @@ class CommsCollector(BaseCollector):
         logger.info(f"[Comms] Processing {len(records)} communication records")
 
         for record in records:
+            # Delta filtering: skip if sent_date is before delta_since
+            if delta_since:
+                sent_date_str = record.get("sent_date", "")
+                if sent_date_str < delta_since:
+                    continue
+
             try:
                 yield self._to_document(record)
             except Exception as exc:

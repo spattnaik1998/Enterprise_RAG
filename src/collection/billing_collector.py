@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import AsyncIterator
+from typing import AsyncIterator, Optional
 
 from loguru import logger
 
@@ -44,8 +44,10 @@ class BillingCollector(BaseCollector):
             logger.warning(f"[Billing] Data file not found: {self.data_file}")
         return ok
 
-    async def collect(self) -> AsyncIterator[RawDocument]:
+    async def collect(self, delta_since: Optional[str] = None) -> AsyncIterator[RawDocument]:
         logger.info(f"[Billing] Loading invoices from {self.data_file}")
+        if delta_since:
+            logger.info(f"[Billing] Delta mode: collecting since {delta_since}")
         try:
             raw = json.loads(self.data_file.read_text(encoding="utf-8"))
         except Exception as exc:
@@ -56,6 +58,12 @@ class BillingCollector(BaseCollector):
         logger.info(f"[Billing] Processing {len(invoices)} invoice records")
 
         for inv in invoices:
+            # Delta filtering: skip if invoice_date is before delta_since
+            if delta_since:
+                invoice_date_str = inv.get("invoice_date", "")
+                if invoice_date_str < delta_since:
+                    continue
+
             try:
                 yield self._to_document(inv)
             except Exception as exc:

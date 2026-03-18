@@ -26,6 +26,7 @@ from loguru import logger
 
 from src.security.abac import ABACContext
 from src.security.audit_logger import AuditEntry, AuditLogger
+from src.security.approval_queue import ApprovalQueue
 from src.security.policy_engine import PolicyEngine
 from src.retrieval.guardrails import PromptGuard
 
@@ -63,10 +64,12 @@ class AgentSecurityGateway:
         self,
         policy_file: str | Path = "config/policies.yaml",
         audit_log: str | Path = "data/audit/audit.jsonl",
+        approval_queue: ApprovalQueue | None = None,
     ) -> None:
         self.guard  = PromptGuard()
         self.policy = PolicyEngine(policy_file)
         self.audit  = AuditLogger(audit_log)
+        self.approval_queue = approval_queue or ApprovalQueue()
         logger.info(
             f"[ASG] Initialised | "
             f"policies={self.policy.policy_count} "
@@ -132,6 +135,23 @@ class AgentSecurityGateway:
                 pii_redacted=[],
                 blocked=True,
                 blocked_reason=reason,
+            )
+
+        # 2b. Check if justification required (step-up auth)
+        if decision.justification_required:
+            logger.info(
+                f"[ASG] Justification required for action={action} | "
+                f"user={ctx.username} | "
+                f"classification={ctx.data_classification}"
+            )
+            return QueryResult(
+                query=query,
+                answer="This action requires administrator approval. "
+                       "Please provide a business justification and request approval.",
+                citations=[],
+                pii_redacted=[],
+                blocked=True,
+                blocked_reason="pending_approval",
             )
 
         # 3. Execute pipeline
