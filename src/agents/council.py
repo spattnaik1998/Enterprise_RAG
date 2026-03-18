@@ -113,6 +113,8 @@ class CouncilOrchestrator:
                     query=query,
                     chunks=candidate_chunks,
                     fast_path=False,
+                    budget_tokens=budget_tokens,
+                    scores=candidate_scores,
                 ),
             )
         except Exception as exc:

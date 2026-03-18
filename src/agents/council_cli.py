@@ -8,7 +8,9 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import sys
+import time
 
 import typer
 from loguru import logger
@@ -61,10 +63,44 @@ async def _run_query(query: str) -> None:
         pipeline = RAGPipeline()
 
     from src.agents.council import CouncilOrchestrator
+    from src.observability.collector import TraceCollector
+    from src.observability.schemas import TraceEvent
+
     council = CouncilOrchestrator(pipeline)
 
+    # Set up observability tracking
+    session_id = f"cli_{int(time.time() * 1000)}"
+
     with console.status(f"[yellow]Running council for: {query[:60]!r}...[/yellow]"):
-        verdict = await council.run(query)
+        # Wrap council execution with TraceCollector for observability
+        with TraceCollector(
+            session_id=session_id,
+            query=query,
+            model="council-3-agent",
+            user_role="msp",
+        ) as tc:
+            verdict = await council.run(query, session_id=session_id)
+
+            # Record council verdict as a trace event
+            tc.add_event(TraceEvent(
+                event_type="council_verdict",
+                payload={
+                    "winning_agent": verdict.winning_agent,
+                    "escalated": verdict.escalated,
+                    "hallucination_detected": verdict.hallucination_detected,
+                    "pii_concern": verdict.pii_concern,
+                    "policy_reasons": verdict.policy_reasons[:3] if verdict.policy_reasons else [],
+                },
+                cost_usd=verdict.total_cost_usd,
+            ))
+
+            # Set final verdict based on council outcome
+            if verdict.escalated:
+                tc.set_verdict("escalated")
+            elif verdict.hallucination_detected:
+                tc.set_verdict("pii_redacted")
+            else:
+                tc.set_verdict("success")
 
     _print_verdict(verdict)
 

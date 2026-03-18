@@ -22,6 +22,9 @@ Usage:
     # Domain-specialist judges (Architecture C) for better calibration
     python -m eval.run_eval --specialist-judges
 
+    # Compare baseline vs DSPy compiled program
+    python -m eval.run_eval --models gpt-4o-mini --dspy dspy_module/compiled/rag_latest.json
+
 Exit codes:
     0  All tested models pass all production thresholds (PRODUCTION READY)
     1  One or more models fail at least one threshold (NOT READY)
@@ -97,6 +100,114 @@ def _resolve_categories(categories: list[str]) -> list[str]:
             )
             raise typer.Exit(code=2)
     return categories
+
+
+def _run_dspy_comparison(
+    dspy_program: str,
+    evaluator,
+    categories: list[str],
+    console: Console,
+) -> None:
+    """
+    Run DSPy compiled program on a sample of eval queries and compare metrics.
+
+    Args:
+        dspy_program: Path to compiled JSON
+        evaluator: RAGEvaluator instance
+        categories: Categories to sample from
+        console: Rich console for output
+    """
+    try:
+        import dspy
+        from dspy_module.dataset import MSPDataset
+        from dspy_module.metrics import keyword_recall_metric, source_type_metric
+        from pathlib import Path
+
+        # Load compiled program
+        program_path = Path(dspy_program)
+        if not program_path.exists():
+            console.print(f"[red]DSPy program not found: {dspy_program}[/red]")
+            return
+
+        compiled = dspy.Module.load(str(program_path))
+        console.print(f"[green]✓[/green] Loaded DSPy program from {dspy_program}")
+
+        # Load dataset
+        dataset = MSPDataset()
+
+        # Filter to selected categories
+        sample_examples = [
+            e for e in dataset.dev
+            if e.category in categories
+        ][:10]  # First 10 from dev set
+
+        if not sample_examples:
+            console.print("[yellow]No examples to compare[/yellow]")
+            return
+
+        # Run both pipelines on sample
+        from rich.table import Table
+        comparison_table = Table(title="DSPy vs Baseline Comparison (Sample)")
+        comparison_table.add_column("Category", style="cyan")
+        comparison_table.add_column("Query ID", style="cyan")
+        comparison_table.add_column("Baseline Recall", style="magenta")
+        comparison_table.add_column("DSPy Recall", style="green")
+        comparison_table.add_column("Improvement", style="yellow")
+
+        baseline_total = 0.0
+        dspy_total = 0.0
+
+        for example in sample_examples:
+            try:
+                # Baseline result (from evaluator's cached pipeline)
+                baseline_result = evaluator._pipeline.query(example.query)
+                baseline_pred = type("Pred", (), {
+                    "answer": baseline_result.answer,
+                    "citations": baseline_result.citations,
+                })()
+                baseline_score = keyword_recall_metric(example, baseline_pred)
+
+                # DSPy result
+                dspy_pred = compiled.forward(query=example.query)
+                dspy_score = keyword_recall_metric(example, dspy_pred)
+
+                # Calculate improvement
+                improvement = dspy_score - baseline_score
+                improvement_str = f"+{improvement:+.3f}"
+
+                comparison_table.add_row(
+                    example.category,
+                    example.query_id,
+                    f"{baseline_score:.3f}",
+                    f"{dspy_score:.3f}",
+                    improvement_str if improvement != 0 else "—",
+                )
+
+                baseline_total += baseline_score
+                dspy_total += dspy_score
+
+            except Exception as e:
+                console.print(f"[yellow]Warning: comparison failed for {example.query_id}: {e}[/yellow]")
+
+        console.print(comparison_table)
+
+        # Summary stats
+        if sample_examples:
+            baseline_avg = baseline_total / len(sample_examples)
+            dspy_avg = dspy_total / len(sample_examples)
+            improvement_pct = ((dspy_avg - baseline_avg) / (baseline_avg + 0.001)) * 100
+
+            console.print(
+                f"\n[cyan]Sample Results:[/cyan] "
+                f"Baseline avg: {baseline_avg:.3f}, "
+                f"DSPy avg: {dspy_avg:.3f}, "
+                f"Improvement: {improvement_pct:+.1f}%"
+            )
+
+    except ImportError:
+        console.print("[yellow]DSPy not installed. Skipping comparison.[/yellow]")
+    except Exception as e:
+        console.print(f"[red]DSPy comparison error:[/red] {e}")
 
 
 @app.command()
@@ -181,6 +292,11 @@ def main(
         False,
         "--specialist-judges",
         help="Use domain-specialist judges instead of generic judge (Architecture C).",
+    ),
+    dspy_program: Optional[str] = typer.Option(
+        None,
+        "--dspy",
+        help="Path to compiled DSPy program JSON for side-by-side comparison.",
     ),
 ) -> None:
     """Run the RAG evaluation suite and print a production readiness report."""
@@ -299,6 +415,14 @@ def main(
         evaluator.print_report(report)
     else:
         orchestrator.print_report(report)
+
+    # DSPy comparison (if specified)
+    if dspy_program:
+        console.print("\n[cyan]Running DSPy program comparison...[/cyan]")
+        try:
+            _run_dspy_comparison(dspy_program, evaluator, resolved_categories, console)
+        except Exception as e:
+            console.print(f"[yellow]Warning: DSPy comparison failed: {e}[/yellow]")
 
     # Print overall verdict
     if hasattr(report, 'model_metrics'):

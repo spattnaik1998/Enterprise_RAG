@@ -1005,27 +1005,58 @@ async def council_query(request: CouncilRequest, _user: dict = Depends(require_m
     logger.info(f"[API] Council | role={request.user_role} | query={message[:80]!r}")
 
     from src.agents.council import CouncilOrchestrator
+    from src.observability.collector import TraceCollector
+    from src.observability.schemas import TraceEvent
 
     council = CouncilOrchestrator(_pipeline)
     session_id = request.session_id or f"council_{int(time.time() * 1000)}"
 
-    try:
-        t0 = time.perf_counter()
-        verdict = await council.run(
-            query=message,
-            budget_tokens=request.budget_tokens,
-            session_id=session_id,
-        )
-        latency_ms = (time.perf_counter() - t0) * 1000
+    # Wrap with TraceCollector for observability
+    with TraceCollector(
+        session_id=session_id,
+        query=message,
+        model="council-3-agent",
+        user_role=request.user_role,
+    ) as tc:
+        try:
+            t0 = time.perf_counter()
+            verdict = await council.run(
+                query=message,
+                budget_tokens=request.budget_tokens,
+                session_id=session_id,
+            )
+            latency_ms = (time.perf_counter() - t0) * 1000
 
-        logger.info(
-            f"[API] Council complete | session={session_id} | "
-            f"agent={verdict.winning_agent} | latency={latency_ms:.0f}ms | "
-            f"cost=${verdict.total_cost_usd:.6f}"
-        )
+            # Record council verdict as a trace event
+            tc.add_event(TraceEvent(
+                event_type="council_verdict",
+                payload={
+                    "winning_agent": verdict.winning_agent,
+                    "escalated": verdict.escalated,
+                    "hallucination_detected": verdict.hallucination_detected,
+                    "pii_concern": verdict.pii_concern,
+                    "policy_reasons": verdict.policy_reasons[:3] if verdict.policy_reasons else [],
+                },
+                cost_usd=verdict.total_cost_usd,
+            ))
 
-    except Exception as exc:
-        logger.error(f"[API] Council error: {exc}")
-        raise HTTPException(status_code=500, detail=str(exc))
+            # Set final verdict based on council outcome
+            if verdict.escalated:
+                tc.set_verdict("escalated")
+            elif verdict.hallucination_detected:
+                tc.set_verdict("pii_redacted")
+            else:
+                tc.set_verdict("success")
+
+            logger.info(
+                f"[API] Council complete | session={session_id} | "
+                f"agent={verdict.winning_agent} | latency={latency_ms:.0f}ms | "
+                f"cost=${verdict.total_cost_usd:.6f}"
+            )
+
+        except Exception as exc:
+            logger.error(f"[API] Council error: {exc}")
+            tc.set_verdict("error")
+            raise HTTPException(status_code=500, detail=str(exc))
 
     return CouncilVerdictResponse(**verdict.to_dict())

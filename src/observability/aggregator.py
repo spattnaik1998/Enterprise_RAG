@@ -75,25 +75,44 @@ class TraceAggregator:
         if not self._trace_dir.exists():
             return traces
 
-        # Each trace file is: traces/{session_id}.jsonl
-        for trace_file in self._trace_dir.glob("*.jsonl"):
+        # Each trace file is: traces/{trace_id}.json (full AgentTrace structure)
+        for trace_file in self._trace_dir.glob("*.json"):
             try:
                 with open(trace_file, "r") as f:
-                    for line in f:
-                        if not line.strip():
-                            continue
+                    try:
+                        full_trace = json.load(f)
+                        timestamp_str = full_trace.get("created_at", "")
                         try:
-                            event = json.loads(line)
-                            timestamp_str = event.get("timestamp", "")
-                            try:
-                                event_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-                            except (ValueError, TypeError):
-                                event_time = datetime.utcnow()
+                            trace_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+                            # Strip timezone for comparison with naive cutoff_time
+                            trace_time = trace_time.replace(tzinfo=None)
+                        except (ValueError, TypeError):
+                            trace_time = datetime.utcnow()
 
-                            if event_time >= cutoff_time:
-                                traces.append(event)
-                        except json.JSONDecodeError:
-                            continue
+                        if trace_time >= cutoff_time:
+                            # Normalize verdict to status
+                            verdict = full_trace.get("verdict", "success")
+                            status = "success" if verdict in ("success", "pii_redacted") else "error"
+
+                            # Compute latency by summing all event durations
+                            events = full_trace.get("events", [])
+                            latency_ms = sum(ev.get("duration_ms", 0) for ev in events)
+
+                            # Build normalized trace record
+                            normalized = {
+                                "status": status,
+                                "latency_ms": latency_ms,
+                                "cost_usd": full_trace.get("total_cost_usd", 0.0),
+                                "timestamp": timestamp_str,
+                                "pii_redacted": verdict == "pii_redacted",
+                                "model": full_trace.get("model"),
+                                "verdict": verdict,
+                                "events": events,
+                                "user_role": full_trace.get("user_role"),
+                            }
+                            traces.append(normalized)
+                    except json.JSONDecodeError:
+                        logger.warning(f"Invalid JSON in trace file {trace_file}")
             except Exception as e:
                 logger.warning(f"Failed to load trace file {trace_file}: {e}")
 

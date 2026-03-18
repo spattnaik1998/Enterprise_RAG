@@ -1,0 +1,169 @@
+{
+  "predict": {
+    "traces": [],
+    "train": [],
+    "demos": [
+      {
+        "augmented": true,
+        "query": "What is the total overdue balance for Skyline Hospitality Group?",
+        "context": "[1] [Invoice INV-2025-1439 - Skyline Hospitality Group - $4,409.26 - OVERDUE_CRITICAL (358d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1439\nInvoice Type    : MONTHLY_RECURRING\nClient          : Skyline Hospitality Group\nAccount Manager : Linda Torres\n\nInvoice Date    : 2025-02-05\nDue Date        : 2025-03-07\nBilling Period  : February 2025\nPayment Terms   : NET30\n\nSubtotal        : $4,045.19\nTax (9%)         : $364.07\nInvoice Total   : $4,409.26\nAmount Paid     : $0.00\nBalance Due     : $4,409.26\nDays Outstanding: 358\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 358 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- February 2025: 1 x $2,500.00 = $1,967.89\n  - Microsoft 365 Administration -- February 2025: 68 x $8.00 = $428.21\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- February 2025: 1 x $995.00 = $783.22\n  - Network Infrastructure Support & Monitoring -- February 2025: 1 x $750.00 = $590.37\n  - VoIP Phone System Support & Management -- February 2025: 1 x $350.00 = $275.50\n\nBilling Contact : billing@skylinehospitalitygr.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $727.53 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[2] [Invoice INV-2025-1445 - Skyline Hospitality Group - $6,803.29 - OVERDUE_CRITICAL (178d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1445\nInvoice Type    : MONTHLY_RECURRING\nClient          : Skyline Hospitality Group\nAccount Manager : Linda Torres\n\nInvoice Date    : 2025-08-04\nDue Date        : 2025-09-03\nBilling Period  : August 2025\nPayment Terms   : NET30\n\nSubtotal        : $6,241.55\nTax (9%)         : $561.74\nInvoice Total   : $6,803.29\nAmount Paid     : $0.00\nBalance Due     : $6,803.29\nDays Outstanding: 178\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 178 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- August 2025: 1 x $2,500.00 = $3,036.37\n  - Microsoft 365 Administration -- August 2025: 68 x $8.00 = $660.71\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- August 2025: 1 x $995.00 = $1,208.47\n  - Network Infrastructure Support & Monitoring -- August 2025: 1 x $750.00 = $910.91\n  - VoIP Phone System Support & Management -- August 2025: 1 x $350.00 = $425.09\n\nBilling Contact : billing@skylinehospitalitygr.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $510.25 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[3] [Invoice INV-2025-1443 - Skyline Hospitality Group - $6,947.71 - OVERDUE_CRITICAL (240d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1443\nInvoice Type    : MONTHLY_RECURRING\nClient          : Skyline Hospitality Group\nAccount Manager : Linda Torres\n\nInvoice Date    : 2025-06-03\nDue Date        : 2025-07-03\nBilling Period  : June 2025\nPayment Terms   : NET30\n\nSubtotal        : $6,374.05\nTax (9%)         : $573.66\nInvoice Total   : $6,947.71\nAmount Paid     : $0.00\nBalance Due     : $6,947.71\nDays Outstanding: 240\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 240 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- June 2025: 1 x $2,500.00 = $3,100.82\n  - Microsoft 365 Administration -- June 2025: 68 x $8.00 = $674.74\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- June 2025: 1 x $995.00 = $1,234.13\n  - Network Infrastructure Support & Monitoring -- June 2025: 1 x $750.00 = $930.25\n  - VoIP Phone System Support & Management -- June 2025: 1 x $350.00 = $434.11\n\nBilling Contact : billing@skylinehospitalitygr.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $833.73 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[4] [Comms COMM-2025-3076 - 4th Notice / Escalat - Skyline Hospitality Group re INV-2025-1445]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3076\nInvoice Ref     : INV-2025-1445\nClient          : Skyline Hospitality Group\nAccount Manager : Linda Torres\n\nNotice Sequence : 4th Notice / Escalation (90+ days - Collections Review)\nDirection       : OUTBOUND\nSent Date       : 2025-12-02\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@skylinehospitalitygr.com\nSUBJECT         : URGENT: Account Skyline Hospitality Group Referred to Collections Review\n\nInvoice Amount  : $6,803.29\nBalance at Send : $6,803.29\nDays Overdue    : 178\n\nMESSAGE PREVIEW:\n----------------\nThis account has been flagged for collections review. Invoice INV-2025-1445 outstanding 178 days. Balance: $6,803.29.\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n\n\n[5] [Comms COMM-2025-3070 - 2nd Notice (30 days  - Skyline Hospitality Group re INV-2025-1443]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3070\nInvoice Ref     : INV-2025-1443\nClient          : Skyline Hospitality Group\nAccount Manager : Linda Torres\n\nNotice Sequence : 2nd Notice (30 days past due)\nDirection       : OUTBOUND\nSent Date       : 2025-08-02\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@skylinehospitalitygr.com\nSUBJECT         : Second Notice: Invoice INV-2025-1443 Now 240 Days Past Due\n\nInvoice Amount  : $6,947.71\nBalance at Send : $6,947.71\nDays Overdue    : 240\n\nMESSAGE PREVIEW:\n----------------\nDear Patrick Allen,\n\nOur records indicate invoice INV-2025-1443 for $6,947.71 is now 240 days past due. Please arrange payment immediately to avoid service interruption and the accrual of late fees (1.5% per month).\n\nIf there is a dispute or billing question, please contact us immediately.\n\nTechVault MSP Billing Team\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n",
+        "reasoning": "Skyline Hospitality Group has three invoices that are currently overdue: \n1. Invoice INV-2025-1439 with an overdue balance of $4,409.26 (overdue by 358 days) \n2. Invoice INV-2025-1445 with an overdue balance of $6,803.29 (overdue by 178 days) \n3. Invoice INV-2025-1443 with an overdue balance of $6,947.71 (overdue by 240 days) \n\nTo determine the total overdue balance, we simply sum these amounts: \n$4,409.26 + $6,803.29 + $6,947.71 = $18,160.26. \n\nThus, the total overdue balance for Skyline Hospitality Group is $18,160.26.",
+        "answer": "The total overdue balance for Skyline Hospitality Group is $18,160.26, which includes overdue invoices INV-2025-1439, INV-2025-1445, and INV-2025-1443."
+      },
+      {
+        "augmented": true,
+        "query": "Which client has invoice INV-2025-1040 and what is its status?",
+        "context": "[1] [Comms COMM-2025-3013 - 1st Notice (Friendly - Northern Lights Healthcare System re INV-2025-1040]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3013\nInvoice Ref     : INV-2025-1040\nClient          : Northern Lights Healthcare System\nAccount Manager : Diana Reyes\n\nNotice Sequence : 1st Notice (Friendly Reminder - 10 days past due)\nDirection       : OUTBOUND\nSent Date       : 2026-01-27\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@northernlightshealth.com\nSUBJECT         : Friendly Reminder: Invoice INV-2025-1040 Due 42 Days Ago\n\nInvoice Amount  : $11,308.15\nBalance at Send : $11,308.15\nDays Overdue    : 42\n\nMESSAGE PREVIEW:\n----------------\nDear Christopher Ashley,\n\nThis is a friendly reminder that invoice INV-2025-1040 for $11,308.15 was due on 2026-01-17. If you have already sent payment, please disregard this notice. Otherwise, please remit payment at your earliest convenience.\n\nThank you for your continued business.\n\nTechVault MSP Billing Team\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n\n\n[2] [Invoice INV-2025-1040 - Northern Lights Healthcare System - $11,308.15 - PAST_DUE (42d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1040\nInvoice Type    : MONTHLY_RECURRING\nClient          : Northern Lights Healthcare System\nAccount Manager : Diana Reyes\n\nInvoice Date    : 2025-12-03\nDue Date        : 2026-01-17\nBilling Period  : December 2025\nPayment Terms   : NET45\n\nSubtotal        : $10,374.45\nTax (9%)         : $933.70\nInvoice Total   : $11,308.15\nAmount Paid     : $0.00\nBalance Due     : $11,308.15\nDays Outstanding: 42\nAging Bucket    : 31-60 days\n\nSTATUS: This invoice is past due by 42 days.\n\nServices Rendered:\n  - Managed IT Support - Tier 3 (76+ users) -- December 2025: 1 x $4,500.00 = $4,017.64\n  - Microsoft 365 Administration -- December 2025: 210 x $8.00 = $1,499.92\n  - Advanced Security Operations Center (SIEM/SOC) -- December 2025: 1 x $2,200.00 = $1,964.18\n  - Cloud Infrastructure Management (Azure/AWS) -- December 2025: 1 x $1,200.00 = $1,071.37\n  - Network Infrastructure Support & Monitoring -- December 2025: 1 x $750.00 = $669.61\n  - Business Continuity & Disaster Recovery -- December 2025: 1 x $550.00 = $491.05\n  - IT Compliance Consulting (HIPAA/SOC2/PCI-DSS) -- December 2025: 1 x $740.00 = $660.68\n\nBilling Contact : billing@northernlightshealth.com\nSource System   : QuickBooks Enterprise 2025\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[3] [Comms COMM-2025-3014 - 2nd Notice (30 days  - Northern Lights Healthcare System re INV-2025-1040]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3014\nInvoice Ref     : INV-2025-1040\nClient          : Northern Lights Healthcare System\nAccount Manager : Diana Reyes\n\nNotice Sequence : 2nd Notice (30 days past due)\nDirection       : OUTBOUND\nSent Date       : 2026-02-16\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@northernlightshealth.com\nSUBJECT         : Second Notice: Invoice INV-2025-1040 Now 42 Days Past Due\n\nInvoice Amount  : $11,308.15\nBalance at Send : $11,308.15\nDays Overdue    : 42\n\nMESSAGE PREVIEW:\n----------------\nDear Christopher Ashley,\n\nOur records indicate invoice INV-2025-1040 for $11,308.15 is now 42 days past due. Please arrange payment immediately to avoid service interruption and the accrual of late fees (1.5% per month).\n\nIf there is a dispute or billing question, please contact us immediately.\n\nTechVault MSP Billing Team\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n\n\n[4] [Comms COMM-2025-3092 - 2nd Notice (30 days  - Harbor Logistics Solutions re INV-2025-1635]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3092\nInvoice Ref     : INV-2025-1635\nClient          : Harbor Logistics Solutions\nAccount Manager : Marcus Johnson\n\nNotice Sequence : 2nd Notice (30 days past due)\nDirection       : OUTBOUND\nSent Date       : 2025-05-03\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@harborlogisticssolut.com\nSUBJECT         : Second Notice: Invoice INV-2025-1635 Now 331 Days Past Due\n\nInvoice Amount  : $5,988.32\nBalance at Send : $5,988.32\nDays Overdue    : 331\n\nMESSAGE PREVIEW:\n----------------\nDear Alejandra Santos,\n\nOur records indicate invoice INV-2025-1635 for $5,988.32 is now 331 days past due. Please arrange payment immediately to avoid service interruption and the accrual of late fees (1.5% per month).\n\nIf there is a dispute or billing question, please contact us immediately.\n\nTechVault MSP Billing Team\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n\n\n[5] [Comms COMM-2025-3096 - 2nd Notice (30 days  - Harbor Logistics Solutions re INV-2025-1643]\n\nCOMMUNICATIONS RECORD - TechVault MSP Exchange Online\n=======================================================\n\nComm ID         : COMM-2025-3096\nInvoice Ref     : INV-2025-1643\nClient          : Harbor Logistics Solutions\nAccount Manager : Marcus Johnson\n\nNotice Sequence : 2nd Notice (30 days past due)\nDirection       : OUTBOUND\nSent Date       : 2025-12-31\nStatus          : DELIVERED\n\nFROM            : billing@techvaultmsp.com\nTO              : billing@harborlogisticssolut.com\nSUBJECT         : Second Notice: Invoice INV-2025-1643 Now 89 Days Past Due\n\nInvoice Amount  : $6,843.41\nBalance at Send : $6,843.41\nDays Overdue    : 89\n\nMESSAGE PREVIEW:\n----------------\nDear Alejandra Santos,\n\nOur records indicate invoice INV-2025-1643 for $6,843.41 is now 89 days past due. Please arrange payment immediately to avoid service interruption and the accrual of late fees (1.5% per month).\n\nIf there is a dispute or billing question, please contact us immediately.\n\nTechVault MSP Billing Team\n\nCLIENT RESPONSE : No response received from client\n\nSource System   : Microsoft Exchange Online\n",
+        "reasoning": "Invoice INV-2025-1040 is associated with Northern Lights Healthcare System. The invoice is currently past due by 42 days, with a total amount of $11,308.15 outstanding. This information was confirmed in multiple communications sent to the client, indicating that they have been reminded of the overdue status.",
+        "answer": "The client with invoice INV-2025-1040 is Northern Lights Healthcare System, and its status is PAST_DUE, being 42 days overdue with an outstanding balance of $11,308.15."
+      },
+      {
+        "augmented": true,
+        "query": "Which client has the most individual overdue invoices?",
+        "context": "[1] [Invoice INV-2025-1031 - Northern Lights Healthcare System - $11,290.10 - OVERDUE_CRITICAL (315d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1031\nInvoice Type    : MONTHLY_RECURRING\nClient          : Northern Lights Healthcare System\nAccount Manager : Diana Reyes\n\nInvoice Date    : 2025-03-05\nDue Date        : 2025-04-19\nBilling Period  : March 2025\nPayment Terms   : NET45\n\nSubtotal        : $10,357.89\nTax (9%)         : $932.21\nInvoice Total   : $11,290.10\nAmount Paid     : $0.00\nBalance Due     : $11,290.10\nDays Outstanding: 315\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 315 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 3 (76+ users) -- March 2025: 1 x $4,500.00 = $4,011.23\n  - Microsoft 365 Administration -- March 2025: 210 x $8.00 = $1,497.53\n  - Advanced Security Operations Center (SIEM/SOC) -- March 2025: 1 x $2,200.00 = $1,961.05\n  - Cloud Infrastructure Management (Azure/AWS) -- March 2025: 1 x $1,200.00 = $1,069.66\n  - Network Infrastructure Support & Monitoring -- March 2025: 1 x $750.00 = $668.54\n  - Business Continuity & Disaster Recovery -- March 2025: 1 x $550.00 = $490.26\n  - IT Compliance Consulting (HIPAA/SOC2/PCI-DSS) -- March 2025: 1 x $740.00 = $659.62\n\nBilling Contact : billing@northernlightshealth.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $1,693.51 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[2] [Invoice INV-2025-1633 - Harbor Logistics Solutions - $6,270.42 - OVERDUE_CRITICAL (393d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1633\nInvoice Type    : MONTHLY_RECURRING\nClient          : Harbor Logistics Solutions\nAccount Manager : Marcus Johnson\n\nInvoice Date    : 2025-01-01\nDue Date        : 2025-01-31\nBilling Period  : January 2025\nPayment Terms   : NET30\n\nSubtotal        : $5,752.68\nTax (9%)         : $517.74\nInvoice Total   : $6,270.42\nAmount Paid     : $0.00\nBalance Due     : $6,270.42\nDays Outstanding: 393\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 393 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- January 2025: 1 x $2,500.00 = $2,388.59\n  - Microsoft 365 Administration -- January 2025: 72 x $8.00 = $550.33\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- January 2025: 1 x $995.00 = $950.66\n  - Cloud Infrastructure Management (Azure/AWS) -- January 2025: 1 x $1,200.00 = $1,146.52\n  - Network Infrastructure Support & Monitoring -- January 2025: 1 x $750.00 = $716.58\n\nBilling Contact : billing@harborlogisticssolut.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $1,222.73 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[3] [Invoice INV-2025-1387 - Pacific Coast Realty Group - $5,520.51 - OVERDUE_CRITICAL (303d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1387\nInvoice Type    : MONTHLY_RECURRING\nClient          : Pacific Coast Realty Group\nAccount Manager : Sarah Park\n\nInvoice Date    : 2025-04-01\nDue Date        : 2025-05-01\nBilling Period  : April 2025\nPayment Terms   : NET30\n\nSubtotal        : $5,064.69\nTax (9%)         : $455.82\nInvoice Total   : $5,520.51\nAmount Paid     : $0.00\nBalance Due     : $5,520.51\nDays Outstanding: 303\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 303 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- April 2025: 1 x $2,500.00 = $3,011.11\n  - Microsoft 365 Administration -- April 2025: 45 x $8.00 = $433.60\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- April 2025: 1 x $995.00 = $1,198.42\n  - VoIP Phone System Support & Management -- April 2025: 1 x $350.00 = $421.56\n\nBilling Contact : billing@pacificcoastrealtygr.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $828.08 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[4] [Invoice INV-2025-1635 - Harbor Logistics Solutions - $5,988.32 - OVERDUE_CRITICAL (331d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1635\nInvoice Type    : MONTHLY_RECURRING\nClient          : Harbor Logistics Solutions\nAccount Manager : Marcus Johnson\n\nInvoice Date    : 2025-03-04\nDue Date        : 2025-04-03\nBilling Period  : March 2025\nPayment Terms   : NET30\n\nSubtotal        : $5,493.87\nTax (9%)         : $494.45\nInvoice Total   : $5,988.32\nAmount Paid     : $0.00\nBalance Due     : $5,988.32\nDays Outstanding: 331\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 331 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 2 (26-75 users) -- March 2025: 1 x $2,500.00 = $2,281.13\n  - Microsoft 365 Administration -- March 2025: 72 x $8.00 = $525.57\n  - Cybersecurity Monitoring (EDR/Endpoint Protection) -- March 2025: 1 x $995.00 = $907.89\n  - Cloud Infrastructure Management (Azure/AWS) -- March 2025: 1 x $1,200.00 = $1,094.94\n  - Network Infrastructure Support & Monitoring -- March 2025: 1 x $750.00 = $684.34\n\nBilling Contact : billing@harborlogisticssolut.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $988.07 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n\n\n[5] [Invoice INV-2025-1036 - Northern Lights Healthcare System - $13,806.86 - OVERDUE_CRITICAL (162d outstanding)]\n\nINVOICE RECORD - TechVault MSP Billing System\n=======================================================\n\nInvoice ID      : INV-2025-1036\nInvoice Type    : MONTHLY_RECURRING\nClient          : Northern Lights Healthcare System\nAccount Manager : Diana Reyes\n\nInvoice Date    : 2025-08-05\nDue Date        : 2025-09-19\nBilling Period  : August 2025\nPayment Terms   : NET45\n\nSubtotal        : $12,666.84\nTax (9%)         : $1,140.02\nInvoice Total   : $13,806.86\nAmount Paid     : $0.00\nBalance Due     : $13,806.86\nDays Outstanding: 162\nAging Bucket    : 90+ days (Critical)\n\nSTATUS: This invoice is CRITICALLY OVERDUE by 162 days and has been escalated.\n\nServices Rendered:\n  - Managed IT Support - Tier 3 (76+ users) -- August 2025: 1 x $4,500.00 = $4,905.40\n  - Microsoft 365 Administration -- August 2025: 210 x $8.00 = $1,831.35\n  - Advanced Security Operations Center (SIEM/SOC) -- August 2025: 1 x $2,200.00 = $2,398.19\n  - Cloud Infrastructure Management (Azure/AWS) -- August 2025: 1 x $1,200.00 = $1,308.11\n  - Network Infrastructure Support & Monitoring -- August 2025: 1 x $750.00 = $817.57\n  - Business Continuity & Disaster Recovery -- August 2025: 1 x $550.00 = $599.55\n  - IT Compliance Consulting (HIPAA/SOC2/PCI-DSS) -- August 2025: 1 x $740.00 = $806.67\n\nBilling Contact : billing@northernlightshealth.com\nSource System   : QuickBooks Enterprise 2025\n\nLate Fee Accrued: $1,035.51 (1.5% per month on outstanding balance)\n\nNotes: Payment due per service agreement. Late payments subject to 1.5% monthly finance charge.\n",
+        "reasoning": "Based on the context provided, Northern Lights Healthcare System has multiple overdue invoices: INV-2025-1031 and INV-2025-1036, totaling two overdue invoices. Harbor Logistics Solutions also has two overdue invoices: INV-2025-1633 and INV-2025-1635. Pacific Coast Realty Group has one overdue invoice: INV-2025-1387. Therefore, both Northern Lights Healthcare System and Harbor Logistics Solutions have the most individual overdue invoices, with a total of two invoices each.",
+        "answer": "The clients with the most individual overdue invoices are Northern Lights Healthcare System and Harbor Logistics Solutions, each having two overdue invoices."
+      },
+      {
+        "query": "What is Quantum Strategy Group's overdue balance?",
+        "answer": "Quantum Strategy Group has an overdue balance of approximately $2,552 in OVERDUE_CRITICAL invoices.",
+        "expected_keywords": [
+          "Quantum Strategy",
+          "2552"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "medium",
+        "query_id": "billing_018"
+      },
+      {
+        "query": "Which invoices are associated with Crossroads Manufacturing?",
+        "answer": "Crossroads Manufacturing has multiple invoices on record in the TechVault MSP billing system. These invoices carry OVERDUE_CRITICAL status and together account for a total overdue balance of approximately $28,688.",
+        "expected_keywords": [
+          "Crossroads Manufacturing",
+          "invoice"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "medium",
+        "query_id": "billing_007"
+      },
+      {
+        "query": "What is Metro Construction's total overdue amount?",
+        "answer": "Metro Construction has a total overdue amount of approximately $14,940 in OVERDUE_CRITICAL invoices.",
+        "expected_keywords": [
+          "Metro Construction",
+          "14940"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "medium",
+        "query_id": "billing_015"
+      },
+      {
+        "query": "What are the line items on a typical TechVault MSP invoice?",
+        "answer": "A typical TechVault MSP invoice includes line items such as managed services (recurring monthly fee), labor (hourly professional services), and hardware or software licensing. Each line item has a description, quantity, unit price, and amount.",
+        "expected_keywords": [
+          "managed services",
+          "labor",
+          "hardware"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "hard",
+        "query_id": "billing_013"
+      },
+      {
+        "query": "What is the outstanding balance on invoice INV-2025-1031?",
+        "answer": "Invoice INV-2025-1031 has an outstanding balance of $11,290. It is an OVERDUE_CRITICAL invoice belonging to Northern Lights Healthcare System.",
+        "expected_keywords": [
+          "INV-2025-1031",
+          "11290"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "medium",
+        "query_id": "billing_005"
+      },
+      {
+        "query": "Which client has an overdue invoice that is 135 days past due?",
+        "answer": "Northern Lights Healthcare System has an invoice that is 135 days past due, among several other overdue invoices ranging from 135 to 315 days overdue.",
+        "expected_keywords": [
+          "Northern Lights"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "hard",
+        "query_id": "billing_017"
+      },
+      {
+        "query": "Are there any invoices with PENDING status?",
+        "answer": "Yes, the TechVault MSP billing system includes invoices with PENDING status, indicating they are not yet past due and awaiting payment within their net terms.",
+        "expected_keywords": [
+          "PENDING"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "easy",
+        "query_id": "billing_019"
+      },
+      {
+        "query": "What payment terms does the billing system use for Northern Lights?",
+        "answer": "Northern Lights Healthcare System invoices are issued under NET45 payment terms, meaning payment is due 45 days from the invoice date.",
+        "expected_keywords": [
+          "Northern Lights",
+          "NET45"
+        ],
+        "expected_source_types": [
+          "billing"
+        ],
+        "category": "billing",
+        "difficulty": "medium",
+        "query_id": "billing_011"
+      }
+    ],
+    "signature": {
+      "instructions": "Answer an enterprise MSP query using retrieved context passages.\n\nThe answer must cite source numbers from the context and end with a\nSources section.",
+      "fields": [
+        {
+          "prefix": "Query:",
+          "description": "The user's question about MSP operations, billing, contracts, or CRM"
+        },
+        {
+          "prefix": "Context:",
+          "description": "Numbered retrieved passages [1]..[N] from the enterprise knowledge base"
+        },
+        {
+          "prefix": "Reasoning: Let's think step by step in order to",
+          "description": "${reasoning}"
+        },
+        {
+          "prefix": "Answer:",
+          "description": "Grounded, factual answer citing source numbers [1]..[N]. Ends with a Sources section listing which passages were cited."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.1.3",
+      "cloudpickle": "3.1"
+    }
+  }
+}

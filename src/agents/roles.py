@@ -151,12 +151,37 @@ class PolicyVerifierAgent:
                 [(_PromptChunk(), 1.0)],
             )
             raw = response.answer.strip()
-            # Strip markdown code fences if present
-            if raw.startswith("```"):
-                lines = raw.split("\n")
-                raw = "\n".join(line for line in lines if not line.startswith("```")).strip()
+
+            # Extract JSON from markdown code fences if present
+            if "```" in raw:
+                # Try to extract content between ``` markers
+                start_idx = raw.find("```")
+                if start_idx != -1:
+                    # Skip the opening ``` line (and optional json/JSON language tag)
+                    after_start = raw[start_idx + 3:]
+                    newline_idx = after_start.find("\n")
+                    if newline_idx != -1:
+                        after_start = after_start[newline_idx + 1:]
+
+                    # Find closing ```
+                    end_idx = after_start.rfind("```")
+                    if end_idx != -1:
+                        raw = after_start[:end_idx].strip()
+                    else:
+                        raw = after_start.strip()
+
             verdict_data = json.loads(raw)
             return verdict_data
+        except json.JSONDecodeError as json_exc:
+            logger.warning(f"[PolicyVerifier] JSON parse failed: {json_exc}")
+            logger.debug(f"[PolicyVerifier] Raw response: {response.answer[:200]}")
+            return {
+                "verdict": "accept_conservative",
+                "winning_agent": "ConservativeChecker",
+                "reasons": [f"Verifier JSON error: {json_exc}"],
+                "hallucination_detected": False,
+                "pii_concern": False,
+            }
         except Exception as exc:
             logger.warning(f"[PolicyVerifier] Verification failed: {exc} -- defaulting to conservative")
             return {

@@ -71,7 +71,11 @@ data/chat_logs/
 data/audit/*.jsonl
 
 # Trace store (runtime-generated, large)
-data/traces/*.jsonl
+data/traces/
+
+# Monitoring & learning data (runtime-generated)
+data/monitoring/
+data/learning/
 
 # Local screenshots / one-off files
 *.png

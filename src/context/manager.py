@@ -76,6 +76,7 @@ class ContextManager:
         chunks: list,
         budget_tokens: int = _DEFAULT_BUDGET,
         fast_path: bool = False,
+        scores: dict | None = None,
     ) -> ContextBundle:
         """
         Build a ContextBundle from reranked chunks.
@@ -86,6 +87,8 @@ class ContextManager:
             budget_tokens: Maximum tokens to include. Set to 1024 for fast path.
             fast_path:     If True, uses FAST_PATH_BUDGET (1024) regardless of
                            budget_tokens param.
+            scores:        Dict of chunk_id -> float for reranker relevance scores.
+                           If provided, overrides chunk.score attribute.
 
         Returns:
             ContextBundle with pieces packed and reordered.
@@ -101,7 +104,7 @@ class ContextManager:
             )
 
         # 1. Convert chunks to ContextPiece objects
-        all_pieces = self._to_pieces(chunks)
+        all_pieces = self._to_pieces(chunks, scores=scores)
 
         # 2. Sort by (tier_priority DESC, combined_score DESC)
         all_pieces.sort(
@@ -148,7 +151,7 @@ class ContextManager:
     # Internal
     # -------------------------------------------------------------------------
 
-    def _to_pieces(self, chunks: list) -> list[ContextPiece]:
+    def _to_pieces(self, chunks: list, scores: dict | None = None) -> list[ContextPiece]:
         pieces: list[ContextPiece] = []
         for i, chunk in enumerate(chunks):
             text     = getattr(chunk, "text", "") or ""
@@ -156,9 +159,14 @@ class ContextManager:
             src_type = getattr(chunk, "source_type", "")
             source   = getattr(chunk, "source", "")
             cid      = getattr(chunk, "id", f"chunk_{i}")
+            chunk_id = getattr(chunk, "chunk_id", str(cid))
 
-            # Scores
-            relevance = float(getattr(chunk, "score", 0.0) or 0.0)
+            # Scores: prefer scores dict, fall back to chunk.score attribute
+            if scores is not None:
+                relevance = float(scores.get(chunk_id, 0.0))
+            else:
+                relevance = float(getattr(chunk, "score", 0.0) or 0.0)
+
             freshness = self._freshness.score(chunk)
             combined  = round(relevance * (0.7 + 0.3 * freshness), 6)
             # Weight: 70% relevance, 30% freshness boost
