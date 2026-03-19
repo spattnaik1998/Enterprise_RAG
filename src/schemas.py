@@ -44,7 +44,7 @@ class RawDocument(BaseModel):
     """
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    source: str                         # e.g. "arxiv:RAG", "wikipedia:FAISS"
+    source: str                         # e.g. "invoice:INV-2024-001", "ticket:TICK-5432"
     source_type: SourceType
     title: str
     content: str                        # Raw, uncleaned full text

@@ -14,7 +14,7 @@ Roles:
     anonymous   -- unauthenticated; no sensitive access
 
 Classifications:
-    public      -- AI research articles, Wikipedia, RSS
+    public      -- general business information, non-sensitive queries
     internal    -- PSA tickets, general CRM notes
     sensitive   -- billing invoices, AR data, CRM RED accounts
     restricted  -- contracts, PII fields, communications history

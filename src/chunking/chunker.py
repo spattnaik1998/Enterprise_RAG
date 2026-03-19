@@ -16,7 +16,7 @@ Strategy selection logic:
       FIXED_OVERLAP -- 512-token windows with 64-token stride so the financial
       summary and contacts sections are each represented without being split.
 
-  - LONG narrative docs (Wikipedia, ArXiv abstracts, RSS, 900+ tokens):
+  - LONG narrative docs (future sources, 900+ tokens):
       SENTENCE_WINDOW -- sliding windows of N sentences with M-sentence overlap.
       Keeps semantic continuity and avoids mid-sentence cuts.
 

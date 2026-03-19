@@ -266,7 +266,8 @@ class ValidationReportGenerator:
             )
         if len(validated) < 20:
             recs.append(
-                "Small corpus (<20 docs). Expand ArXiv queries or add more RSS feeds."
+                "Small corpus (<20 docs). Consider adding more enterprise data sources "
+                "or expanding data collection across systems."
             )
         if validated:
             avg = sum(d.quality_score for d in validated) / len(validated)

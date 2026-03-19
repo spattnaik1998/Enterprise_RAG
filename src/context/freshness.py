@@ -9,8 +9,8 @@ Score = max(0, 1 - days_since_creation / DECAY_DAYS)
   - 0.0  = DECAY_DAYS+ ago   (~90 days or older)
   - 0.5  = no date field (neutral, not penalised)
 
-The 90-day decay window ensures recent MSP billing events and PSA tickets
-rank higher than six-month-old RSS articles.
+The 90-day decay window ensures recent MSP operational data (billing, tickets)
+ranks higher than older reference documents.
 """
 from __future__ import annotations
 

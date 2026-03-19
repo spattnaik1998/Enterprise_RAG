@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import sys
 
-# Windows cp1252 terminal fix: force UTF-8 so RSS/external content with
+# Windows cp1252 terminal fix: force UTF-8 so external content with
 # emoji does not crash the Rich console renderer.
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")

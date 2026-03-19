@@ -34,7 +34,7 @@ class ContextPiece:
 
     # Provenance
     source_type: str
-    """Source system: billing | psa | crm | contracts | communications | arxiv | wikipedia | rss"""
+    """Source system: billing | psa | crm | contracts | communications"""
 
     source: str
     """Document source name (e.g. invoice ID, paper title)."""
@@ -54,7 +54,7 @@ class ContextPiece:
     """
     working   -- operationally immediate (billing, psa, communications)
     ephemeral -- query-relevant (crm, contracts)
-    longterm  -- background knowledge (arxiv, wikipedia, rss)
+    longterm  -- reserved for future background knowledge sources
     """
 
     context_position: int = 0
