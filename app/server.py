@@ -1174,6 +1174,7 @@ async def list_alerts(
 @app.patch("/api/alerts/{alert_id}/acknowledge", response_model=dict)
 @limiter.limit("30/minute")
 async def acknowledge_alert(
+    request: Request,
     alert_id: str,
     acknowledged: bool = Query(True),
     _user: dict = Depends(require_msp),
@@ -1385,8 +1386,8 @@ async def list_approval_requests(
 @app.post("/api/approvals/{request_id}/approve", response_model=dict)
 @limiter.limit("30/minute")
 async def approve_request(
-    request_id: str,
     request: Request,
+    request_id: str,
     _user: dict = Depends(require_msp),
 ):
     """
@@ -1424,9 +1425,9 @@ async def approve_request(
 @app.post("/api/approvals/{request_id}/reject", response_model=dict)
 @limiter.limit("30/minute")
 async def reject_request(
+    request: Request,
     request_id: str,
     reason: str = Query("", description="Reason for rejection"),
-    request: Request = ...,
     _user: dict = Depends(require_msp),
 ):
     """
