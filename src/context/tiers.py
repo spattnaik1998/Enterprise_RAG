@@ -10,7 +10,7 @@ Maps a source_type string to one of three context tiers:
   ephemeral -- query-relevant but not time-critical (crm, contracts)
                Placed just inside the working-tier bookends.
 
-  longterm  -- background knowledge (arxiv, wikipedia, rss)
+  longterm  -- reserved for future background knowledge sources
                Placed in the middle where recency matters least.
 
 Tier priority (for sort order — higher = ranked earlier):

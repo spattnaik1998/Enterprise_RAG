@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import functools
+import os
 from pathlib import Path
 
 from loguru import logger
@@ -66,6 +67,14 @@ class AgentSecurityGateway:
         audit_log: str | Path = "data/audit/audit.jsonl",
         approval_queue: ApprovalQueue | None = None,
     ) -> None:
+        # Compliance: AUDIT_HMAC_KEY must be set in non-dev environments
+        environment = os.environ.get("ENVIRONMENT", "dev")
+        if environment != "dev" and "AUDIT_HMAC_KEY" not in os.environ:
+            raise RuntimeError(
+                "AUDIT_HMAC_KEY must be set in non-dev environments. "
+                "Refusing to start. Set AUDIT_HMAC_KEY in your environment variables."
+            )
+
         self.guard  = PromptGuard()
         self.policy = PolicyEngine(policy_file)
         self.audit  = AuditLogger(audit_log)

@@ -53,5 +53,6 @@ NO_CONTEXT_RESPONSE = (
     "- Billing & accounts receivable (overdue invoices, client statements)\n"
     "- Service tickets and PSA work logs (ConnectWise)\n"
     "- Client profiles and account health (HubSpot CRM)\n"
+    "- Service communications (invoice reminders, support emails)\n"
     "- Contract terms and SLA details (SharePoint)"
 )

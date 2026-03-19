@@ -19,11 +19,22 @@ import json
 import re
 import time
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional
 
 from loguru import logger
 
 from src.agents.council import CouncilVerdict
+from src.skills.registry import SkillRegistry
+from src.skills.base import SkillContext
+
+
+class RouteType(str, Enum):
+    """Query routing decision types."""
+    SKILL = "skill"
+    DIRECT_RAG = "direct_rag"
+    COUNCIL = "council"
+    TOOL_COMPOSER = "tool_composer"
 
 
 # Heuristic patterns for fast classification
@@ -57,6 +68,17 @@ class ClassificationResult:
     query_class: str  # "SIMPLE", "COMPLEX", "AGGREGATE"
     confidence: float  # 0.0 - 1.0
     reasoning: str
+
+
+@dataclass
+class RouteDecision:
+    """Routing decision with full trace information."""
+    route_type: RouteType
+    confidence: float  # 0.0 - 1.0
+    skill_name: Optional[str] = None
+    classification: Optional[ClassificationResult] = None
+    reasoning: str = ""
+    estimated_cost_usd: float = 0.0
 
 
 class QueryClassifier:
@@ -200,12 +222,10 @@ class DirectRAGAgent:
         start = time.time()
 
         try:
-            # Run RAG with fast-path context budget
+            # Run RAG with fast-path context budget (uses pipeline's configured defaults)
             result = self._pipeline.query(
-                query=query,
-                top_k=10,
-                rerank_top_k=5,
-                abac_ctx=abac_ctx,
+                user_query=query,
+                fast_path=True,
             )
 
             latency_ms = (time.time() - start) * 1000
@@ -347,25 +367,85 @@ class QueryRouterAgent:
             CouncilVerdict with standardized response format
         """
         start = time.time()
+        route_decision = None
 
-        # Classify query
+        # 1. Check for skill matches first (highest priority)
+        skill_registry = SkillRegistry()
+        matched_skill = skill_registry.match(query)
+
+        if matched_skill and matched_skill.matches_query(query) > 0.7:
+            # Route to skill
+            logger.info(
+                f"[Router] Skill match: {matched_skill.name} | "
+                f"confidence={matched_skill.matches_query(query):.2f}"
+            )
+            route_decision = RouteDecision(
+                route_type=RouteType.SKILL,
+                confidence=matched_skill.matches_query(query),
+                skill_name=matched_skill.name,
+                reasoning=f"Skill match for {matched_skill.name}",
+            )
+
+            try:
+                t_skill = time.time()
+                skill_context = SkillContext(query=query)
+                skill_result = await matched_skill.execute(skill_context)
+                skill_latency_ms = (time.time() - t_skill) * 1000
+
+                verdict = CouncilVerdict(
+                    accepted_answer=skill_result.data if skill_result.success else f"Skill error: {skill_result.error}",
+                    winning_agent=f"Skill:{matched_skill.name}",
+                    dissent_summary="",
+                    escalated=not skill_result.success,
+                    policy_reasons=[f"Routed to skill {matched_skill.name}"],
+                    total_cost_usd=0.0,
+                    trace_id="",
+                    latency_ms=skill_latency_ms,
+                )
+
+                logger.info(
+                    f"[Router] Skill execution: {matched_skill.name} | "
+                    f"latency={skill_latency_ms:.0f}ms | "
+                    f"success={skill_result.success}"
+                )
+                return verdict
+
+            except Exception as e:
+                logger.error(f"[Router] Skill execution failed: {e}; escalating to council")
+                # Fall through to normal routing on skill error
+
+        # 2. Classify query (heuristics + optional LLM)
         classification = self._classifier.classify(query)
         logger.info(
             f"[Router] Classified as {classification.query_class:10s} | "
             f"confidence={classification.confidence:.2f} | reasoning={classification.reasoning}"
         )
 
-        # Route to appropriate agent
+        # 3. Route to appropriate agent
         if classification.query_class == "SIMPLE":
             verdict = await self._direct_rag.run(query, abac_ctx)
             verdict.policy_reasons = [
                 f"Routed to DirectRAG ({classification.reasoning})"
             ] + verdict.policy_reasons
+            route_decision = RouteDecision(
+                route_type=RouteType.DIRECT_RAG,
+                confidence=classification.confidence,
+                classification=classification,
+                reasoning=classification.reasoning,
+                estimated_cost_usd=verdict.total_cost_usd,
+            )
         elif classification.query_class == "AGGREGATE":
             verdict = await self._tool_composer.run(query, abac_ctx)
             verdict.policy_reasons = [
                 f"Routed to ToolComposer ({classification.reasoning})"
             ] + verdict.policy_reasons
+            route_decision = RouteDecision(
+                route_type=RouteType.TOOL_COMPOSER,
+                confidence=classification.confidence,
+                classification=classification,
+                reasoning=classification.reasoning,
+                estimated_cost_usd=verdict.total_cost_usd,
+            )
         else:  # COMPLEX
             if self._council:
                 verdict = await self._council.run(query, abac_ctx)
@@ -376,9 +456,25 @@ class QueryRouterAgent:
             verdict.policy_reasons = [
                 f"Routed to CouncilOrchestrator ({classification.reasoning})"
             ] + verdict.policy_reasons
+            route_decision = RouteDecision(
+                route_type=RouteType.COUNCIL,
+                confidence=classification.confidence,
+                classification=classification,
+                reasoning=classification.reasoning,
+                estimated_cost_usd=verdict.total_cost_usd,
+            )
 
         total_latency = (time.time() - start) * 1000
         verdict.latency_ms = total_latency
+
+        # Log routing decision
+        if route_decision:
+            logger.info(
+                f"[Router] Decision: route={route_decision.route_type.value:15s} | "
+                f"confidence={route_decision.confidence:.2f} | "
+                f"cost=${route_decision.estimated_cost_usd:.4f} | "
+                f"latency={total_latency:.0f}ms"
+            )
 
         logger.info(
             f"[Router] Route complete | "
